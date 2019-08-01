@@ -15,15 +15,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 SVG utilities
-'''
+"""
 
 import cairo
 import g15pythonlang
 
 # Logging
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -39,11 +40,12 @@ def rotate_element(element, degrees):
     t.rotate(g15convert.degrees_to_radians(degrees))
     ts = "m" + str(t)[7:]
     element.set("transform", ts)
-    
-def get_transforms(element, position_only = False):
+
+
+def get_transforms(element, position_only=False):
     transform_val = element.get("transform")
     list = []
-    if transform_val != None:
+    if transform_val is not None:
         start = 0
         while True:
             start_args = transform_val.find("(", start)
@@ -58,9 +60,11 @@ def get_transforms(element, position_only = False):
                 list.append(cairo.Matrix(1.0, 0.0, 0.0, 1.0, float(args[0]), float(args[1])))
             elif name == "matrix":
                 if position_only:
-                    list.append(cairo.Matrix(float(args[0]), float(args[1]), float(args[2]), float(args[3]),float(args[4]),float(args[5])))
+                    list.append(
+                        cairo.Matrix(float(args[0]), float(args[1]), float(args[2]), float(args[3]), float(args[4]),
+                                     float(args[5])))
                 else:
-                    list.append(cairo.Matrix(1, 0, 0, 1, float(args[4]),float(args[5])))
+                    list.append(cairo.Matrix(1, 0, 0, 1, float(args[4]), float(args[5])))
             elif name == "scale":
                 list.append(cairo.Matrix(float(args[0]), 0.0, 0.0, float(args[1]), 0.0, 0.0))
             else:
@@ -69,15 +73,16 @@ def get_transforms(element, position_only = False):
 
     return list
 
+
 def get_location(element):
     list = []
-    while element != None:
+    while element is not None:
         x = element.get("x")
         y = element.get("y")
-        if x != None and y != None:
+        if x is not None and y is not None:
             list.append((float(x), float(y)))
         transform_val = element.get("transform")
-        if transform_val != None:
+        if transform_val is not None:
             start = 0
             while True:
                 start_args = transform_val.find("(", start)
@@ -92,7 +97,7 @@ def get_location(element):
                 if name == "translate":
                     list.append((float(args[0]), float(args[1])))
                 elif name == "matrix":
-                    list.append((float(args[4]),float(args[5])))
+                    list.append((float(args[4]), float(args[5])))
                 else:
                     logger.warning("WARNING: Unsupported transform %s", name)
                 start = end_args + 1
@@ -103,15 +108,16 @@ def get_location(element):
     for i in list:
         x += i[0]
         y += i[1]
-    return (x, y)
+    return x, y
 
-def get_actual_bounds(element, relative_to = None):
+
+def get_actual_bounds(element, relative_to=None):
     id = element.get("id")
 
     bounds = get_bounds(element)
     transforms = []
     t = cairo.Matrix()
-    t.translate(bounds[0],bounds[1])
+    t.translate(bounds[0], bounds[1])
     transforms.append(t)
 
     # If the element is a clip path and the associated clipped_node is provided, the work out the transforms from
@@ -119,7 +125,7 @@ def get_actual_bounds(element, relative_to = None):
     if relative_to is not None:
         element = relative_to.getparent()
 
-    while element != None:
+    while element is not None:
         transforms += get_transforms(element, position_only=True)
         element = element.getparent()
     transforms.reverse()
@@ -131,22 +137,22 @@ def get_actual_bounds(element, relative_to = None):
     xx, yx, xy, yy, x0, y0 = t
     return x0, y0, bounds[2], bounds[3]
 
+
 def get_bounds(element):
     x = 0.0
     y = 0.0
     w = 0.0
     h = 0.0
     v = element.get("x")
-    if v != None:
+    if v is not None:
         x = float(v)
     v = element.get("y")
-    if v != None:
+    if v is not None:
         y = float(v)
     v = element.get("width")
-    if v != None:
+    if v is not None:
         w = float(v)
     v = element.get("height")
-    if v != None:
+    if v is not None:
         h = float(v)
-    return (x, y, w, h)
-
+    return x, y, w, h

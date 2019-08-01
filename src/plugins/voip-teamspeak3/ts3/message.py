@@ -20,6 +20,7 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 __all__ = ['Message', 'Command']
 
+
 class MessageFactory(object):
     @classmethod
     def get_message(cls, incoming_string):
@@ -30,20 +31,21 @@ class MessageFactory(object):
             else:
                 return Message(incoming_string)
 
+
 class MessageBase(object):
     MAPPINGS = {
-            '\\\\': '\\',
-            '\\/': '/',
-            '\\s': ' ',
-            '\\p': '|',
-            '\\a': '',
-            '\\b': '',
-            '\\f': '\n',
-            '\\n': '\n',
-            '\\r': '\n',
-            '\\t': '\t',
-            '\\v': '',
-            }
+        '\\\\': '\\',
+        '\\/': '/',
+        '\\s': ' ',
+        '\\p': '|',
+        '\\a': '',
+        '\\b': '',
+        '\\f': '\n',
+        '\\n': '\n',
+        '\\r': '\n',
+        '\\t': '\t',
+        '\\v': '',
+    }
 
     def __eq__(self, other):
         if self.__repr__() == other.__repr__():
@@ -56,17 +58,15 @@ class MessageBase(object):
     def __repr__(self):
         return "<%s>" % self.__str__()
 
-    def _clean_incoming_value_multipart(self, value):
+    @staticmethod
+    def _clean_incoming_value_multipart(value):
         raw_values = value.split('|')
 
-        items = []
-        items.append(
-                raw_values[0]
-            )
+        items = [raw_values[0]]
         for raw_item in raw_values[1:]:
             items.append(
-                    raw_item.split('=')[1]
-                )
+                raw_item.split('=')[1]
+            )
         return tuple(items)
 
     def _clean_incoming_value(self, value):
@@ -87,6 +87,7 @@ class MessageBase(object):
             return self.origination.command
         else:
             return self.command
+
 
 class Message(MessageBase):
     def __init__(self, command):
@@ -117,7 +118,8 @@ class Message(MessageBase):
     def set_origination(self, command):
         self.origination = command
 
-    def _get_command_from_string(self, cmd):
+    @staticmethod
+    def _get_command_from_string(cmd):
         command = cmd.split(' ')[0]
         if command.find('=') > -1:
             command = None
@@ -153,31 +155,32 @@ class Message(MessageBase):
         arglist = []
         for param, value in self.args.items():
             arglist.append("%s=%s" % (
-                    param,
-                    self._clean_outgoing_value(value),
-                ))
+                param,
+                self._clean_outgoing_value(value),
+            ))
         if self.is_response():
             return "%s %s" % (
-                        self.origination.__repr__(),
-                        " ".join(arglist),
-                    )
+                self.origination.__repr__(),
+                " ".join(arglist),
+            )
         else:
             return "%s %s" % (
-                        self.command,
-                        " ".join(arglist),
-                    )
+                self.command,
+                " ".join(arglist),
+            )
 
     def __str__(self):
         if self.is_response():
             return "%s %s" % (
-                        self.origination.__repr__(),
-                        self.args
-                    )
+                self.origination.__repr__(),
+                self.args
+            )
         else:
             return "%s %s" % (
-                        self.command,
-                        self.args
-                    )
+                self.command,
+                self.args
+            )
+
 
 class MultipartMessage(MessageBase):
     def __init__(self, command_string):
@@ -185,17 +188,18 @@ class MultipartMessage(MessageBase):
         self.origination = None
 
         self.responses = self.parse_command(
-                    self.command
-                )
+            self.command
+        )
 
-    def parse_command(self, string):
+    @staticmethod
+    def parse_command(string):
         responses = []
         for string_part in string.split('|'):
             responses.append(
-                        Message(
-                            string_part
-                            )
-                    )
+                Message(
+                    string_part
+                )
+            )
         return responses
 
     def set_origination(self, command):
@@ -211,14 +215,17 @@ class MultipartMessage(MessageBase):
         for response in self.responses:
             string_list.append(repr(response))
         return "[%s]" % (
-                ", ".join(string_list)
-            )
+            ", ".join(string_list)
+        )
 
-    def is_response(self):
+    @staticmethod
+    def is_response():
         return True
 
-    def is_reset_message(self):
+    @staticmethod
+    def is_reset_message():
         return False
+
 
 class Command(Message):
     def __init__(self, command, **kwargs):

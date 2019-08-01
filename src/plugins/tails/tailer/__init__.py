@@ -1,7 +1,10 @@
 # $Id: __init__.py 3 2008-01-29 18:39:09Z msthornton $
 
+from __future__ import print_function
 import re
+import sys
 import time
+
 
 class Tailer(object):
     """\
@@ -16,7 +19,7 @@ class Tailer(object):
         self.start_pos = self.file.tell()
         if end:
             self.seek_end()
-    
+
     def splitlines(self, data):
         return re.split('|'.join(self.line_terminators), data)
 
@@ -48,7 +51,7 @@ class Tailer(object):
             # The first charachter is a line terminator, don't count this one
             start += 1
 
-        while bytes_read > 0:          
+        while bytes_read > 0:
             # Scan forwards, counting the newlines in this bufferfull
             i = start
             while i < bytes_read:
@@ -90,7 +93,7 @@ class Tailer(object):
                 # found crlf
                 bytes_read -= 1
 
-        while bytes_read > 0:          
+        while bytes_read > 0:
             # Scan backward, counting the newlines in this bufferfull
             i = bytes_read - 1
             while i >= 0:
@@ -110,7 +113,7 @@ class Tailer(object):
             bytes_read, read_str = self.read(self.read_size)
 
         return None
-  
+
     def tail(self, lines=10):
         """\
         Return the last lines of the file.
@@ -127,7 +130,7 @@ class Tailer(object):
             return self.splitlines(data)
         else:
             return []
-               
+
     def head(self, lines=10):
         """\
         Return the top lines of the file.
@@ -137,9 +140,9 @@ class Tailer(object):
         for i in xrange(lines):
             if not self.seek_line_forward():
                 break
-    
+
         end_pos = self.file.tell()
-        
+
         self.seek(0)
         data = self.file.read(end_pos - 1)
 
@@ -154,12 +157,12 @@ class Tailer(object):
 
         Based on: http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/157035
         """
-        trailing = True       
-        
+        trailing = True
+
         while 1:
             where = self.file.tell()
             line = self.file.readline()
-            if line:    
+            if line:
                 if trailing and line in self.line_terminators:
                     # This is just the line terminator added to the end of the file
                     # before a new line, ignore.
@@ -185,6 +188,7 @@ class Tailer(object):
     def close(self):
         self.file.close()
 
+
 def tail(file, lines=10):
     """\
     Return the last lines of the file.
@@ -198,6 +202,7 @@ def tail(file, lines=10):
     """
     return Tailer(file).tail(lines)
 
+
 def head(file, lines=10):
     """\
     Return the top lines of the file.
@@ -210,6 +215,7 @@ def head(file, lines=10):
     ['Line 1', 'Line 2', 'Line 3']
     """
     return Tailer(file).head(lines)
+
 
 def follow(file, delay=1.0):
     """\
@@ -233,9 +239,11 @@ def follow(file, delay=1.0):
     """
     return Tailer(file, end=True).follow(delay)
 
+
 def _test():
     import doctest
     doctest.testmod()
+
 
 def _main(filepath, options):
     tailer = Tailer(open(filepath, 'rb'))
@@ -245,26 +253,27 @@ def _main(filepath, options):
             if options.lines > 0:
                 if options.head:
                     if options.follow:
-                        print >>sys.stderr, 'Cannot follow from top of file.'
+                        print('Cannot follow from top of file.', file=sys.stderr)
                         sys.exit(1)
                     lines = tailer.head(options.lines)
                 else:
                     lines = tailer.tail(options.lines)
-        
+
                 for line in lines:
-                    print line
+                    print(line)
             elif options.follow:
                 # Seek to the end so we can follow
                 tailer.seek_end()
 
             if options.follow:
                 for line in tailer.follow(delay=options.sleep):
-                    print line
+                    print(line)
         except KeyboardInterrupt:
             # Escape silently
             pass
     finally:
         tailer.close()
+
 
 def main():
     from optparse import OptionParser
@@ -295,6 +304,7 @@ def main():
         sys.exit(1)
     else:
         _main(args[0], options)
+
 
 if __name__ == '__main__':
     main()

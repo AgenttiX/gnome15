@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
- 
+
 #  Gnome15 - Suite of tools for the Logitech G series keyboards and headsets
 #  Copyright (C) 2011 Brett Smith <tanktarta@blueyonder.co.uk>
 #
@@ -29,19 +29,21 @@ import glib
 # Allow running from local path
 path = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), ".."))
 if os.path.exists(path):
-    sys.path.insert(0, path) 
+    sys.path.insert(0, path)
 
 # Logging
 import gnome15.g15logging as g15logging
+
 logger = g15logging.get_root_logger()
 
 # Allow running from local path
 path = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), ".."))
 if os.path.exists(path):
-    sys.path.insert(0, path) 
-    
+    sys.path.insert(0, path)
+
 #
 import gobject
+
 gobject.threads_init()
 
 import gconf
@@ -53,6 +55,7 @@ import termios, sys, os
 
 TERMIOS = termios
 conf_client = gconf.client_get_default()
+
 
 def getkey():
     fd = sys.stdin.fileno()
@@ -69,54 +72,60 @@ def getkey():
         termios.tcsetattr(fd, TERMIOS.TCSAFLUSH, old)
     return c
 
+
 def list_drivers():
     for driver in g15drivermanager.imported_drivers.values():
         print "Id: %s" % driver.id
         print "\tName: %s" % driver.name
         print "\tDescription: %s" % driver.description
 
+
 def list_devices():
     for device in g15devices.find_all_devices():
         print "UID: %s" % device.uid
         print "\tModel: %s" % device.model_id
-        print "\tUSB ID: 0x%0.4x:0x%0.4x" % ( device.controls_usb_id[0], device.controls_usb_id[1] )
-        print "\tLCD BPP: %d" % ( device.bpp )
-        print "\tLCD Size: %s" % ( str(device.lcd_size) )
+        print "\tUSB ID: 0x%0.4x:0x%0.4x" % (device.controls_usb_id[0], device.controls_usb_id[1])
+        print "\tLCD BPP: %d" % (device.bpp)
+        print "\tLCD Size: %s" % (str(device.lcd_size))
         driver, reconfigured = get_driver(device)
         if driver is None:
             print "\tConfigured Driver: None found"
         else:
             driver_mod = sys.modules[driver.__module__]
             if reconfigured:
-                print "\tConfigured Driver: %s (%s) [Next best, configured driver not available]" % ( driver_mod.id, driver_mod.name )
+                print "\tConfigured Driver: %s (%s) [Next best, configured driver not available]" % (
+                driver_mod.id, driver_mod.name)
             else:
-                print "\tConfigured Driver: %s (%s)" % ( driver_mod.id, driver_mod.name )
+                print "\tConfigured Driver: %s (%s)" % (driver_mod.id, driver_mod.name)
             print "\t\tName: %s" % driver.get_name()
             print "\t\tModel: %s" % driver.get_model_name()
             print "\t\tSupported Models: %s" % driver.get_model_names()
             print "\t\tBPP: %s" % driver.get_bpp()
             print "\t\tAntialias: %s" % driver.get_antialias()
-            
+
+
 def get_driver(device):
     reconfigured = False
-    try:        
+    try:
         driver = g15drivermanager.get_driver(conf_client, device)
     except:
         driver = g15drivermanager.get_best_driver(conf_client, device)
         reconfigured = True
     return driver, reconfigured
 
+
 def _check_hint(hint, value, name, list):
     if value & hint:
         list.append(name)
 
+
 def controls(uid):
     g15uinput.open_devices()
-    device = g15devices.get_device(uid)    
+    device = g15devices.get_device(uid)
     driver, reconfigured = get_driver(device)
     if driver is None:
         raise Exception("No driver for device with UID of %s." % uid)
-    
+
     for c in driver.get_controls():
         print "%s" % c.id
         print "\tName: %s" % c.name
@@ -135,7 +144,8 @@ def controls(uid):
         _check_hint(g15driver.HINT_VIRTUAL, c.hint, "Virtual", hint_names)
         _check_hint(g15driver.HINT_RED_BLUE_LED, c.hint, "Red/Blue", hint_names)
         print "\tHints: %s" % ",".join(hint_names)
-        
+
+
 def keytest(uid):
     g15uinput.open_devices()
     device = g15devices.get_device(uid)
@@ -150,21 +160,24 @@ def keytest(uid):
     print "Press any standard key to stop monitoring macro keys"
     getkey()
     driver.disconnect()
-    
+
+
 def handle_key(keys, state):
     print "Keys: %s, State: %d" % (keys, state)
 
+
 if __name__ == "__main__":
     import optparse
+
     parser = optparse.OptionParser()
     parser.add_option("-l", "--log", dest="log_level", metavar="INFO,DEBUG,WARNING,ERROR,CRITICAL",
-        default="warning" , help="Log level")
+                      default="warning", help="Log level")
     (options, args) = parser.parse_args()
-    
+
     if len(args) == 0:
         print "No command"
         sys.exit(1)
-        
+
     if args[0] == "devices":
         list_devices()
     elif args[0] == "drivers":

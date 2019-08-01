@@ -20,13 +20,16 @@ from runnable import Runnable
 import threading
 import time
 import logging
+
 logger = logging.getLogger(__name__)
 
-class InputProcessor(object):
-    '''Object to process key presses.'''
 
-    def process_input(self, inputEvent):
-        '''Processes given event.
+class InputProcessor(object):
+    """Object to process key presses."""
+
+    @staticmethod
+    def process_input(inputEvent):
+        """Processes given event.
 
         Should return as fast as possible.  Any time-consuming processing
         should be done in another thread.
@@ -34,22 +37,22 @@ class InputProcessor(object):
         @param inputEvent Event to process.
         @return True if event was consumed, or False if ignored.
 
-        '''
+        """
         return False
 
 
 class InputEvent(object):
-    '''Event created by a key press or release.'''
+    """Event created by a key press or release."""
 
     def __init__(self, oldState, newState, keysDown, keysUp):
-        '''Creates an InputEvent.
+        """Creates an InputEvent.
 
         @param oldState State before event happened.
         @param newState State after event happened.
         @param keysDown Keys newly pressed.
         @param keysUp Kys released by this event.
 
-        '''
+        """
         self.oldState = oldState
         self.newState = newState
         self.keysDown = keysDown
@@ -57,78 +60,81 @@ class InputEvent(object):
 
 
 class State(object):
-    '''Current state of keyboard.'''
+    """Current state of keyboard."""
 
     def __init__(self):
         self.__keysDown = set()
 
-    def _data_to_keys_g_and_m(self, data):
-        '''Converts a G/M keys data package to a set of keys defined as
+    @staticmethod
+    def _data_to_keys_g_and_m(data):
+        """Converts a G/M keys data package to a set of keys defined as
         pressed by it.
 
-        '''
+        """
         if len(data) != 4 or data[0] != 2:
             raise ValueError("not a multimedia key packet: " + str(data))
         empty = 0x400000
-        curVal = data[3] << 16 | data[2] << 8 | data[1]
+        cur_val = data[3] << 16 | data[2] << 8 | data[1]
         keys = []
-        while curVal != empty:
-            foundAKey = False
+        while cur_val != empty:
+            found_a_key = False
             for val in Data.gmKeys.keys():
-                if val & curVal == val:
-                    curVal ^= val
+                if val & cur_val == val:
+                    cur_val ^= val
                     keys.append(Data.gmKeys[val])
-                    foundAKey = True
-            if not foundAKey:
+                    found_a_key = True
+            if not found_a_key:
                 raise ValueError("incorrect g/m key packet: " +
-                        str(data))
+                                 str(data))
 
         return set(keys)
-        self.__keysDown = set()
+        # self.__keysDown = set()
 
-    def _data_to_keys_d(self, data):
-        '''Converts a D data package to a set of keys defined as
+    @staticmethod
+    def _data_to_keys_d(data):
+        """Converts a D data package to a set of keys defined as
         pressed by it.
-        '''
+        """
         if len(data) != 2 or data[1] != 0x80:
             raise ValueError("not a D key packet: " + str(data))
-        curVal = data[0]
+        cur_val = data[0]
         keys = []
-        
+
         '''Zero is release
         '''
-        if curVal != 0:
-            foundAKey = False
+        if cur_val != 0:
+            found_a_key = False
             for val in Data.displayKeys.keys():
-                if val & curVal == val:
-                    curVal ^= val
+                if val & cur_val == val:
+                    cur_val ^= val
                     keys.append(Data.displayKeys[val])
-                    foundAKey = True
-            if not foundAKey:
+                    found_a_key = True
+            if not found_a_key:
                 raise ValueError("incorrect D key packet: " +
-                        str(data))
+                                 str(data))
         return set(keys)
 
-    def _data_to_keys_mm(self, data):
-        '''Converts a multimedia keys data package to a set of keys defined as
+    @staticmethod
+    def _data_to_keys_mm(data):
+        """Converts a multimedia keys data package to a set of keys defined as
         pressed by it.
 
-        '''
+        """
         if len(data) != 2 or data[0] not in [1, 3]:
             raise ValueError("not a multimedia key packet: " + str(data))
         if data[0] == 1:
-            curVal = data[1]
+            cur_val = data[1]
             keys = []
-            while curVal:
-                foundAKey = False
+            while cur_val:
+                found_a_key = False
                 for val in Data.mmKeys.keys():
-                    if val & curVal == val:
-                        curVal ^= val
+                    if val & cur_val == val:
+                        cur_val ^= val
                         keys.append(Data.mmKeys[val])
-                        foundAKey = True
-                if not foundAKey:
+                        found_a_key = True
+                if not found_a_key:
                     raise ValueError("incorrect multimedia key packet: " +
-                            str(data))
+                                     str(data))
         elif data == [3, 1]:
             keys = [Key.WINKEY_SWITCH]
         elif data == [3, 0]:
@@ -139,7 +145,7 @@ class State(object):
         return set(keys)
 
     def _update_keys_down(self, possibleKeys, keys):
-        '''Updates internal keysDown set.
+        """Updates internal keysDown set.
 
         Updates the current state of all keys in 'possibleKeys' with state
         given in 'keys'.
@@ -156,88 +162,88 @@ class State(object):
         @param keys Current state of all keys in possibleKeys.
         @return A pair of sets listing newly pressed and newly released keys.
 
-        '''
-        keysDown = set()
-        keysUp = set()
+        """
+        keys_down = set()
+        keys_up = set()
         for key in possibleKeys:
             if key in keys:
                 if key not in self.__keysDown:
                     self.__keysDown.add(key)
-                    keysDown.add(key)
+                    keys_down.add(key)
             else:
                 if key in self.__keysDown:
                     self.__keysDown.remove(key)
-                    keysUp.add(key)
-        return (keysDown, keysUp)
+                    keys_up.add(key)
+        return keys_down, keys_up
 
     def clone(self):
-        '''Returns an exact copy of this state.'''
+        """Returns an exact copy of this state."""
         state = State()
         state.__keysDown = set(self.__keysDown)
         return state
 
     def packet_received_g_and_m(self, data):
-        '''Mutates the state by given data packet from G- and M- keys.
+        """Mutates the state by given data packet from G- and M- keys.
 
         @param data Data packet received.
         @return InputEvent for data packet, or None if data packet was ignored.
 
-        '''
-        oldState = self.clone()
+        """
+        old_state = self.clone()
         evt = None
         logger.debug("G key of %d", len(data))
         if len(data) == 4:
             keys = self._data_to_keys_g_and_m(data)
-            keysDown, keysUp = self._update_keys_down(Key.gmKeys, keys)
-            newState = self.clone()
-            evt = InputEvent(oldState, newState, keysDown, keysUp)
+            keys_down, keys_up = self._update_keys_down(Key.gmKeys, keys)
+            new_state = self.clone()
+            evt = InputEvent(old_state, new_state, keys_down, keys_up)
         return evt
 
     def packet_received_d(self, data):
-        '''Mutates the state by given data packet from D- keys.
+        """Mutates the state by given data packet from D- keys.
 
         @param data Data packet received.
         @return InputEvent for data packet, or None if data packet was ignored.
 
-        '''
-        oldState = self.clone()
+        """
+        old_state = self.clone()
         evt = None
         logger.debug("D key of %d", len(data))
         if len(data) == 2:
             keys = self._data_to_keys_d(data)
-            keysDown, keysUp = self._update_keys_down(Key.displayKeys, keys)
-            newState = self.clone()
-            evt = InputEvent(oldState, newState, keysDown, keysUp)
+            keys_down, keys_up = self._update_keys_down(Key.displayKeys, keys)
+            new_state = self.clone()
+            evt = InputEvent(old_state, new_state, keys_down, keys_up)
         return evt
 
     def packet_received_mm(self, data):
-        '''Mutates the state by given data packet from multimedia keys.
+        """Mutates the state by given data packet from multimedia keys.
 
         @param data Data packet received.
         @return InputEvent for data packet.
 
-        '''
-        oldState = self.clone()
+        """
+        old_state = self.clone()
         if len(data) != 2:
             raise ValueError("incorrect multimedia key packet: " + str(data))
         logger.debug("MM or Win key of %d", len(data))
         keys = self._data_to_keys_mm(data)
-        winKeySet = set([Key.WINKEY_SWITCH])
+        win_key_set = {Key.WINKEY_SWITCH}
         if data[0] == 1:
             # update state of all mm keys
             logger.debug("MM key %d", len(data))
-            possibleKeys = Key.mmKeys.difference(winKeySet)
-            keysDown, keysUp = self._update_keys_down(possibleKeys, keys)
+            possible_keys = Key.mmKeys.difference(win_key_set)
+            keys_down, keys_up = self._update_keys_down(possible_keys, keys)
         else:
             # update winkey state
             logger.debug("Win key")
-            keysDown, keysUp = self._update_keys_down(winKeySet, keys)
-        newState = self.clone()
-        return InputEvent(oldState, newState, keysDown, keysUp)
+            keys_down, keys_up = self._update_keys_down(win_key_set, keys)
+        new_state = self.clone()
+        return InputEvent(old_state, new_state, keys_down, keys_up)
 
 
 class G19Receiver(Runnable):
-    '''This receiver consumes all data sent by special keys.'''
+    """This receiver consumes all data sent by special keys."""
 
     def __init__(self, g19):
         Runnable.__init__(self)
@@ -247,18 +253,18 @@ class G19Receiver(Runnable):
         self.__state = State()
 
     def add_input_processor(self, processor):
-        '''Adds an input processor.'''
+        """Adds an input processor."""
         self.__mutex.acquire()
         self.__ips.append(processor)
         self.__mutex.release()
         pass
 
     def execute(self):
-        gotData = False
+        got_data = False
         processors = self.list_all_input_processors()
 
         if self.__g19.enable_mm_keys:
-            data = self.__g19.read_multimedia_keys()        
+            data = self.__g19.read_multimedia_keys()
             if data:
                 logger.debug('MM keys data %s', len(data))
                 evt = self.__state.packet_received_mm(data)
@@ -268,7 +274,7 @@ class G19Receiver(Runnable):
                             break
                 else:
                     logger.info('MM keys ignored')
-                gotData = True
+                got_data = True
 
         data = self.__g19.read_g_and_m_keys()
         if data:
@@ -280,7 +286,7 @@ class G19Receiver(Runnable):
                         break
             else:
                 logger.info('G/M keys ignored')
-            gotData = True
+            got_data = True
 
         data = self.__g19.read_display_menu_keys()
         if data:
@@ -289,23 +295,23 @@ class G19Receiver(Runnable):
             if evt:
                 for proc in processors:
                     if proc.process_input(evt):
-                        break 
+                        break
             else:
                 logger.info('Menu keys ignored')
-            gotData = True
+            got_data = True
 
-        if not gotData:
+        if not got_data:
             time.sleep(0.05)
 
     def list_all_input_processors(self):
-        '''Returns a list of all input processors currently registered to this
+        """Returns a list of all input processors currently registered to this
         receiver.
 
         @return All registered processors.  This list is a copy of the internal
         one.
 
-        '''
+        """
         self.__mutex.acquire()
-        allProcessors = list(self.__ips)
+        all_processors = list(self.__ips)
         self.__mutex.release()
-        return allProcessors
+        return all_processors

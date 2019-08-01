@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
- 
+
 #  Gnome15 - Suite of tools for the Logitech G series keyboards and headsets
 #  Copyright (C) 2011 Brett Smith <tanktarta@blueyonder.co.uk>
 #
@@ -16,15 +16,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 Provides a panel indicator that can be used to control and monitor the Gnome15
 desktop service (g15-desktop-service). It will display a list of currently active
 screens on activation, and allow the configuration UI to be launched (g15-config)
-'''
-
+"""
 
 import sys
 import pygtk
+
 pygtk.require('2.0')
 import gtk
 import os
@@ -38,15 +38,18 @@ if os.path.exists(path):
 
 # Logging
 import gnome15.g15logging as g15logging
+
 logger = g15logging.get_root_logger()
 
 # This block MUST be before the imports of the gnome15 modules
 import dbus
 import gobject
+
 gobject.threads_init()
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from dbus.mainloop.glib import threads_init
+
 threads_init()
 DBusGMainLoop(set_as_default=True)
 
@@ -56,74 +59,82 @@ import gnome15.g15screen as g15screen
 import gnome15.util.g15icontools as g15icontools
 import gnome15.g15desktop as g15desktop
 
+
 class G15SystemTray(g15desktop.G15GtkMenuPanelComponent):
-    
-    def __init__(self):      
+
+    def __init__(self):
         self.prefs_menu = gtk.Menu()
         g15desktop.G15GtkMenuPanelComponent.__init__(self)
-        
+
     def create_component(self):
         self.status_icon = gtk.StatusIcon()
-        
+
         self.status_icon.connect('popup-menu', self._on_popup_menu)
         self.status_icon.connect('activate', self._on_activate)
         self.status_icon.connect('scroll_event', self.scroll_event)
-        
+
     def clear_attention(self):
         self.remove_attention_menu_item()
         self.status_icon.set_from_pixbuf(self.normal_icon)
         self.status_icon.set_tooltip("")
         self.status_icon.set_visible(not self.conf_client.get_bool("/apps/gnome15/indicate_only_on_error"))
-        
+
     def attention(self, message=None):
         self.status_icon.set_visible(True)
         self.status_icon.set_from_pixbuf(self.attention_icon)
         self.status_icon.set_tooltip(message if message != None else self.default_message)
-        
+
     def _on_popup_menu(self, status, button, time):
         self.prefs_menu.popup(None, None, None, button, time)
-        
+
     def _on_activate(self, status):
         if len(self.menu.get_children()) > 0:
             self.menu.popup(None, None, None, 1, gtk.get_current_event_time())
-        
+
     def add_service_item(self, item):
-        self._append_item(item, self.prefs_menu)   
-             
+        self._append_item(item, self.prefs_menu)
+
     def add_start_desktop_service(self):
         g15desktop.G15GtkMenuPanelComponent.add_start_desktop_service(self)
         self.add_service_item(gtk.MenuItem())
-        
+
     def rebuild_desktop_component(self):
         g15desktop.G15GtkMenuPanelComponent.rebuild_desktop_component(self)
-        if len(self.devices)> 1:
-            self.add_service_item(gtk.MenuItem())  
+        if len(self.devices) > 1:
+            self.add_service_item(gtk.MenuItem())
         item = gtk.MenuItem("Properties")
         item.connect("activate", self.show_configuration)
-        self.add_service_item(item)        
+        self.add_service_item(item)
         item = gtk.MenuItem("About")
         item.connect("activate", self.about_info)
-        self.add_service_item(item)        
+        self.add_service_item(item)
         self.status_icon.menu = self.prefs_menu
-        
+
         self.prefs_menu.show_all()
-        
+
     def icons_changed(self):
-        self.normal_icon = gtk.gdk.pixbuf_new_from_file_at_size(g15icontools.get_icon_path([ "logitech-g-keyboard-applet", "logitech-g-keyboard-panel" ]), self.status_icon.get_size(), self.status_icon.get_size())
-        self.attention_icon = gtk.gdk.pixbuf_new_from_file_at_size(g15icontools.get_icon_path([ "logitech-g-keyboard-error-panel", "logitech-g-keyboard-error-applet" ]), self.status_icon.get_size(), self.status_icon.get_size())
-    
+        self.normal_icon = gtk.gdk.pixbuf_new_from_file_at_size(
+            g15icontools.get_icon_path(["logitech-g-keyboard-applet", "logitech-g-keyboard-panel"]),
+            self.status_icon.get_size(), self.status_icon.get_size())
+        self.attention_icon = gtk.gdk.pixbuf_new_from_file_at_size(
+            g15icontools.get_icon_path(["logitech-g-keyboard-error-panel", "logitech-g-keyboard-error-applet"]),
+            self.status_icon.get_size(), self.status_icon.get_size())
+
+
 # run it in a gtk window
 if __name__ == "__main__":
-    try :
+    try:
         import setproctitle
+
         setproctitle.setproctitle(os.path.basename(os.path.abspath(sys.argv[0])))
     except Exception as e:
         logger.debug("setproctitle not available. Process will be named python",
-                     exc_info = e)
-    
+                     exc_info=e)
+
     if g15desktop.get_desktop() == "gnome-shell":
-        sys.stderr.write("System Tray is not recommended in GNOME Shell, use the GNOME Shell extension instead (if you have version 3.4 or above)")
-    
+        sys.stderr.write(
+            "System Tray is not recommended in GNOME Shell, use the GNOME Shell extension instead (if you have version 3.4 or above)")
+
     tray = G15SystemTray()
     tray.start_service()
     gtk.main()

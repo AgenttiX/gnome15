@@ -20,29 +20,34 @@ import g15pythonlang
 
 # Logging
 import logging
+
 logger = logging.getLogger(__name__)
 
 import jobqueue
 
-'''
+"""
 Default scheduler
-'''
+"""
 scheduler = jobqueue.JobScheduler()
 
-'''
+"""
 Task scheduler. Tasks may be added to the queue to execute
 after a specified interval. The timer is done by the gobject
 event loop, which then executes the job on a different thread
-'''
+"""
 
-def clear_jobs(queue_name = None):
+
+def clear_jobs(queue_name=None):
     scheduler.clear_jobs(queue_name)
+
 
 def execute(queue_name, job_name, function, *args):
     return scheduler.execute(queue_name, job_name, function, *args)
 
+
 def schedule(job_name, interval, function, *args):
     return scheduler.schedule(job_name, interval, function, *args)
+
 
 def run_on_gobject(function, *args):
     if g15pythonlang.is_gobject_thread():
@@ -51,11 +56,14 @@ def run_on_gobject(function, *args):
         gobject.idle_add(function, *args)
         return True
 
+
 def stop_queue(queue_name):
     scheduler.stop_queue(queue_name)
 
+
 def queue(queue_name, job_name, interval, function, *args):
     return scheduler.queue(queue_name, job_name, interval, function, *args)
+
 
 def stop_all_schedulers():
     scheduler.stop_all()

@@ -19,16 +19,14 @@
 import ts3
 import gnome15.g15logging as g15logging
 import logging
- 
+
 if __name__ == "__main__":
     logger = g15logging.get_root_logger()
     logger.setLevel(logging.INFO)
-    
+
     t = ts3.TS3()
     t.start()
-    
+
     logger.info("schandlerid : %d", t.schandlerid)
-    
-    
+
     logger.info("channel: %s", t.send_command(ts3.Command('channelconnectinfo')).args['path'])
-    

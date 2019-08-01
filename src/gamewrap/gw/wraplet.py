@@ -13,19 +13,18 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 import shlex
- 
+
+
 class Wraplet():
-    
+
     def __init__(self, filename):
         self.filename = filename
-        
+
         fd = open(filename, "r")
         try:
             lexr = shlex.shlex()
             lexr.wordchars = "._"
         finally:
             fd.close()
-        
-        

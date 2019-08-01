@@ -30,20 +30,23 @@ __all__ = ["parse_date", "ParseError"]
 
 # Adapted from http://delete.me.uk/2005/03/iso8601.html
 ISO8601_REGEX = re.compile(r"(?P<year>[0-9]{4})(-(?P<month>[0-9]{1,2})(-(?P<day>[0-9]{1,2})"
-    r"((?P<separator>.)(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2})(:(?P<second>[0-9]{2})(\.(?P<fraction>[0-9]+))?)?"
-    r"(?P<timezone>Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?"
-)
+                           r"((?P<separator>.)(?P<hour>[0-9]{2}):(?P<minute>[0-9]{2})(:(?P<second>[0-9]{2})(\.(?P<fraction>[0-9]+))?)?"
+                           r"(?P<timezone>Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?"
+                           )
 TIMEZONE_REGEX = re.compile("(?P<prefix>[+-])(?P<hours>[0-9]{2}).(?P<minutes>[0-9]{2})")
+
 
 class ParseError(Exception):
     """Raised when there is a problem parsing a date string"""
 
+
 # Yoinked from python docs
 ZERO = timedelta(0)
+
+
 class Utc(tzinfo):
-    """UTC
-    
-    """
+    """UTC"""
+
     def utcoffset(self, dt):
         return ZERO
 
@@ -52,12 +55,14 @@ class Utc(tzinfo):
 
     def dst(self, dt):
         return ZERO
+
+
 UTC = Utc()
 
+
 class FixedOffset(tzinfo):
-    """Fixed offset in hours and minutes from UTC
-    
-    """
+    """Fixed offset in hours and minutes from UTC"""
+
     def __init__(self, offset_hours, offset_minutes, name):
         self.__offset = timedelta(hours=offset_hours, minutes=offset_minutes)
         self.__name = name
@@ -70,9 +75,10 @@ class FixedOffset(tzinfo):
 
     def dst(self, dt):
         return ZERO
-    
+
     def __repr__(self):
         return "<FixedOffset %r>" % self.__name
+
 
 def parse_timezone(tzstring, default_timezone=UTC):
     """Parses ISO 8601 time zone specs into tzinfo offsets
@@ -93,6 +99,7 @@ def parse_timezone(tzstring, default_timezone=UTC):
         minutes = -minutes
     return FixedOffset(hours, minutes, tzstring)
 
+
 def parse_date(datestring, default_timezone=UTC):
     """Parses ISO 8601 dates into datetime objects
     
@@ -112,10 +119,10 @@ def parse_date(datestring, default_timezone=UTC):
         groups["fraction"] = 0
     else:
         groups["fraction"] = int(float("0.%s" % groups["fraction"]) * 1e6)
-    return datetime(int(groups["year"] if "year" in groups else 0), 
-                    int(groups["month"] if "month" in groups else 1), 
+    return datetime(int(groups["year"] if "year" in groups else 0),
+                    int(groups["month"] if "month" in groups else 1),
                     int(groups["day"] if "day" in groups else 1),
-                    int(groups["hour"] if "hour" in groups and groups["hour"] is not None else 0), 
-                    int(groups["minute"] if "minute" in groups and groups["minute"] is not None  else 0), 
+                    int(groups["hour"] if "hour" in groups and groups["hour"] is not None else 0),
+                    int(groups["minute"] if "minute" in groups and groups["minute"] is not None else 0),
                     int(groups["second"] if "second" in groups and groups["second"] is not None else 0),
                     int(groups["fraction"] if "fraction" in groups and groups["fraction"] is not None else 0), tz)

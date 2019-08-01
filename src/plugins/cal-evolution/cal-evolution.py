@@ -13,14 +13,15 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 """
 Calendar backend that retrieves event data from Evolution
 """
- 
+
 import gnome15.g15locale as g15locale
 import gnome15.g15accounts as g15accounts
-_ = g15locale.get_translation("cal-evolution", modfile = __file__).ugettext
+
+_ = g15locale.get_translation("cal-evolution", modfile=__file__).ugettext
 import gtk
 import urllib
 import vobject
@@ -31,31 +32,36 @@ import re
 import cal
 import xdg.BaseDirectory
 import logging
+
 logger = logging.getLogger(__name__)
- 
+
 """
 Plugin definition
 """
-id="cal-evolution"
-name=_("Calendar (Evolution support)")
-description=_("Calendar for Evolution. Adds Evolution as a source for calendars \
+id = "cal-evolution"
+name = _("Calendar (Evolution support)")
+description = _("Calendar for Evolution. Adds Evolution as a source for calendars \
 to the Calendar plugin")
-author="Brett Smith <tanktarta@blueyonder.co.uk>"
-copyright=_("Copyright (C)2012 Brett Smith")
-site="http://www.russo79.com/gnome15"
-has_preferences=False
-global_plugin=True
-passive=True
-unsupported_models=cal.unsupported_models
+author = "Brett Smith <tanktarta@blueyonder.co.uk>"
+copyright = _("Copyright (C)2012 Brett Smith")
+site = "http://www.russo79.com/gnome15"
+has_preferences = False
+global_plugin = True
+passive = True
+unsupported_models = cal.unsupported_models
 
 """
 Calendar Back-end module functions
 """
+
+
 def create_options(account, account_ui):
     return EvolutionCalendarOptions(account, account_ui)
 
+
 def create_backend(account, account_manager):
     return EvolutionBackend()
+
 
 class EvolutionCalendarOptions(g15accounts.G15AccountOptions):
     def __init__(self, account, account_ui):
@@ -63,36 +69,39 @@ class EvolutionCalendarOptions(g15accounts.G15AccountOptions):
         self.widget_tree = gtk.Builder()
         self.widget_tree.add_from_file(os.path.join(os.path.dirname(__file__), "cal-evolution.ui"))
         self.component = self.widget_tree.get_object("OptionPanel")
-        try :
+        try:
             self.event.valarm
             self.alarm = True
         except AttributeError as ae:
-            logger.debug("Could not set attribute", exc_info = ae)
+            logger.debug("Could not set attribute", exc_info=ae)
             pass
 
+
 class EvolutionEvent(cal.CalendarEvent):
-    
+
     def __init__(self, parsed_event):
         cal.CalendarEvent.__init__(self)
-        
+
         self.start_date = parsed_event.dtstart.value
         if parsed_event.dtend:
             self.end_date = parsed_event.dtend.value
         else:
-            self.end_date = datetime.datetime(self.start_date.year,self.start_date.month,self.start_date.day, 23, 59, 0)
-            
+            self.end_date = datetime.datetime(self.start_date.year, self.start_date.month, self.start_date.day, 23, 59,
+                                              0)
+
         self.summary = parsed_event.summary.value
         self.alt_icon = os.path.join(os.path.dirname(__file__), "icon.png")
-        
+
+
 class EvolutionBackend(cal.CalendarBackend):
-    
+
     def __init__(self):
         cal.CalendarBackend.__init__(self)
-        
+
     def get_events(self, now):
         calendars = []
         event_days = {}
-        
+
         # Find all the calendar files
         cal_dir = os.path.join(xdg.BaseDirectory.xdg_data_home, "evolution", "calendar")
         if not os.path.exists(cal_dir):
@@ -103,7 +112,7 @@ class EvolutionBackend(cal.CalendarBackend):
                 for _file in files:
                     if _file.endswith(".ics"):
                         calendars.append(os.path.join(root, _file))
-        
+
         for cal in calendars:
             if not re.search("^webcal://", cal[1]):
                 f = open(cal)
@@ -112,20 +121,20 @@ class EvolutionBackend(cal.CalendarBackend):
                 try:
                     event_list = vobject.readOne(calstring).vevent_list
                 except AttributeError as ae:
-                    logger.debug("Could not read attribute", exc_info = ae)
+                    logger.debug("Could not read attribute", exc_info=ae)
                     continue
-            else: # evolution library does not support webcal ics
+            else:  # evolution library does not support webcal ics
                 webcal = urllib.urlopen('http://' + cal[1][9:])
                 webcalstring = ''.join(webcal.readlines())
                 webcal.close()
                 event_list = vobject.readOne(webcalstring).vevent_list
-                
+
             for e in event_list:
                 if type(e) != vobject.icalendar.RecurringComponent:
                     parsed_event = vobject.readOne(e.get_as_string())
                 else:
                     parsed_event = e
-                    
+
                 self.check_and_add(EvolutionEvent(parsed_event), now, event_days)
-                
+
         return event_days

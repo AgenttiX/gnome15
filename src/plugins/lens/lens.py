@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 import logging
 import cairo
 import os
@@ -83,7 +84,7 @@ class G15Lens():
         result = result.unpack()[0]
     
         if result != 1 :
-            print >> sys.stderr, "Failed to own name %s. Bailing out." % BUS_NAME
+            print("Failed to own name %s. Bailing out." % BUS_NAME, file=sys.stderr)
             raise Exception("Failed to own name %s. Bailing out." % BUS_NAME)
         
         self._lens = Unity.Lens.new("/org/gnome15/Gnome15Lens", "Gnome15Lens")
@@ -94,28 +95,36 @@ class G15Lens():
         self._lens.props.search_in_global = True
         
         # Populate categories
-        cats = []
-        cats.append (Unity.Category.new ("Pages",
-                                         Gio.ThemedIcon.new("display"),
-                                         Unity.CategoryRenderer.VERTICAL_TILE))
-        cats.append (Unity.Category.new ("Tools",
-                                         Gio.ThemedIcon.new("configuration-section"),
-                                         Unity.CategoryRenderer.VERTICAL_TILE))
+        cats = [
+            Unity.Category.new(
+                "Pages",
+                Gio.ThemedIcon.new("display"),
+                    Unity.CategoryRenderer.VERTICAL_TILE
+            ),
+            Unity.Category.new(
+                "Tools",
+                Gio.ThemedIcon.new(
+                "configuration-section"),
+                Unity.CategoryRenderer.VERTICAL_TILE
+            )
+        ]
         self._lens.props.categories = cats
         
         # Listen for changes and requests
         self._scope.connect ("notify::active-search", self._on_search_changed)
         self._scope.connect ("notify::active-global-search", self._on_global_search_changed)
         
-        self._lens.add_local_scope (self._scope);
-        self._lens.export ();
-    
-    def do_activate(self, *args):
-        print "activate:", args
+        self._lens.add_local_scope (self._scope)
+        self._lens.export ()
+
+    @staticmethod
+    def do_activate(*args):
+        print("activate:", args)
         return Unity.ActivationStatus.ACTIVATED_HIDE_DASH
         
-    def _activation(self, uri):
-        print uri
+    @staticmethod
+    def _activation(uri):
+        print(uri)
         return True
         
     def screen_removed(self, screen):
@@ -160,9 +169,10 @@ class G15Lens():
     """
     Private
     """
-    def _on_activation(self, uri, callback, callback_target):
-        print "URI %s, %s, %s" % ( uri, str(callback), str(callback_target))
-    
+    @staticmethod
+    def _on_activation(uri, callback, callback_target):
+        print("URI %s, %s, %s" % (uri, str(callback), str(callback_target)))
+
     def _add_screen(self, screen):
         listener = MenuScreenChangeListener(self, screen)
         self.listeners.append(listener)
@@ -181,7 +191,8 @@ class G15Lens():
             sections_model.append (device.model_fullname,
                                    icon.to_string())
     
-    def _on_groups_synchronized (self, groups_model, *args):
+    @staticmethod
+    def _on_groups_synchronized (groups_model, *args):
         groups_model.clear ()
         groups_model.append ("UnityDefaultRenderer",
                              "Screens",
@@ -197,32 +208,32 @@ class G15Lens():
     def _on_search_changed (self, *args):        
         search = self.get_search_string()
         results = self._entry.props.results_model
-        
-        print "Search changed to: '%s'" % search
-        
+
+        print("Search changed to: '%s'" % search)
+
         self._update_results_model (search, results)
         self.search_finished()
     
     def _on_global_search_changed (self, entry, param_spec):
         search = self.get_global_search_string()
         results = self._entry.props.global_renderer_info.props.results_model
-        
-        print "Global search changed to: '%s'" % search
-        
+
+        print("Global search changed to: '%s'" % search)
+
         self._update_results_model (search, results)
         self.global_search_finished()
         
     def _update_results_model (self, search, model):
         model.clear ()
         search = search.lower()
-        print "Search> %s" % search
+        print("Search> %s" % search)
         for listener in self.listeners:
-            print "   L[%s]" % str(listener)
+            print("   L[%s]" % str(listener))
             for page in listener.screen.pages:
                 if len(search) == 0 or search in page.title.lower(): 
                     icon_hint = listener._get_page_filename(page)
                     uri = "gnome15://%s" % base64.encodestring(page.id)
-                    print "      URI %s" % uri
+                    print("      URI %s" % uri)
                     model.append (uri,    # uri
                                   icon_hint,        # string formatted GIcon
                                   CATEGORY_PAGES,   # numeric group id
@@ -230,15 +241,15 @@ class G15Lens():
                                   page.title,       # display name
                                   page.title,       # comment,
                                   uri)              # FIXME WHATSTHIS?
-            
-        print str(model)
+
+        print(str(model))
     
     def deactivate(self):
         pass
         
     def destroy(self):
         pass
-        
+
 class MenuScreenChangeListener(g15screen.ScreenChangeAdapter):
     def __init__(self, plugin, screen):
         self.plugin = plugin
@@ -247,7 +258,7 @@ class MenuScreenChangeListener(g15screen.ScreenChangeAdapter):
             self._add_page(page)
         
     def new_page(self, page):
-        print "Adding page %s for screen %s" % (page.id, self.screen.device.uid)
+        print("Adding page %s for screen %s" % (page.id, self.screen.device.uid))
         self._add_page(page)
         
     def title_changed(self, page, title):        
@@ -261,19 +272,20 @@ class MenuScreenChangeListener(g15screen.ScreenChangeAdapter):
     """
     Private
     """
-    def _get_page_filename(self, page):
+    @staticmethod
+    def _get_page_filename(page):
         return "%s/%s.png" % ( cache_dir, base64.encodestring(page.id) )
-    
+
     def _add_page(self, page):
         self._update_page(page)
         
     def _update_page(self, page):
-        if page.thumbnail_painter != None:
+        if page.thumbnail_painter is not None:
             img = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.screen.width, self.screen.height)
             thumb_canvas = cairo.Context(img)
             try :
                 if page.thumbnail_painter(thumb_canvas, self.screen.height, True):
-                    filename = self._get_page_filename(page) 
+                    filename = self._get_page_filename(page)
                     logger.info("Writing thumbnail to %s", filename)
                     img.write_to_png(filename)
             except Exception as e:

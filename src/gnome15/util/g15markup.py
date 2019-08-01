@@ -15,34 +15,39 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 Markup utilities
-'''
+"""
 
 from HTMLParser import HTMLParser
+
 
 class MLStripper(HTMLParser):
     def __init__(self):
         self.reset()
         self.fed = []
+
     def handle_data(self, d):
         self.fed.append(d)
+
     def get_data(self):
         return ''.join(self.fed)
+
 
 def strip_tags(html):
     s = MLStripper()
     s.feed(html)
     return s.get_data()
 
+
 html_escape_table = {
-                     "&": "&amp;",
-                     '"': "&quot;",
-                     "'": "&apos;",
-                     ">": "&gt;",
-                     "<": "&lt;",
-                     }
+    "&": "&amp;",
+    '"': "&quot;",
+    "'": "&apos;",
+    ">": "&gt;",
+    "<": "&lt;",
+}
+
 
 def html_escape(text):
-    return "".join(html_escape_table.get(c,c) for c in text)
-
+    return "".join(html_escape_table.get(c, c) for c in text)

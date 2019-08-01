@@ -15,12 +15,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 Various conversions
-'''
+"""
 
 import gtk.gdk
 import math
+
 
 def rgb_to_string(rgb):
     if rgb == None:
@@ -28,17 +29,20 @@ def rgb_to_string(rgb):
     else:
         return "%d,%d,%d" % rgb
 
+
 def get_alt_color(color):
     if color[0] == color[1] == color[2]:
-        return (1.0-color[0], 1.0-color[1], 1.0-color[2], color[3])
+        return (1.0 - color[0], 1.0 - color[1], 1.0 - color[2], color[3])
     else:
-        return (color[1],color[2],color[0],color[3])
+        return (color[1], color[2], color[0], color[3])
+
 
 def color_to_rgb(color):
-    i = ( color.red >> 8, color.green >> 8, color.blue >> 8 )
-    return ( i[0],i[1],i[2] )
+    i = (color.red >> 8, color.green >> 8, color.blue >> 8)
+    return (i[0], i[1], i[2])
 
-def to_rgb(string_rgb, default = None):
+
+def to_rgb(string_rgb, default=None):
     # Currently this method is implemented in g15gconf so that it avoids
     # a dependency on g15convert.
     # g15convert depends on gtk, and when initializing the gtk module a
@@ -49,25 +53,29 @@ def to_rgb(string_rgb, default = None):
     import g15gconf
     return g15gconf._to_rgb(string_rgb, default)
 
+
 def to_pixel(rgb):
-    return ( rgb[0] << 24 ) + ( rgb[1] << 16 ) + ( rgb[2] < 8 ) + 0
+    return (rgb[0] << 24) + (rgb[1] << 16) + (rgb[2] < 8) + 0
+
 
 def to_color(rgb):
-    return gtk.gdk.Color(rgb[0] <<8, rgb[1] <<8,rgb[2] <<8)
+    return gtk.gdk.Color(rgb[0] << 8, rgb[1] << 8, rgb[2] << 8)
+
 
 def rgb_to_uint16(r, g, b):
-    rBits = r * 32 / 255
-    gBits = g * 64 / 255
-    bBits = b * 32 / 255
+    r_bits = r * 32 / 255
+    g_bits = g * 64 / 255
+    b_bits = b * 32 / 255
 
-    rBits = rBits if rBits <= 31 else 31
-    gBits = gBits if gBits <= 63 else 63
-    bBits = bBits if bBits <= 31 else 31
+    r_bits = r_bits if r_bits <= 31 else 31
+    g_bits = g_bits if g_bits <= 63 else 63
+    b_bits = b_bits if b_bits <= 31 else 31
 
-    valueH = (rBits << 3) | (gBits >> 3)
-    valueL = (gBits << 5) | bBits
+    value_h = (r_bits << 3) | (g_bits >> 3)
+    value_l = (g_bits << 5) | b_bits
 
-    return chr(valueL & 0xff) + chr(valueH & 0xff)
+    return chr(value_l & 0xff) + chr(value_h & 0xff)
+
 
 def rgb_to_hex(rgb):
     # Currently this method is implemented in g15driver so that it avoids
@@ -80,6 +88,6 @@ def rgb_to_hex(rgb):
     import g15driver
     return g15driver.rgb_to_hex(rgb)
 
+
 def degrees_to_radians(degrees):
     return degrees * (math.pi / 180.0)
-

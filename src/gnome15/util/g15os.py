@@ -15,19 +15,21 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 Gnome15 utilities to work with the system (running commands, manipulating the
 filesystem, getting OS information...)
-'''
+"""
 
 from gnome15 import g15globals
 import os
 
 # Logging
 import logging
+
 logger = logging.getLogger(__name__)
 
-def run_script(script, args = None, background = True):
+
+def run_script(script, args=None, background=True):
     """
     Runs a python script from the scripts directory.
 
@@ -40,9 +42,10 @@ def run_script(script, args = None, background = True):
     if args:
         for arg in args:
             a += "\"%s\"" % arg
-    p = os.path.realpath(os.path.join(g15globals.scripts_dir,script))
+    p = os.path.realpath(os.path.join(g15globals.scripts_dir, script))
     logger.info("Running '%s'", p)
-    return os.system("\"%s\" %s %s" % ( p, a, " &" if background else "" ))
+    return os.system("\"%s\" %s %s" % (p, a, " &" if background else ""))
+
 
 def get_command_output(cmd):
     """
@@ -64,6 +67,7 @@ def get_command_output(cmd):
     if text[-1:] == '\n': text = text[:-1]
     return sts, text
 
+
 def mkdir_p(path):
     """
     Creates a directory and it's parents if needed unless it already exists..
@@ -73,12 +77,14 @@ def mkdir_p(path):
     """
     try:
         os.makedirs(path)
-    except OSError as exc: # Python >2.5
-        logger.debug("Error when trying to create path %s", path, exc_info = exc)
+    except OSError as exc:  # Python >2.5
+        logger.debug("Error when trying to create path %s", path, exc_info=exc)
         import errno
         if exc.errno == errno.EEXIST:
             pass
-        else: raise
+        else:
+            raise
+
 
 def full_path_of_program(program_name):
     """
@@ -98,6 +104,7 @@ def full_path_of_program(program_name):
             return full_path
     return None
 
+
 def is_program_in_path(program_name):
     """
     Checks if a program_name is available in PATH environment variable
@@ -107,7 +114,8 @@ def is_program_in_path(program_name):
 
     Returns True if program_name is in PATH, else False
     """
-    return full_path_of_program(program_name) != None
+    return full_path_of_program(program_name) is not None
+
 
 def get_lsb_release():
     """
@@ -120,6 +128,7 @@ def get_lsb_release():
     ret, r = get_command_output('lsb_release -rs')
     return float(r) if ret == 0 else 0
 
+
 def get_lsb_distributor():
     """
     Gets the Linux distribution distributor id
@@ -130,4 +139,3 @@ def get_lsb_distributor():
     """
     ret, r = get_command_output('lsb_release -is')
     return r if ret == 0 else "Unknown"
-

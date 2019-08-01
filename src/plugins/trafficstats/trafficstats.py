@@ -15,7 +15,8 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import gnome15.g15locale as g15locale
-_ = g15locale.get_translation("trafficstats", modfile = __file__).ugettext
+
+_ = g15locale.get_translation("trafficstats", modfile=__file__).ugettext
 
 import gnome15.g15screen as g15screen
 import gnome15.g15theme as g15theme
@@ -31,11 +32,12 @@ import gnome15.g15plugin as g15plugin
 import time
 import datetime
 import logging
-logger=logging.getLogger(__name__)
+
+logger = logging.getLogger(__name__)
 try:
     import gtop
 except Exception as e:
-    logger.debug("Could not import gtop. Falling back to g15top", exc_info = e)
+    logger.debug("Could not import gtop. Falling back to g15top", exc_info=e)
     # API compatible work around for Ubuntu 12.10
     import gnome15.g15top as gtop
 import os
@@ -43,31 +45,34 @@ import gtk
 import locale
 
 # Plugin details - All of these must be provided
-id="trafficstats"
-name=_("Traffic Stats")
-description=_("Displays network traffic stats. Either of actual session or from vnstat.")
-author="NoXPhasma <noxphasma@live.de>"
-copyright=_("Copyright (C)2013 NoXPhasma")
-site="http://www.russo79.com/gnome15"
-has_preferences=True
-default_enabled=True
-ICON=os.path.join(os.path.dirname(__file__), 'trafficstats.png')
-unsupported_models = [ g15driver.MODEL_G110, g15driver.MODEL_G11, g15driver.MODEL_G930, g15driver.MODEL_G35 ]
-actions={
-         g15driver.PREVIOUS_SELECTION : _("Switch daily/monthly stats (Only vnstat)"),
-         g15driver.NEXT_SELECTION : _("Switch network device")
-         }
+id = "trafficstats"
+name = _("Traffic Stats")
+description = _("Displays network traffic stats. Either of actual session or from vnstat.")
+author = "NoXPhasma <noxphasma@live.de>"
+copyright = _("Copyright (C)2013 NoXPhasma")
+site = "http://www.russo79.com/gnome15"
+has_preferences = True
+default_enabled = True
+ICON = os.path.join(os.path.dirname(__file__), 'trafficstats.png')
+unsupported_models = [g15driver.MODEL_G110, g15driver.MODEL_G11, g15driver.MODEL_G930, g15driver.MODEL_G35]
+actions = {
+    g15driver.PREVIOUS_SELECTION: _("Switch daily/monthly stats (Only vnstat)"),
+    g15driver.NEXT_SELECTION: _("Switch network device")
+}
 
 #
 # This plugin displays the network traffic stats
 #
 
-'''
+"""
 This function must create your plugin instance. You are provided with
 a GConf client and a Key prefix to use if your plugin has preferences
-'''
+"""
+
+
 def create(gconf_key, gconf_client, screen):
     return G15TrafficStats(gconf_key, gconf_client, screen)
+
 
 def show_preferences(parent, driver, gconf_client, gconf_key):
     widget_tree = gtk.Builder()
@@ -87,58 +92,63 @@ def show_preferences(parent, driver, gconf_client, gconf_key):
     use_vnstat = widget_tree.get_object('UseVnstat')
     use_vnstat.set_sensitive(vnstat_installed)
 
-    g15uigconf.configure_checkbox_from_gconf(gconf_client, gconf_key + "/use_vnstat", "UseVnstat", vnstat_installed, widget_tree)
+    g15uigconf.configure_checkbox_from_gconf(gconf_client, gconf_key + "/use_vnstat", "UseVnstat", vnstat_installed,
+                                             widget_tree)
     ndevice = widget_tree.get_object("NetDevice")
     for netdev in gtop.netlist():
         ndevice.append([netdev])
-    g15uigconf.configure_combo_from_gconf(gconf_client, gconf_key + "/networkdevice", "NetworkDevice", "lo", widget_tree)
-    g15uigconf.configure_adjustment_from_gconf(gconf_client, gconf_key + "/refresh_interval", "RefreshingScale", 10.0, widget_tree)
+    g15uigconf.configure_combo_from_gconf(gconf_client, gconf_key + "/networkdevice", "NetworkDevice", "lo",
+                                          widget_tree)
+    g15uigconf.configure_adjustment_from_gconf(gconf_client, gconf_key + "/refresh_interval", "RefreshingScale", 10.0,
+                                               widget_tree)
     dialog.set_transient_for(parent)
     dialog.run()
     dialog.hide()
 
-class G15TrafficStats(g15plugin.G15RefreshingPlugin):
 
-    '''
+class G15TrafficStats(g15plugin.G15RefreshingPlugin):
+    """
     ******************************************************************
     * Lifecycle functions. You must provide activate and deactivate, *
     * the constructor and destroy function are optional              *
     ******************************************************************
-    '''
+    """
 
     def __init__(self, gconf_key, gconf_client, screen):
         self.gconf_client = gconf_client
         self.gconf_key = gconf_key
-        g15plugin.G15RefreshingPlugin.__init__(self, gconf_client, gconf_key, \
-                                               screen, ICON, id, name, g15gconf.get_float_or_default(self.gconf_client, self.gconf_key + "/refresh_interval", 10.0))
+        g15plugin.G15RefreshingPlugin.__init__(self, gconf_client, gconf_key,
+                                               screen, ICON, id, name, g15gconf.get_float_or_default(self.gconf_client,
+                                                                                                     self.gconf_key + "/refresh_interval",
+                                                                                                     10.0))
         self.hidden = False
 
     def activate(self):
-        '''
+        """
         The activate function is invoked when gnome15 starts up, or the plugin is re-enabled
         after it has been disabled. When extending any of the provided base plugin classes,
         you nearly always want to call the function in the supoer class as well
-        '''
+        """
         self._load_configuration()
 
         g15plugin.G15RefreshingPlugin.activate(self)
 
-        '''
+        """
         Most plugins will delegate their drawing to a 'Theme'. A theme usually consists of an SVG file, one
         for each model that is supported, and optionally a fragment of Python for anything that can't
         be done with SVG and the built in theme facilities
-        '''
+        """
         self._reload_theme()
 
         self.watch(None, self._config_changed)
 
         self.page.title = "Traffic Stats"
 
-        '''
+        """
         Once created, we should always ask for the screen to be drawn (even if another higher
         priority screen is actually active. If the canvas is not displayed immediately,
         the on_shown function will be invoked when it finally is.
-        '''
+        """
         self.screen.redraw(self.page)
 
         self.screen.key_handler.action_listeners.append(self)
@@ -168,60 +178,63 @@ class G15TrafficStats(g15plugin.G15RefreshingPlugin):
                     return True
 
     def destroy(self):
-        '''
+        """
         Invoked when the plugin is disabled or the applet is stopped
-        '''
+        """
         pass
 
     def _config_changed(self, client, connection_id, entry, args):
 
-        '''
+        """
         Load the gconf configuration
-        '''
+        """
         self._load_configuration()
 
-        '''
+        """
         This is called when the gconf configuration changes. See add_notify and remove_notify in
         the plugin's activate and deactive functions.
-        '''
+        """
         self.do_refresh()
 
-        '''
+        """
         Reload the theme as the layout required may have changed (i.e. with the 'show date'
         option has been change)
-        '''
+        """
         self._reload_theme()
 
-        '''
+        """
         In this case, we temporarily raise the priority of the page. This will force
         the page to be painted (i.e. the paint function invoked). After the specified time,
         the page will revert it's priority. Only one revert timer is active at any one time,
         so it is safe to call this function in quick succession
-        '''
-        self.screen.set_priority(self.page, g15screen.PRI_HIGH, revert_after = 3.0)
+        """
+        self.screen.set_priority(self.page, g15screen.PRI_HIGH, revert_after=3.0)
 
     def _load_configuration(self):
-        self.use_vnstat = g15gconf.get_bool_or_default(self.gconf_client, self.gconf_key + "/use_vnstat", os.path.isfile("/usr/bin/vnstat"))
+        self.use_vnstat = g15gconf.get_bool_or_default(self.gconf_client, self.gconf_key + "/use_vnstat",
+                                                       os.path.isfile("/usr/bin/vnstat"))
         self.networkdevice = g15gconf.get_string_or_default(self.gconf_client, self.gconf_key + "/networkdevice", 'lo')
-        self.loadpage = g15gconf.get_string_or_default(self.gconf_client, self.gconf_key + "/vnstat_view", "vnstat_daily")
-        self.refresh_interval = g15gconf.get_float_or_default(self.gconf_client, self.gconf_key + "/refresh_interval", 10.0)
+        self.loadpage = g15gconf.get_string_or_default(self.gconf_client, self.gconf_key + "/vnstat_view",
+                                                       "vnstat_daily")
+        self.refresh_interval = g15gconf.get_float_or_default(self.gconf_client, self.gconf_key + "/refresh_interval",
+                                                              10.0)
 
-    '''
+    """
     ***********************************************************
     * Functions specific to plugin                            *
     ***********************************************************
-    '''
+    """
 
     def _reload_theme(self):
         variant = None
         self.theme = g15theme.G15Theme(os.path.join(os.path.dirname(__file__), "default"), variant)
 
-    '''
+    """
     Get the properties dictionary
-    '''
+    """
 
     def get_theme_properties(self):
-        properties = { }
+        properties = {}
 
         def convert_bytes(bytes):
             bytes = float(bytes)
@@ -243,7 +256,7 @@ class G15TrafficStats(g15plugin.G15RefreshingPlugin):
 
         # Split vnstat data into array
         def get_traffic_data(dataType, dataValue, vn):
-            line=''
+            line = ''
             for item in vn.split("\n"):
                 if "%s;%d;" % (dataType, dataValue) in item:
                     line = item.strip().split(';')
@@ -254,17 +267,17 @@ class G15TrafficStats(g15plugin.G15RefreshingPlugin):
         def cb(mib, kib):
             return (int(mib) * 1000000) + (int(kib) * 1000)
 
-        '''
+        """
         Get the details to display and place them as properties which are passed to
         the theme
-        '''
+        """
 
         if self.use_vnstat is False:
             bootup = datetime.datetime.fromtimestamp(int(gtop.uptime().boot_time)).strftime('%d.%m.%y %H:%M')
             sd = gtop.netload(self.networkdevice)
-            properties["sdn"] = "DL: " +convert_bytes(sd.bytes_in)
-            properties["sup"] = "UL: " +convert_bytes(sd.bytes_out)
-            properties["des1"] = "Traffic since: " +bootup
+            properties["sdn"] = "DL: " + convert_bytes(sd.bytes_in)
+            properties["sup"] = "UL: " + convert_bytes(sd.bytes_out)
+            properties["des1"] = "Traffic since: " + bootup
             properties["title"] = self.networkdevice + " Traffic"
 
         else:
@@ -272,11 +285,11 @@ class G15TrafficStats(g15plugin.G15RefreshingPlugin):
             if vnstat != 0:
                 properties["message"] = "vnstat is not installed!"
             else:
-                chErr = str(vn.find("Error"));
+                chErr = str(vn.find("Error"))
                 if chErr != "-1":
                     properties["message"] = "No stats for device " + self.networkdevice
                 else:
-                    properties["title"] = self.networkdevice +" Traffic (U/D)"
+                    properties["title"] = self.networkdevice + " Traffic (U/D)"
 
                     def get_data(kind, period):
                         # get vnstat data as array, array content: 2 = unixtime, 4 = up MiB, 6 = up KiB, 3 = dn MiB, 5 = dn KiB
@@ -296,8 +309,8 @@ class G15TrafficStats(g15plugin.G15RefreshingPlugin):
                         k = "m"
                         fmt = '%B'
 
-                    for p in range(0,3):
-                        data = get_data(k,p)
+                    for p in range(0, 3):
+                        data = get_data(k, p)
                         if data is not None:
                             properties["d"] = "/"
                             properties["dup" + str(p + 1)] = data[0]

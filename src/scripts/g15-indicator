@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
- 
+
 #  Gnome15 - Suite of tools for the Logitech G series keyboards and headsets
 #  Copyright (C) 2010 Brett Smith <tanktarta@blueyonder.co.uk>
 #
@@ -16,14 +16,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-'''
+"""
 Provides a panel indicator that can be used to control and monitor the Gnome15
 desktop service (g15-desktop-service). It will display a list of currently active
 screens on activation, and allow the configuration UI to be launched (g15-config)
-'''
+"""
 
 import sys
 import pygtk
+
 pygtk.require('2.0')
 import gtk
 import os
@@ -38,15 +39,18 @@ if os.path.exists(path):
 
 # Logging
 import gnome15.g15logging as g15logging
+
 logger = g15logging.get_root_logger()
 
 # This block MUST be before the imports of the gnome15 modules
 import dbus
 import gobject
+
 gobject.threads_init()
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from dbus.mainloop.glib import threads_init
+
 threads_init()
 DBusGMainLoop(set_as_default=True)
 
@@ -56,55 +60,59 @@ import gnome15.g15screen as g15screen
 import gnome15.util.g15convert as g15convert
 import gnome15.g15desktop as g15desktop
 
+
 class G15Indicator(g15desktop.G15GtkMenuPanelComponent):
-    
+
     def __init__(self):
         g15desktop.G15GtkMenuPanelComponent.__init__(self)
-        
+
     def create_component(self):
-        
+
         item = gtk.MenuItem("Preferences")
         item.connect("activate", self.show_configuration)
         self.menu.append(item)
-        
+
         item = gtk.MenuItem("About Gnome15")
         item.connect("activate", self.about_info)
         self.menu.append(item)
-        
+
         self.menu.append(gtk.MenuItem())
-        
+
         self.indicator = appindicator.Indicator("gnome15",
-                               self.get_icon_path("logitech-g-keyboard-panel"), 
-                               appindicator.CATEGORY_HARDWARE)
-        self.indicator.set_status (appindicator.STATUS_ACTIVE)
+                                                self.get_icon_path("logitech-g-keyboard-panel"),
+                                                appindicator.CATEGORY_HARDWARE)
+        self.indicator.set_status(appindicator.STATUS_ACTIVE)
         self.indicator.set_menu(self.menu)
-        
+
     def clear_attention(self):
         self.remove_attention_menu_item()
         if self.conf_client.get_bool("/apps/gnome15/indicate_only_on_error"):
-            self.indicator.set_status (appindicator.STATUS_PASSIVE)
+            self.indicator.set_status(appindicator.STATUS_PASSIVE)
         else:
-            self.indicator.set_status (appindicator.STATUS_ACTIVE)
-        
-    def attention(self, message = None):
-        self.indicator.set_status (appindicator.STATUS_ATTENTION)
-        
+            self.indicator.set_status(appindicator.STATUS_ACTIVE)
+
+    def attention(self, message=None):
+        self.indicator.set_status(appindicator.STATUS_ATTENTION)
+
     def icons_changed(self):
-        self.indicator.set_icon(self.get_icon_path([ "logitech-g-keyboard-panel", "logitech-g-keyboard-applet" ]))        
-        self.indicator.set_attention_icon(self.get_icon_path([ "logitech-g-keyboard-error-panel", "logitech-g-keyboard-error-applet" ]))
-    
+        self.indicator.set_icon(self.get_icon_path(["logitech-g-keyboard-panel", "logitech-g-keyboard-applet"]))
+        self.indicator.set_attention_icon(
+            self.get_icon_path(["logitech-g-keyboard-error-panel", "logitech-g-keyboard-error-applet"]))
+
+
 # run it in a gtk window
 if __name__ == "__main__":
-    try :
+    try:
         import setproctitle
+
         setproctitle.setproctitle(os.path.basename(os.path.abspath(sys.argv[0])))
     except Exception as e:
-        logger.debug("Could not import setproctitle. Using python as processname", exc_info = e)
+        logger.debug("Could not import setproctitle. Using python as processname", exc_info=e)
         pass
-    
+
     if g15desktop.get_desktop() == "gnome-shell":
         sys.stderr.write("Indicator is not supported in GNOME Shell, use the GNOME Shell extension instead")
         sys.exit(1)
-    
-    G15Indicator().start_service()   
+
+    G15Indicator().start_service()
     gtk.main()

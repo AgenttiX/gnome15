@@ -24,8 +24,10 @@ import gnome15.drivers.pylibg15 as libg15
 import gnome15.g15devices as g15devices
 import sys
 
+
 def clamp(val, min_val, max_val):
     return max(min_val, min(val, max_val))
+
 
 print 'libg15 test\n'
 print 'Choose a device:'
@@ -33,14 +35,15 @@ mono_devices = []
 for idx, device in enumerate(g15devices.find_all_devices()):
     if device.bpp == 1:
         mono_devices.append(device)
-        print '  %d %-10s - %-40s (%04x %04x)' % (idx, device.uid, device.model_fullname, device.usb_id[0],device.usb_id[1] )
-        
+        print '  %d %-10s - %-40s (%04x %04x)' % (
+        idx, device.uid, device.model_fullname, device.usb_id[0], device.usb_id[1])
+
 device_idx = int(raw_input('\nDevice:'))
 if device_idx < 0 or device_idx >= len(mono_devices):
     sys.stderr.write('Invalid device number\n')
     sys.exit(1)
 device = mono_devices[device_idx]
-    
+
 print "WARNING: Reset sometimes doesn't work, try without it first"
 reset_usb = raw_input('Reset USB Y/(N):').lower()[:1] == 'y'
 
@@ -72,15 +75,18 @@ while True:
         libg15.set_contrast(clamp(int(raw_input('LCD contrast (0-2):')), 0, 2))
     elif option == 4:
         libg15.set_keyboard_color((clamp(int(raw_input('Red (0-255):')), 0, 255), \
-                                  clamp(int(raw_input('Green (0-255):')), 0, 255), \
-                                  clamp(int(raw_input('Blue (0-255):')), 0, 255)))
+                                   clamp(int(raw_input('Green (0-255):')), 0, 255), \
+                                   clamp(int(raw_input('Blue (0-255):')), 0, 255)))
     elif option == 5:
         libg15.set_leds(clamp(int(raw_input('LED mask (0-15):')), 0, 15))
     elif option == 6:
         print "******************************************************************"
         print "* Now testing keys, abort with Ctrl+\\"
         print "******************************************************************"
+
+
         def callback(code, extended_code):
-            print "%04x/%04x - %08d/%08d"% (code, extended_code, code, extended_code)
+            print "%04x/%04x - %08d/%08d" % (code, extended_code, code, extended_code)
+
+
         libg15.grab_keyboard(callback).join()
-        

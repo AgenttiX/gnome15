@@ -26,6 +26,7 @@ from pyinputevent.keytrans import *
 
 EVIOCGRAB = 0x40044590
 
+
 class ForwardDevice(SimpleDevice):
     def __init__(self, *args, **kwargs):
         SimpleDevice.__init__(self, *args, **kwargs)
@@ -68,10 +69,10 @@ class ForwardDevice(SimpleDevice):
             print "Etype 0"
         else:
             print "Unhandled event: %s" % str(event)
-    
+
+
 if __name__ == "__main__":
     parser = optparse.OptionParser()
     (options, args) = parser.parse_args()
     device = ForwardDevice(args[0])
     device.monitor()
-    

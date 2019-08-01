@@ -17,7 +17,8 @@
 import datetime
 import gnome15.g15notify as g15notify
 
-class G15Timer():
+
+class G15Timer:
     TIMER_MODE_STOPWATCH = 0
     TIMER_MODE_COUNTDOWN = 1
 
@@ -68,7 +69,7 @@ class G15Timer():
             self.pause()
         else:
             self.resume()
-            
+
     def is_running(self):
         return self.__running
 
@@ -86,6 +87,6 @@ class G15Timer():
         self._last_resume = datetime.datetime.now()
 
     def notify(self):
-        g15notify.notify("Stopwatch", "Timer '" + self.label + "' is over.", timeout = 0)
+        g15notify.notify("Stopwatch", "Timer '" + self.label + "' is over.", timeout=0)
 
 # vim:set ts=4 sw=4 et:

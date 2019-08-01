@@ -14,8 +14,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 class Key(object):
-    '''Static container containing all keys.'''
+    """Static container containing all keys."""
 
     # G/M keys
     # light switch
@@ -56,8 +57,8 @@ class Key(object):
     MUTE, \
     SCROLL_UP, \
     SCROLL_DOWN = range(UP + 1, UP + 9)
-    
-    displayKeys = set([
+
+    displayKeys = {
         BACK,
         DOWN,
         LEFT,
@@ -66,40 +67,42 @@ class Key(object):
         RIGHT,
         SETTINGS,
         UP
-                       ])
+    }
 
-    mmKeys = set([
-            WINKEY_SWITCH,
-            NEXT,
-            PREV,
-            STOP,
-            PLAY,
-            MUTE,
-            SCROLL_UP,
-            SCROLL_DOWN])
+    mmKeys = {
+        WINKEY_SWITCH,
+        NEXT,
+        PREV,
+        STOP,
+        PLAY,
+        MUTE,
+        SCROLL_UP,
+        SCROLL_DOWN
+    }
 
-    gmKeys = set([
-            G01,
-            G02,
-            G03,
-            G04,
-            G05,
-            G06,
-            G07,
-            G08,
-            G09,
-            G10,
-            G11,
-            G12,
-            LIGHT,
-            M1,
-            M2,
-            M3,
-            MR])
+    gmKeys = {
+        G01,
+        G02,
+        G03,
+        G04,
+        G05,
+        G06,
+        G07,
+        G08,
+        G09,
+        G10,
+        G11,
+        G12,
+        LIGHT,
+        M1,
+        M2,
+        M3,
+        MR
+    }
 
 
 class Data(object):
-    '''Static container with all data values for all keys.'''
+    """Static container with all data values for all keys."""
 
     ##
     ## display keys
@@ -111,16 +114,16 @@ class Data(object):
     # Incoming data always has 0x80 appended, e.g. pressing and releasing the menu
     # key results in two INTERRUPT transmissions: [0x04, 0x80] and [0x00, 0x80]
     # Pressing (and holding) UP and OK at the same time results in [0x88, 0x80].
-    displayKeys = {}
-    displayKeys[0x01] = Key.SETTINGS
-    displayKeys[0x02] = Key.BACK
-    displayKeys[0x04] = Key.MENU
-    displayKeys[0x08] = Key.OK
-    displayKeys[0x10] = Key.RIGHT
-    displayKeys[0x20] = Key.LEFT
-    displayKeys[0x40] = Key.DOWN
-    displayKeys[0x80] = Key.UP
-
+    displayKeys = {
+        0x01: Key.SETTINGS,
+        0x02: Key.BACK,
+        0x04: Key.MENU,
+        0x08: Key.OK,
+        0x10: Key.RIGHT,
+        0x20: Key.LEFT,
+        0x40: Key.DOWN,
+        0x80: Key.UP
+    }
 
     ##
     ## G- and M-Keys
@@ -160,26 +163,25 @@ class Data(object):
     # up:   [0x02, 0x00, 0x00, 0x40]
     KEY_LIGHT = 0x080000
 
-    gmKeys = {}
-    gmKeys[KEY_G01] = Key.G01
-    gmKeys[KEY_G02] = Key.G02
-    gmKeys[KEY_G03] = Key.G03
-    gmKeys[KEY_G04] = Key.G04
-    gmKeys[KEY_G05] = Key.G05
-    gmKeys[KEY_G06] = Key.G06
-    gmKeys[KEY_G07] = Key.G07
-    gmKeys[KEY_G08] = Key.G08
-    gmKeys[KEY_G09] = Key.G09
-    gmKeys[KEY_G10] = Key.G10
-    gmKeys[KEY_G11] = Key.G11
-    gmKeys[KEY_G12] = Key.G12
-    gmKeys[KEY_G12] = Key.G12
-    gmKeys[KEY_M1] = Key.M1
-    gmKeys[KEY_M2] = Key.M2
-    gmKeys[KEY_M3] = Key.M3
-    gmKeys[KEY_MR] = Key.MR
-    gmKeys[KEY_LIGHT] = Key.LIGHT
-
+    gmKeys = {
+        KEY_G01: Key.G01,
+        KEY_G02: Key.G02,
+        KEY_G03: Key.G03,
+        KEY_G04: Key.G04,
+        KEY_G05: Key.G05,
+        KEY_G06: Key.G06,
+        KEY_G07: Key.G07,
+        KEY_G08: Key.G08,
+        KEY_G09: Key.G09,
+        KEY_G10: Key.G10,
+        KEY_G11: Key.G11,
+        KEY_G12: Key.G12,
+        KEY_M1: Key.M1,
+        KEY_M2: Key.M2,
+        KEY_M3: Key.M3,
+        KEY_MR: Key.MR,
+        KEY_LIGHT: Key.LIGHT
+    }
 
     ##
     ## MM-keys
@@ -190,16 +192,16 @@ class Data(object):
     # example: NEXT+SCROLL_UP:       [0x01, 0x21]
     #          after scroll stopped: [0x01, 0x01]
     #          after release:        [0x01, 0x00]
-    mmKeys = {}
-    mmKeys[0x01] = Key.NEXT
-    mmKeys[0x02] = Key.PREV
-    mmKeys[0x04] = Key.STOP
-    mmKeys[0x08] = Key.PLAY
-    mmKeys[0x10] = Key.MUTE
-    mmKeys[0x20] = Key.SCROLL_UP
-    mmKeys[0x40] = Key.SCROLL_DOWN
+    mmKeys = {
+        0x01: Key.NEXT,
+        0x02: Key.PREV,
+        0x04: Key.STOP,
+        0x08: Key.PLAY,
+        0x10: Key.MUTE,
+        0x20: Key.SCROLL_UP,
+        0x40: Key.SCROLL_DOWN
+    }
 
     # winkey switch to winkey off: [0x03, 0x01]
     # winkey switch to winkey on:  [0x03, 0x00]
     KEY_WIN_SWITCH = 0x0103
-

@@ -20,7 +20,8 @@ This plugin allows a user to apply the Pommodoro Technique to manage their time.
 """
 
 import gnome15.g15locale as g15locale
-_ = g15locale.get_translation("pommodoro", modfile = __file__).ugettext
+
+_ = g15locale.get_translation("pommodoro", modfile=__file__).ugettext
 
 import gnome15.g15screen as g15screen
 import gnome15.g15theme as g15theme
@@ -41,41 +42,43 @@ import os
 import locale
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 # Plugin details - All of these must be provided
-id="pommodoro"
-name=_("Pommodoro Timer")
-description=_("A Pommodoro Timer.\n" \
-              "The <a href=\"http://www.pomodorotechnique.com/\">Pomodoro Technique</a> is an " \
-              "amazing way to get the most out of your work day - breaking up your time into " \
-              "manageable sections lets you focus more on the task, and accomplish more!")
-author="Nuno Araujo <nuno.araujo@russo79.com>"
-copyright=_("Copyright (C) 2013 Nuno Araujo")
-site="http://www.russo79.com/gnome15"
-has_preferences=True
+id = "pommodoro"
+name = _("Pommodoro Timer")
+description = _("A Pommodoro Timer.\n"
+                "The <a href=\"http://www.pomodorotechnique.com/\">Pomodoro Technique</a> is an "
+                "amazing way to get the most out of your work day - breaking up your time into "
+                "manageable sections lets you focus more on the task, and accomplish more!")
+author = "Nuno Araujo <nuno.araujo@russo79.com>"
+copyright = _("Copyright (C) 2013 Nuno Araujo")
+site = "http://www.russo79.com/gnome15"
+has_preferences = True
 unsupported_models = [g15driver.MODEL_G110,
                       g15driver.MODEL_G11,
                       g15driver.MODEL_G930,
                       g15driver.MODEL_G35]
-actions={
-         g15driver.SELECT : _("Start / Stop Pommodoro"),
-         g15driver.CLEAR : _("Reset finished pommodoro counter"),
-         g15driver.VIEW : _("Cancel Pommodoro")
-         }
-actions_g19={
-         g15driver.SELECT : _("Start / Stop Pommodoro"),
-         g15driver.CLEAR : _("Reset finished pommodoro counter"),
-         g15driver.VIEW : _("Cancel Pommodoro")
-         }
+actions = {
+    g15driver.SELECT: _("Start / Stop Pommodoro"),
+    g15driver.CLEAR: _("Reset finished pommodoro counter"),
+    g15driver.VIEW: _("Cancel Pommodoro")
+}
+actions_g19 = {
+    g15driver.SELECT: _("Start / Stop Pommodoro"),
+    g15driver.CLEAR: _("Reset finished pommodoro counter"),
+    g15driver.VIEW: _("Cancel Pommodoro")
+}
 
+DEFAULT_WORK_DURATION = 25  # [min]
+DEFAULT_SHORTBREAK_DURATION = 5  # [min]
+DEFAULT_LONGBREAK_DURATION = 15  # [min]
 
-DEFAULT_WORK_DURATION       = 25 # [min]
-DEFAULT_SHORTBREAK_DURATION =  5 # [min]
-DEFAULT_LONGBREAK_DURATION  = 15 # [min]
 
 def create(gconf_key, gconf_client, screen):
     return G15PommodoroPlugin(gconf_key, gconf_client, screen)
+
 
 def show_preferences(parent, driver, gconf_client, gconf_key):
     widget_tree = gtk.Builder()
@@ -85,26 +88,26 @@ def show_preferences(parent, driver, gconf_client, gconf_key):
     dialog.set_transient_for(parent)
 
     g15uigconf.configure_adjustment_from_gconf(gconf_client,
-                                            "{0}/work_duration".format(gconf_key),
-                                            "WorkDuration",
-                                            DEFAULT_WORK_DURATION,
-                                            widget_tree)
+                                               "{0}/work_duration".format(gconf_key),
+                                               "WorkDuration",
+                                               DEFAULT_WORK_DURATION,
+                                               widget_tree)
     g15uigconf.configure_adjustment_from_gconf(gconf_client,
-                                            "{0}/shortbreak_duration".format(gconf_key),
-                                            "ShortBreakDuration",
-                                            DEFAULT_SHORTBREAK_DURATION,
-                                            widget_tree)
+                                               "{0}/shortbreak_duration".format(gconf_key),
+                                               "ShortBreakDuration",
+                                               DEFAULT_SHORTBREAK_DURATION,
+                                               widget_tree)
     g15uigconf.configure_adjustment_from_gconf(gconf_client,
-                                            "{0}/longbreak_duration".format(gconf_key),
-                                            "LongBreakDuration",
-                                            DEFAULT_LONGBREAK_DURATION,
-                                            widget_tree)
+                                               "{0}/longbreak_duration".format(gconf_key),
+                                               "LongBreakDuration",
+                                               DEFAULT_LONGBREAK_DURATION,
+                                               widget_tree)
     dialog.run()
     dialog.hide()
 
 
 class PommodoroTimer:
-    '''
+    """
     PommodoroTimer is a state machine with three main states:
         STOPPED : No activity is taking place
         RUNNING : An activity is taking place
@@ -130,17 +133,17 @@ class PommodoroTimer:
     PommodoroTimer changes.
 
     PommodoroTimer also counts the number of times the WORKING activity was finished in a counter.
-    '''
+    """
 
     # States
     STOPPED = 0
     RUNNING = 1
     WAITING = 2
 
-    #Activities
-    WORKING       = 1
+    # Activities
+    WORKING = 1
     SHORT_PAUSING = 2
-    LONG_PAUSING  = 3
+    LONG_PAUSING = 3
 
     NUMBER_OF_POMMODOROS_BEFORE_LONG_PAUSE = 4
 
@@ -162,16 +165,16 @@ class PommodoroTimer:
         self.on_count_change = None
 
     def start(self):
-        '''
+        """
         Start the timer
-        '''
+        """
         if self._state == PommodoroTimer.STOPPED:
             self._state_next()
 
     def stop(self):
-        '''
+        """
         Stop the timer
-        '''
+        """
         if self._state in [PommodoroTimer.WAITING, PommodoroTimer.RUNNING]:
             self._destroy_state_change_timer()
             self._timer_value = self._minutes_to_timedelta(self.work_duration)
@@ -181,9 +184,9 @@ class PommodoroTimer:
             self._log_pommodoro_state()
 
     def go_on(self):
-        '''
+        """
         Continue the timer when in WAITING state
-        '''
+        """
         if self._state == PommodoroTimer.WAITING:
             self._state_next()
 
@@ -192,18 +195,18 @@ class PommodoroTimer:
         self._signal_count_change()
 
     def count_reset(self):
-        '''
+        """
         Resets the finished pommodoros counter
-        '''
+        """
         self._count = 0
         self._signal_count_change()
 
     def recalculate(self):
-        '''
+        """
         Recalculate the timer schedulers.
         This method should be called when changes are made to any of the fields managing the
         the activity durations (work_duration, shortbreak_duration or longbreak_duration)
-        '''
+        """
 
         # Update the _timer_value to a new value depending on the activity.
         if self._state in [PommodoroTimer.RUNNING, PommodoroTimer.STOPPED]:
@@ -223,31 +226,31 @@ class PommodoroTimer:
 
     @property
     def state(self):
-        '''
+        """
         Returns the current state of the pommodoro timer
-        '''
+        """
         return self._state
 
     @property
     def activity(self):
-        '''
+        """
         Returns the current activity
-        '''
+        """
         return self._activity
 
     @property
     def timer_value(self):
-        '''
+        """
         Returns the current timer maximum value
-        '''
+        """
         return self._timer_value
 
     @property
     def value(self):
-        '''
+        """
         Returns the current timer remaining time.
         Note, this value can be less than 0 if the timer has elapsed.
-        '''
+        """
         if self._state == PommodoroTimer.STOPPED:
             return self._timer_value
         else:
@@ -255,28 +258,29 @@ class PommodoroTimer:
 
     @property
     def started_at(self):
-        '''
+        """
         Returns the time at which the last activity started
-        '''
+        """
         return self._started_at
 
     @property
     def count(self):
-        '''
+        """
         Returns the number of finished pommodoros
-        '''
+        """
         return self._count
 
     '''
     Private methods
     '''
+
     def _elapsed_time(self):
         return datetime.datetime.now() - self._started_at
 
     def _state_next(self):
-        '''
+        """
         Switch to next state within 'normal' workflow
-        '''
+        """
         logger.debug("Switching to next state")
         if self._state == PommodoroTimer.STOPPED:
             # Start pommodoro timer
@@ -324,15 +328,16 @@ class PommodoroTimer:
     def _schedule_next_state(self, when):
         self._destroy_state_change_timer()
         self._state_change_timer = g15scheduler.schedule("PommodoroTimerStateChange",
-                                                        when,
-                                                        self._state_next)
+                                                         when,
+                                                         self._state_next)
 
     def _destroy_state_change_timer(self):
         if self._state_change_timer is not None:
             self._state_change_timer.cancel()
             self._state_change_timer = None
 
-    def _minutes_to_timedelta(self, minutes):
+    @staticmethod
+    def _minutes_to_timedelta(minutes):
         return datetime.timedelta(0, 0, 0, 0, minutes)
 
     def _count_increase(self):
@@ -355,13 +360,13 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
                                                id,
                                                name)
         self.waiting_image = \
-                g15cairo.load_surface_from_file(self._get_icon_path("Machovka_tomato.png"))
+            g15cairo.load_surface_from_file(self._get_icon_path("Machovka_tomato.png"))
         self.running_image = \
-                g15cairo.load_surface_from_file(self._get_icon_path("Machovka_tomato_green.png"))
+            g15cairo.load_surface_from_file(self._get_icon_path("Machovka_tomato_green.png"))
         self.waiting_image_1bpp = \
-                g15cairo.load_surface_from_file(self._get_icon_path("tomato_empty_1bpp.png"))
+            g15cairo.load_surface_from_file(self._get_icon_path("tomato_empty_1bpp.png"))
         self.running_image_1bpp = \
-                g15cairo.load_surface_from_file(self._get_icon_path("tomato_1bpp.png"))
+            g15cairo.load_surface_from_file(self._get_icon_path("tomato_1bpp.png"))
 
         self.pommodoro_timer = PommodoroTimer()
         self.pommodoro_timer.on_state_change = self.timer_state_changed
@@ -398,7 +403,7 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
             if self.pommodoro_timer.state == PommodoroTimer.WAITING:
                 self.pommodoro_timer.stop()
         elif binding.action == g15driver.CLEAR:
-                self.pommodoro_timer.count_reset()
+            self.pommodoro_timer.count_reset()
 
     def _paint_panel(self, canvas, allocated_size, horizontal):
         # Nothing to paint if the timer is stopped
@@ -427,11 +432,10 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
         return size
 
     def get_theme_properties(self):
-        properties = { }
-
-        properties["timer"] = self._format_timer_value_for_display()
-
-        properties["pommodoro_timer"] = self._get_progress_in_percent()
+        properties = {
+            "timer": self._format_timer_value_for_display(),
+            "pommodoro_timer": self._get_progress_in_percent()
+        }
 
         if self.pommodoro_timer.activity == PommodoroTimer.WORKING:
             properties["action"] = "Work"
@@ -456,10 +460,9 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
         self._reload_theme()
         # Raise the page for 10 seconds if a activity has just finished (state went to WAITING)
         if self.pommodoro_timer.state == PommodoroTimer.WAITING \
-           and self.page is not None \
-           and self.page.theme is not None:
-            self.screen.set_priority(self.page, g15screen.PRI_HIGH, revert_after = 10.0)
-
+                and self.page is not None \
+                and self.page.theme is not None:
+            self.screen.set_priority(self.page, g15screen.PRI_HIGH, revert_after=10.0)
 
     def pommodoro_count_save(self):
         pommodoro_count_conf_key = self._get_configuration_key("pommodoro_count")
@@ -470,9 +473,9 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
         if total_seconds > 0:
             return str(datetime.timedelta(0, total_seconds))
         else:
-            x = int((datetime.datetime.now() \
-                    - self.pommodoro_timer.started_at \
-                    - self.pommodoro_timer.timer_value).total_seconds())
+            x = int((datetime.datetime.now()
+                     - self.pommodoro_timer.started_at
+                     - self.pommodoro_timer.timer_value).total_seconds())
             return "- {0}".format(str(datetime.timedelta(0, x)))
 
     def _get_progress_in_percent(self):
@@ -482,25 +485,25 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
 
     def _config_changed(self, client, connection_id, entry, args):
         self._load_configuration()
-        self.screen.set_priority(self.page, g15screen.PRI_HIGH, revert_after = 3.0)
+        self.screen.set_priority(self.page, g15screen.PRI_HIGH, revert_after=3.0)
 
     def _load_configuration(self):
         work_duration_conf_key = self._get_configuration_key("work_duration")
         self.pommodoro_timer.work_duration = g15gconf.get_int_or_default(self.gconf_client,
-                                                                        work_duration_conf_key,
-                                                                        DEFAULT_WORK_DURATION)
+                                                                         work_duration_conf_key,
+                                                                         DEFAULT_WORK_DURATION)
 
         shortbreak_conf_key = self._get_configuration_key("shortbreak_duration")
         self.pommodoro_timer.shortbreak_duration = \
-                g15gconf.get_int_or_default(self.gconf_client,
-                                            shortbreak_conf_key,
-                                            DEFAULT_SHORTBREAK_DURATION)
+            g15gconf.get_int_or_default(self.gconf_client,
+                                        shortbreak_conf_key,
+                                        DEFAULT_SHORTBREAK_DURATION)
 
         longbreak_conf_key = self._get_configuration_key("longbreak_duration")
         self.pommodoro_timer.longbreak_duration = \
-                g15gconf.get_int_or_default(self.gconf_client,
-                                            longbreak_conf_key,
-                                            DEFAULT_LONGBREAK_DURATION)
+            g15gconf.get_int_or_default(self.gconf_client,
+                                        longbreak_conf_key,
+                                        DEFAULT_LONGBREAK_DURATION)
 
         pommodoro_count_conf_key = self._get_configuration_key("pommodoro_count")
         self.pommodoro_timer.init_count_at(g15gconf.get_int_or_default(self.gconf_client,
@@ -509,9 +512,9 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
         self.pommodoro_timer.recalculate()
 
     def _get_configuration_key(self, key_name):
-        '''
+        """
         Returns the full gconf key name for the relative key_name passed as parameter
-        '''
+        """
         return "{0}/{1}".format(self.gconf_key, key_name)
 
     def _reload_theme(self):
@@ -521,5 +524,6 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
         if self.page is not None and self.page.theme is not None:
             self.page.theme.set_variant(variant)
 
-    def _get_icon_path(self, name):
+    @staticmethod
+    def _get_icon_path(name):
         return os.path.join(os.path.dirname(__file__), name)

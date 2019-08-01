@@ -23,7 +23,8 @@
 
 
 import gnome15.g15locale as g15locale
-_ = g15locale.get_translation("im", modfile = __file__).ugettext
+
+_ = g15locale.get_translation("im", modfile=__file__).ugettext
 
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15icontools as g15icontools
@@ -33,68 +34,70 @@ import gnome15.g15plugin as g15plugin
 import dbus
 import telepathy
 from telepathy.interfaces import (
-        CHANNEL,
-        CHANNEL_INTERFACE_GROUP,
-        CHANNEL_TYPE_CONTACT_LIST,
-        CONNECTION,
-        CONNECTION_INTERFACE_ALIASING,
-        CONNECTION_INTERFACE_CONTACTS,
-        CONNECTION_INTERFACE_REQUESTS,
-        CONNECTION_INTERFACE_SIMPLE_PRESENCE)
+    CHANNEL,
+    CHANNEL_INTERFACE_GROUP,
+    CHANNEL_TYPE_CONTACT_LIST,
+    CONNECTION,
+    CONNECTION_INTERFACE_ALIASING,
+    CONNECTION_INTERFACE_CONTACTS,
+    CONNECTION_INTERFACE_REQUESTS,
+    CONNECTION_INTERFACE_SIMPLE_PRESENCE)
 
 from telepathy.constants import (
-        CONNECTION_PRESENCE_TYPE_AVAILABLE,
-        CONNECTION_PRESENCE_TYPE_AWAY,
-        CONNECTION_PRESENCE_TYPE_BUSY,
-        CONNECTION_PRESENCE_TYPE_EXTENDED_AWAY,
-        HANDLE_TYPE_LIST)
+    CONNECTION_PRESENCE_TYPE_AVAILABLE,
+    CONNECTION_PRESENCE_TYPE_AWAY,
+    CONNECTION_PRESENCE_TYPE_BUSY,
+    CONNECTION_PRESENCE_TYPE_EXTENDED_AWAY,
+    HANDLE_TYPE_LIST)
 
 # Logging
 import logging
+
 logger = logging.getLogger(__name__)
 
 # Plugin details - All of these must be provided
-id="im"
-name=_("Instant Messenger")
-description=_("Integrates with a number of instant messengers, showing \n\
+id = "im"
+name = _("Instant Messenger")
+description = _("Integrates with a number of instant messengers, showing \n\
 buddy lists and messages on your LCD. Currently supports all \n\
 clients that use the Telepathy framework.")
-author="Brett Smith <tanktarta@blueyonder.co.uk>"
-copyright=_("Copyright (C)2011 Brett Smith")
-site="http://www.russo79.com/gnome15"
-has_preferences=False
-unsupported_models = [ g15driver.MODEL_G110, g15driver.MODEL_G11, g15driver.MODEL_G930, g15driver.MODEL_G35 ]
-actions={ 
-         g15driver.PREVIOUS_SELECTION : _("Previous contact"), 
-         g15driver.NEXT_SELECTION : _("Next contact"), 
-         g15driver.VIEW : _("Toggle mode"),
-         g15driver.NEXT_PAGE : _("Next page"),
-         g15driver.PREVIOUS_PAGE : _("Previous page")
-         }
+author = "Brett Smith <tanktarta@blueyonder.co.uk>"
+copyright = _("Copyright (C)2011 Brett Smith")
+site = "http://www.russo79.com/gnome15"
+has_preferences = False
+unsupported_models = [g15driver.MODEL_G110, g15driver.MODEL_G11, g15driver.MODEL_G930, g15driver.MODEL_G35]
+actions = {
+    g15driver.PREVIOUS_SELECTION: _("Previous contact"),
+    g15driver.NEXT_SELECTION: _("Next contact"),
+    g15driver.VIEW: _("Toggle mode"),
+    g15driver.NEXT_PAGE: _("Next page"),
+    g15driver.PREVIOUS_PAGE: _("Previous page")
+}
 
 # Other constants
-POSSIBLE_ICON_NAMES = [ "im-user", "empathy", "pidgin", "emesene", "system-config-users", "im-message-new" ]
+POSSIBLE_ICON_NAMES = ["im-user", "empathy", "pidgin", "emesene", "system-config-users", "im-message-new"]
 CONNECTION_PRESENCE_TYPE_OFFLINE = 1
 
 IMAGE_DIR = 'images'
 STATUS_MAP = {
-        ( CONNECTION_PRESENCE_TYPE_OFFLINE, None ): [ [ "offline", "user-offline-panel" ] , _("Offline")],
-        ( CONNECTION_PRESENCE_TYPE_AVAILABLE, None ): [ "user-available", _("Available") ],
-        ( CONNECTION_PRESENCE_TYPE_AVAILABLE, "chat" ): [ "im-message-new", _("Chatty") ],
-        ( CONNECTION_PRESENCE_TYPE_AWAY, None ): [ "user-idle", _("Idle") ],
-        ( CONNECTION_PRESENCE_TYPE_BUSY, None ): [ "user-busy", _("Busy") ],
-        ( CONNECTION_PRESENCE_TYPE_EXTENDED_AWAY, None ): [ "user-away", _("Away") ]
-                                                 }
+    (CONNECTION_PRESENCE_TYPE_OFFLINE, None): [["offline", "user-offline-panel"], _("Offline")],
+    (CONNECTION_PRESENCE_TYPE_AVAILABLE, None): ["user-available", _("Available")],
+    (CONNECTION_PRESENCE_TYPE_AVAILABLE, "chat"): ["im-message-new", _("Chatty")],
+    (CONNECTION_PRESENCE_TYPE_AWAY, None): ["user-idle", _("Idle")],
+    (CONNECTION_PRESENCE_TYPE_BUSY, None): ["user-busy", _("Busy")],
+    (CONNECTION_PRESENCE_TYPE_EXTENDED_AWAY, None): ["user-away", _("Away")]
+}
 
 MODE_ALL = "all"
 MODE_ONLINE = "online"
 MODE_AVAILABLE = "available"
-MODE_LIST= [ MODE_ONLINE, MODE_AVAILABLE, MODE_ALL ]
+MODE_LIST = [MODE_ONLINE, MODE_AVAILABLE, MODE_ALL]
 MODES = {
-         MODE_ALL : [ "All", _("All Contacts") ],
-         MODE_ONLINE : [ "Online", _("Online Contacts") ],
-         MODE_AVAILABLE : [ "Available", _("Available Contacts") ]
-         }
+    MODE_ALL: ["All", _("All Contacts")],
+    MODE_ONLINE: ["Online", _("Online Contacts")],
+    MODE_AVAILABLE: ["Available", _("Available Contacts")]
+}
+
 
 def create(gconf_key, gconf_client, screen):
     """
@@ -105,9 +108,12 @@ def create(gconf_key, gconf_client, screen):
     """
     return G15Im(gconf_client, gconf_key, screen)
 
+
 """
 Holds list of contacts for a single connection
 """
+
+
 class ContactList:
 
     def __init__(self, list_store, conn, screen):
@@ -116,7 +122,7 @@ class ContactList:
         self.screen = screen
         self._contact_list = {}
         self._conn.call_when_ready(self._connection_ready_cb)
-        
+
     def deactivate(self):
         pass
 
@@ -136,36 +142,36 @@ class ContactList:
         groups = ["subscribe", "publish"]
         for group in groups:
             requests = {
-                    CHANNEL + ".ChannelType": CHANNEL_TYPE_CONTACT_LIST,
-                    CHANNEL + ".TargetHandleType": HANDLE_TYPE_LIST,
-                    CHANNEL + ".TargetID": group}
+                CHANNEL + ".ChannelType": CHANNEL_TYPE_CONTACT_LIST,
+                CHANNEL + ".TargetHandleType": HANDLE_TYPE_LIST,
+                CHANNEL + ".TargetID": group}
             self._conn[CONNECTION_INTERFACE_REQUESTS].EnsureChannel(
-                    requests,
-                    reply_handler = self._ensure_channel_cb,
-                    error_handler = self._error_cb)
+                requests,
+                reply_handler=self._ensure_channel_cb,
+                error_handler=self._error_cb)
 
     def _ensure_channel_cb(self, is_yours, channel, properties):
         channel = telepathy.client.Channel(
-                service_name = self._conn.service_name,
-                object_path = channel)
+            service_name=self._conn.service_name,
+            object_path=channel)
         DBUS_PROPERTIES = 'org.freedesktop.DBus.Properties'
         channel[DBUS_PROPERTIES].Get(
-                CHANNEL_INTERFACE_GROUP,
-                'Members',
-                reply_handler = self._request_contact_info,
-                error_handler = self._error_cb)
+            CHANNEL_INTERFACE_GROUP,
+            'Members',
+            reply_handler=self._request_contact_info,
+            error_handler=self._error_cb)
 
     def _request_contact_info(self, handles):
         logger.debug("Requesting contact info for %s", str(handles))
         interfaces = [CONNECTION,
-                CONNECTION_INTERFACE_ALIASING,
-                CONNECTION_INTERFACE_SIMPLE_PRESENCE]
+                      CONNECTION_INTERFACE_ALIASING,
+                      CONNECTION_INTERFACE_SIMPLE_PRESENCE]
         self._conn[CONNECTION_INTERFACE_CONTACTS].GetContactAttributes(
             handles,
             interfaces,
             False,
-            reply_handler = self._get_contact_attributes_cb,
-            error_handler = self._error_cb)
+            reply_handler=self._get_contact_attributes_cb,
+            error_handler=self._error_cb)
 
     def _get_contact_attributes_cb(self, attributes):
         logger.debug("Received contact attributes for %s", str(attributes))
@@ -175,7 +181,8 @@ class ContactList:
             if handle not in self._contact_list:
                 self._add_contact(handle, contact, presence, str(alias))
 
-    def _parse_member_attributes(self, member):
+    @staticmethod
+    def _parse_member_attributes(member):
         contact_id, alias, presence = None, None, None
         for key, value in member.iteritems():
             if key == CONNECTION + '/contact-id':
@@ -185,7 +192,7 @@ class ContactList:
             elif key == CONNECTION_INTERFACE_SIMPLE_PRESENCE + '/presence':
                 presence = value
 
-        return (contact_id, alias, presence)
+        return contact_id, alias, presence
 
     def _add_contact(self, handle, contact, presence, alias):
         logger.debug("Add contact %s (%s)", str(contact), str(handle))
@@ -204,21 +211,25 @@ class ContactList:
         logger.debug("Updating contact presence for %s", str(handle))
         self.menu.update_contact_presence(self._conn, handle, presence)
 
-    def _error_cb(self, *args):
+    @staticmethod
+    def _error_cb(*args):
         logger.error("Error happens: %s", args)
+
 
 """
 Represents a contact as a single item in a menu
 """
-class ContactMenuItem(g15theme.MenuItem):    
+
+
+class ContactMenuItem(g15theme.MenuItem):
     def __init__(self, conn, handle, contact, presence, alias):
-        g15theme.MenuItem.__init__(self, "contact-%s-%s" % ( str(conn), str(handle) ) )
+        g15theme.MenuItem.__init__(self, "contact-%s-%s" % (str(conn), str(handle)))
         self.conn = conn
         self.handle = handle
-        self.contact=  contact
+        self.contact = contact
         self.presence = presence
-        self.alias = alias  
-        
+        self.alias = alias
+
     def get_theme_properties(self):
         """
         Render a single menu item
@@ -230,63 +241,71 @@ class ContactMenuItem(g15theme.MenuItem):
         properties -- properties to pass to theme
         attribtes -- attributes to pass to theme
         
-        """       
+        """
         item_properties = g15theme.MenuItem.get_theme_properties(self)
         item_properties["item_name"] = self.alias
         item_properties["item_alt"] = self._get_status_text(self.presence)
         item_properties["item_type"] = ""
         item_properties["item_icon"] = g15icontools.get_icon_path(self._get_status_icon_name(self.presence))
         return item_properties
-        
+
     def set_presence(self, presence):
         logger.debug("Setting presence of %s to %s", str(self.contact), str(presence))
-        self.presence = presence   
-        
+        self.presence = presence
+
     '''
     Private
     '''
 
-    def _get_status_text(self, presence):        
-        key = ( presence[0], presence[1] ) 
+    @staticmethod
+    def _get_status_text(presence):
+        key = (presence[0], presence[1])
         if key in STATUS_MAP:
             return STATUS_MAP[key][1]
-        key = ( presence[0], None ) 
+        key = (presence[0], None)
         if key in STATUS_MAP:
             return STATUS_MAP[key][1]
         logger.warning("Unknown presence %d = %s", presence[0], presence[1])
         return "Unknown"
-    
-    def _get_status_icon_name(self, presence):
-        key = ( presence[0], presence[1] ) 
+
+    @staticmethod
+    def _get_status_icon_name(presence):
+        key = (presence[0], presence[1])
         if key in STATUS_MAP:
             return STATUS_MAP[key][0]
-        key = ( presence[0], None ) 
+        key = (presence[0], None)
         if key in STATUS_MAP:
             return STATUS_MAP[key][0]
         logger.warning("Unknown presence %d = %s", presence[0], presence[1])
-        return "dialog-warning"   
-        
+        return "dialog-warning"
+
+
 """
 Compare a single contact based on it's alias and presence
 """
+
+
 def compare_contacts(a, b):
-    if ( a is None and b is not None ):
+    if a is None and b is not None:
         val = 1
-    elif ( b is None and a is not None ):
+    elif b is None and a is not None:
         val = -1
-    elif ( b is None and a is  None ):
+    elif b is None and a is None:
         val = 0
     else:
         val = cmp(a.presence[0], b.presence[0])
         if val == 0:
             val = cmp(a.alias, b.alias)
-        
+
     return val
-    
+
+
 """
 Theme menu for displaying all contacts across all monitored
 connections.
 """
+
+
 class ContactMenu(g15theme.Menu):
 
     def __init__(self, mode):
@@ -319,7 +338,7 @@ class ContactMenu(g15theme.Menu):
         self._connections = []
         self._contact_lists = {}
         self._contacts = []
-            
+
     def new_connection(self, bus_name, bus):
         """
         Add a new connection to those monitored for contacts.
@@ -330,8 +349,7 @@ class ContactMenu(g15theme.Menu):
         """
         connection = telepathy.client.Connection(bus_name, "/%s" % bus_name.replace(".", "/"), bus)
         self._connect(connection)
-        
-    
+
     def remove_connection(self, bus_name):
         """
         Remove a connection given its name. All contacts attached to this connection
@@ -351,7 +369,7 @@ class ContactMenu(g15theme.Menu):
                 if self.on_update:
                     self.on_update()
                 return
-            
+
     def is_connected(self, bus_name):
         """
         Determine if the given connection name exists in the list of
@@ -364,7 +382,7 @@ class ContactMenu(g15theme.Menu):
             if connection.service_name == bus_name:
                 return True
         return False
-    
+
     def reload(self):
         """
         Build up the filter menu item list from the stored contacts. Only
@@ -378,7 +396,7 @@ class ContactMenu(g15theme.Menu):
         self.sort_items(c)
         self.select_first()
         self.mark_dirty()
-        
+
     def sort_items(self, children):
         """
         Sort items based on their alias and presence
@@ -420,13 +438,11 @@ class ContactMenu(g15theme.Menu):
                     self.on_update()
                 return
         logger.warning("Got presence update for unknown contact %s", str(presence))
-    
-        
+
     '''
     Private
     '''
-        
-     
+
     def _connect(self, connection):
         """
         Connect to the given path. Events will then be received to add new contacts
@@ -436,7 +452,7 @@ class ContactMenu(g15theme.Menu):
         """
         self._contact_lists[connection] = ContactList(self, connection, self.screen)
         self._connections.append(connection)
-            
+
     def _is_presence_included(self, presence):
         """
         Determine if presence is appropriate for the current mode
@@ -444,13 +460,15 @@ class ContactMenu(g15theme.Menu):
         Keyword arguments:
         presence -- presence
         """
-        return ( self.mode == MODE_ONLINE and presence[0] != 1 ) or \
-            ( self.mode == MODE_AVAILABLE and presence[0] == CONNECTION_PRESENCE_TYPE_AVAILABLE ) or \
-            self.mode == MODE_ALL
+        return (self.mode == MODE_ONLINE and presence[0] != 1) or \
+               (self.mode == MODE_AVAILABLE and presence[0] == CONNECTION_PRESENCE_TYPE_AVAILABLE) or \
+               self.mode == MODE_ALL
+
 
 """
 Instant Messenger plugin class
 """
+
 
 class G15Im(g15plugin.G15MenuPlugin):
 
@@ -464,7 +482,7 @@ class G15Im(g15plugin.G15MenuPlugin):
         screen -- screen manager
         """
         g15plugin.G15MenuPlugin.__init__(self, gconf_client, gconf_key, screen, POSSIBLE_ICON_NAMES, id, name)
-        
+
         self.hidden = False
         self._session_bus = dbus.SessionBus()
         self._signal_handle = None
@@ -476,19 +494,19 @@ class G15Im(g15plugin.G15MenuPlugin):
         g15plugin.G15MenuPlugin.activate(self)
         self.screen.key_handler.action_listeners.append(self)
         self._signal_handle = self._session_bus.add_signal_receiver(self._name_owner_changed,
-                                     dbus_interface='org.freedesktop.DBus',
-                                     signal_name='NameOwnerChanged')
-            
-    def create_menu(self):    
+                                                                    dbus_interface='org.freedesktop.DBus',
+                                                                    signal_name='NameOwnerChanged')
+
+    def create_menu(self):
         mode = self.gconf_client.get_string(self.gconf_key + "/mode")
         return ContactMenu(mode)
-    
+
     def deactivate(self):
         self.screen.key_handler.action_listeners.remove(self)
         g15plugin.G15MenuPlugin.deactivate(self)
         if self._signal_handle:
             self._session_bus.remove_signal_receiver(self._signal_handle)
-        
+
     def action_performed(self, binding):
         """
         Handle actions. Most actions will be handle by the abstract menu plugin class, 
@@ -497,7 +515,7 @@ class G15Im(g15plugin.G15MenuPlugin):
         Keyword arguments:
         binding -- binding
         """
-        if binding.action == g15driver.VIEW and self.page != None and self.page.is_visible(): 
+        if binding.action == g15driver.VIEW and self.page != None and self.page.is_visible():
             mode_index = MODE_LIST.index(self.menu.mode) + 1
             if mode_index >= len(MODE_LIST):
                 mode_index = 0
@@ -507,22 +525,22 @@ class G15Im(g15plugin.G15MenuPlugin):
             self.menu.reload()
             self.screen.redraw(self.page)
             return True
-    
+
     def get_theme_properties(self):
         props = g15plugin.G15MenuPlugin.get_theme_properties(self)
         props["title"] = MODES[self.menu.mode][1]
-        
+
         # Get what mode to switch to
         mode_index = MODE_LIST.index(self.menu.mode) + 1
         if mode_index >= len(MODE_LIST):
             mode_index = 0
         props["list"] = MODES[MODE_LIST[mode_index]][0]
-        return props 
-    
+        return props
+
     """
     DBUS callbacks functions
     """
-        
+
     def _name_owner_changed(self, name, old_owner, new_owner):
         """
         If the change is a telepathy connection, determine if it is
@@ -541,4 +559,3 @@ class G15Im(g15plugin.G15MenuPlugin):
             elif old_owner == "" and not connected:
                 logger.info("Adding %s", name)
                 g15scheduler.schedule("NewConnection", 5.0, self.menu.new_connection, name, self._session_bus)
-        

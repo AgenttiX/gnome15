@@ -23,16 +23,19 @@ ALL of Gnome15 to use such bindings.
 This class is stop gap until a better solution can be found
 """
 
+from __future__ import print_function
 import os
 import time
 
-class CPU():
+
+class CPU:
     def __init__(self, name):
         self.name = name
         self.user = 0
         self.nice = 0
         self.sys = 0
         self.idle = 0
+
 
 class CPUS(CPU):
     def __init__(self):
@@ -51,9 +54,10 @@ class CPUS(CPU):
                     self.cpus.append(cpu)
         finally:
             cpudata.close()
-            
-class ProcState():
-    
+
+
+class ProcState:
+
     def __init__(self, pid):
         self.uid = 0
         self.cmd = ""
@@ -66,19 +70,21 @@ class ProcState():
                     self.cmd = self._get_value(line)[0]
         finally:
             memdata.close()
-            
+
     def _get_value(self, line):
         return line[line.index(':') + 1:].strip().split()
-            
-class NetworkLoad():
-    
+
+
+class NetworkLoad:
+
     def __init__(self, net, bytes_in, bytes_out):
         self.net = net
         self.bytes_in = bytes_in
         self.bytes_out = bytes_out
-        
-class Mem():
-    
+
+
+class Mem:
+
     def __init__(self):
         self.total = 0
         self.free = 0
@@ -94,10 +100,11 @@ class Mem():
                     self.cached = self._get_value(line)
         finally:
             memdata.close()
-            
+
     def _get_value(self, line):
         return int(line[line.index(':') + 1:line.index('kB')]) * 1024
-            
+
+
 def netload(net):
     """
     Get the network load details for the network interface described by the
@@ -115,8 +122,8 @@ def netload(net):
                 return NetworkLoad(net, int(data[0]), int(data[8]))
     finally:
         netdata.close()
-    
-            
+
+
 def netlist():
     """
     Returns a list of Net objects, one for each available network interface 
@@ -130,20 +137,23 @@ def netlist():
         line = line.split(' ')
         if len(line) > 0 and line[0].endswith(":"):
             nets.append(line[0][:-1])
-            
+
     return nets
-    
+
+
 def cpu():
     """
     Return an object containing data about all available CPUS
     """
     return CPUS()
 
+
 def mem():
     """
     Return an object containing data about all available CPUS
     """
     return Mem()
+
 
 def proclist():
     """
@@ -158,6 +168,7 @@ def proclist():
                 pass
     return n
 
+
 def proc_state(pid):
     """
     Get an object describing the state of the given process
@@ -166,6 +177,7 @@ def proc_state(pid):
     pid        --    process ID
     """
     return ProcState(pid)
+
 
 def proc_args(pid):
     """
@@ -181,11 +193,13 @@ def proc_args(pid):
     finally:
         cmddata.close()
 
+
 class Uptime:
     def __init__(self, uptime, idletime):
         self.uptime = uptime
         self.idletime = idletime
         self.boot_time = time.time() - self.uptime
+
 
 def uptime():
     """
@@ -200,7 +214,8 @@ def uptime():
 
     return Uptime(float(vals[0]), float(vals[1]))
 
+
 if __name__ == "__main__":
     for d in proclist():
         ps = proc_state(d)
-        print d,ps.cmd,ps.uid,proc_args(d)
+        print(d, ps.cmd, ps.uid, proc_args(d))

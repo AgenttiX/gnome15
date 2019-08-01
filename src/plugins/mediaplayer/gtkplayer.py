@@ -16,12 +16,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 import gst
 import gtk
 
+
 class Main:
     def __init__(self):
-
         # Create GUI objects
         self.window = gtk.Window()
         self.vbox = gtk.VBox()
@@ -56,17 +57,18 @@ class Main:
         self.window.show_all()
 
     def OnPlay(self, widget):
-        print "play"
+        print("play")
         # Tell the video sink to display the output in our DrawingArea
         self.sink.set_xwindow_id(self.da.window.xid)
         self.pipeline.set_state(gst.STATE_PLAYING)
 
     def OnStop(self, widget):
-        print "stop"
+        print("stop")
         self.pipeline.set_state(gst.STATE_READY)
 
     def OnQuit(self, widget):
         gtk.main_quit()
 
+
 start = Main()
-gtk.main() 
+gtk.main()

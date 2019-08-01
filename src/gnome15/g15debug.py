@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 import gc
 import weakref
 import objgraph
@@ -23,12 +24,11 @@ import objgraph
 
 import time            
 if __name__ == "__main__":
-    print "Creating snapshot1"
-    snapshot1 = take_snapshot()    
-    print "Creating some objects"    
-    l = [ "A", "B", "C", "D", "E" ]  
-    print "Creating snapshot2"
-    snapshot2 = take_snapshot()  
-    print "Comparing"
+    print("Creating snapshot1")
+    snapshot1 = take_snapshot()
+    print("Creating some objects")
+    l = ["A", "B", "C", "D", "E"]
+    print("Creating snapshot2")
+    snapshot2 = take_snapshot()
+    print("Comparing")
     compare_snapshots(snapshot1, snapshot2)
-         

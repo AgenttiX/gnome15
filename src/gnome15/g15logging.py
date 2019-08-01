@@ -21,6 +21,7 @@ import logging
 
 DEFAULT_LEVEL = logging.NOTSET
 
+
 def configure():
     """
     Configures the logging python module with a basic configuration
@@ -28,6 +29,7 @@ def configure():
     """
     logging.basicConfig(format='%(levelname)s\t%(asctime)s-%(threadName)s\t%(name)s - %(message)s',
                         datefmt='%H:%M:%S')
+
 
 def get_level(level):
     """
@@ -39,6 +41,7 @@ def get_level(level):
     if result == "Level %s" % level:
         result = DEFAULT_LEVEL
     return result
+
 
 def get_root_logger():
     """
