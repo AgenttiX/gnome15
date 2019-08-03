@@ -14,14 +14,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+
 import dbus
+import gobject
+
 import util.g15scheduler as g15scheduler
 import util.g15cairo as g15cairo
 import util.g15icontools as g15icontools
 import g15theme
 import g15screen
-import sys
-import gobject
 
 
 class G15Plugin:
@@ -87,7 +89,7 @@ class G15Plugin:
 
     def deactivate(self):
         for h in self.__notify_handlers:
-            self.gconf_client.notify_remove(h);
+            self.gconf_client.notify_remove(h)
         self.active = False
 
     def destroy(self):
@@ -166,11 +168,11 @@ class G15PagePlugin(G15Plugin):
         Keyword arguments:
         properties -- properties
         """
-        properties = {}
-        properties["icon"] = self._icon_path
-        properties["title"] = self._title
-        properties["alt_title"] = ""
-        return properties
+        return {
+            "icon": self._icon_path,
+            "title": self._title,
+            "alt_title": ""
+        }
 
     def reload_theme(self):
         """
@@ -348,13 +350,12 @@ class G15MenuPlugin(G15Plugin):
         Keyword arguments:
         properties -- properties
         """
-        properties = {
+        return {
             "icon": self._icon_path,
             "title": self._title,
             "alt_title": "",
             "no_items": self.menu.get_child_count() == 0
         }
-        return properties
 
     def reload_theme(self):
         """

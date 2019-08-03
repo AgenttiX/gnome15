@@ -15,29 +15,27 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+import gc
+import logging
+import os
+import sys
+import traceback
+
+import dbus.service
+import pango
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("clock", modfile=__file__).ugettext
-
 import gnome15.g15text as g15text
 import gnome15.g15driver as g15driver
 import gnome15.g15globals as g15globals
 import gnome15.g15plugin as g15plugin
 import gnome15.g15theme as g15theme
 import gnome15.util.g15scheduler as g15scheduler
-import pango
-import os
-import sys
-import traceback
-import gc
 import gnome15.objgraph as objgraph
 import gnome15.g15logging as g15logging
-import dbus.service
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("debug", modfile=__file__).ugettext
 
 id = "debug"
 name = _("Debug")
@@ -72,13 +70,11 @@ EXCLUDED = [
 
 
 class intdict(dict):
-
     def __init__(self):
         dict.__init__(self)
 
 
 class Snapshot:
-
     def __init__(self):
         self.stats = intdict()
         self.objects = intdict()
@@ -90,7 +86,7 @@ def referents_count(typename):
     for r in objgraph.by_type(typename):
         for o in gc.get_referents(r):
             name = _get_key(o)
-            if name != "type" and name != typename and not name in EXCLUDED and not name in done:
+            if name != "type" and name != typename and name not in EXCLUDED and name not in done:
                 done[name] = True
                 count = objgraph.count(name)
                 if count > 1:
@@ -125,9 +121,9 @@ def _do_referrers(r, depth, max_depth, done):
     dep = ""
     for _ in range(0, depth):
         dep += "    "
-    l = gc.get_referrers(r)
-    for o in l:
-        if not o == done and not o == l and not _get_key(o) in EXCLUDED and not o in done:
+    lst = gc.get_referrers(r)
+    for o in lst:
+        if not o == done and not o == lst and not _get_key(o) in EXCLUDED and o not in done:
             print("%s%s" % (dep, _max_len(o, 120)))
             done.append(o)
             if depth < max_depth:
@@ -140,7 +136,7 @@ def referrers_count(typename):
     for r in objgraph.by_type(typename):
         for o in gc.get_referrers(r):
             name = _get_key(o)
-            if name != "type" and name != typename and not name in EXCLUDED and not name in done:
+            if name != "type" and name != typename and name not in EXCLUDED and name not in done:
                 done[name] = True
                 count = objgraph.count(name)
                 if count > 1:
@@ -151,7 +147,7 @@ def take_snapshot(snap_objects=True):
     snapshot = Snapshot()
     for o in gc.get_objects():
         k = _get_key(o)
-        if not k in EXCLUDED:
+        if k not in EXCLUDED:
             snapshot.stats.setdefault(k, 0)
             snapshot.stats[k] += 1
             if snap_objects:
@@ -166,16 +162,17 @@ def compare_snapshots(snapshot1, snapshot2, show_removed=True):
     removed_types = []
 
     # Find everything that has been removed or changed
-    for k, v in snapshot1.stats.iteritems():
-        if not k in snapshot2.stats:
+    # iteritems() has been replaced with items() for Python 3 compatibility
+    for k, v in snapshot1.stats.items():
+        if k not in snapshot2.stats:
             removed_types.append(k)
         else:
             if v != snapshot2.stats[k]:
                 changed_types.append(k)
 
     # Find everything that has been added
-    for k, v in snapshot2.stats.iteritems():
-        if not k in snapshot1.stats:
+    for k, v in snapshot2.stats.items():
+        if k not in snapshot1.stats:
             new_types.append(k)
 
     # Print some stuff
@@ -249,7 +246,8 @@ def _do_obj(o, s):
         if _get_key(o[0]) in EXCLUDED:
             return
     elif isinstance(o, dict):
-        for k, v in dict(o).iteritems():
+        # iteritems() has been replaced with items() for Python 3 compatibility
+        for k, v in dict(o).items():
             if _get_key(k) in EXCLUDED or _get_key(v) in EXCLUDED:
                 return
             break
@@ -271,7 +269,6 @@ def _max_len(o, l):
 
 
 class G15DBUSDebugService(dbus.service.Object):
-
     def __init__(self, dbus_service):
         dbus.service.Object.__init__(self, dbus_service._bus_name, DEBUG_NAME)
         self._service = dbus_service._service
@@ -406,7 +403,6 @@ def create(gconf_key, gconf_client, screen):
 
 
 class G15Debug(g15plugin.G15RefreshingPlugin):
-
     def __init__(self, gconf_key, gconf_client, screen):
         g15plugin.G15RefreshingPlugin.__init__(self, gconf_client, gconf_key, screen, ["dialog-error"], id, name,
                                                refresh_interval=1.0)
@@ -463,14 +459,14 @@ class G15Debug(g15plugin.G15RefreshingPlugin):
                 font_size = 8
                 factor = 2
                 font_name = g15globals.fixed_size_font_name
-                x = 1
+                # x = 1
                 gap = 1
             else:
                 factor = 1 if horizontal else 2
                 font_name = "Sans"
                 text = "%.2f MiB\n%.2f MiB" % (mem_mb, res_mb)
                 font_size = allocated_size / 3
-                x = 4
+                # x = 4
                 gap = 8
 
             self.text.set_canvas(canvas)

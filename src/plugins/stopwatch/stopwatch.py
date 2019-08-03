@@ -15,10 +15,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
+import pango
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("stopwatch", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.g15theme as g15theme
 import gnome15.util.g15gconf as g15gconf
@@ -27,11 +28,10 @@ import gnome15.g15driver as g15driver
 import gnome15.g15globals as g15globals
 import gnome15.g15plugin as g15plugin
 import gnome15.g15text as g15text
-import datetime
-import pango
 import timer
-
 import preferences as g15preferences
+
+_ = g15locale.get_translation("stopwatch", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "stopwatch"
@@ -70,7 +70,6 @@ def show_preferences(parent, driver, gconf_client, gconf_key):
 
 
 class G15Stopwatch(g15plugin.G15RefreshingPlugin):
-
     def __init__(self, gconf_key, gconf_client, screen):
         g15plugin.G15RefreshingPlugin.__init__(self, gconf_client, gconf_key, screen,
                                                ["cairo-clock", "clock", "gnome-panel-clock", "xfce4-clock", "rclock",

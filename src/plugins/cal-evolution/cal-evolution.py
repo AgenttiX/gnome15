@@ -18,22 +18,24 @@
 Calendar backend that retrieves event data from Evolution
 """
 
+import datetime
+import logging
+import os.path
+import re
+import urllib
+
+# import dateutil
+import gtk
+import vobject
+import xdg.BaseDirectory
+
 import gnome15.g15locale as g15locale
 import gnome15.g15accounts as g15accounts
 
-_ = g15locale.get_translation("cal-evolution", modfile=__file__).ugettext
-import gtk
-import urllib
-import vobject
-import datetime
-import dateutil
-import sys, os, os.path
-import re
 import cal
-import xdg.BaseDirectory
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("cal-evolution", modfile=__file__).ugettext
 
 """
 Plugin definition

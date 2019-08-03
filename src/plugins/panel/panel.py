@@ -14,17 +14,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
+import cairo
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("panel", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.g15driver as g15driver
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
-import os
-import gtk
-import cairo
+
+_ = g15locale.get_translation("panel", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "panel"
@@ -181,13 +182,13 @@ class G15Panel():
     def activate(self):
         self.painter = G15PanelPainter(self.screen, self.gconf_client, self.gconf_key)
         self.screen.painters.append(self.painter)
-        self.notify_handle = self.gconf_client.notify_add(self.gconf_key, self._config_changed);
+        self.notify_handle = self.gconf_client.notify_add(self.gconf_key, self._config_changed)
         self._set_available_screen_size()
         self.screen.redraw()
 
     def deactivate(self):
         self.screen.painters.remove(self.painter)
-        self.gconf_client.notify_remove(self.notify_handle);
+        self.gconf_client.notify_remove(self.notify_handle)
         self.screen.set_available_size((0, 0, self.screen.width, self.screen.height))
         self.screen.redraw()
 

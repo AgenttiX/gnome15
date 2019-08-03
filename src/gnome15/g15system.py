@@ -14,17 +14,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gobject
-import g15globals
-import signal
-import dbus.service
+import logging
 import os.path
+import signal
+
+import dbus.service
+import gobject
+
+import g15globals
 import g15devices
 import g15driver
 import util.g15scheduler as g15scheduler
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -164,7 +164,6 @@ DEVICES_PATH = "/sys/bus/hid/devices"
 
 
 class G15SystemServiceController:
-
     def __init__(self, bus, no_trap=False):
         self._page_sequence_number = 1
         self._bus = bus
@@ -229,7 +228,8 @@ class G15SystemServiceController:
                             logger.info("Found device %s", str(device))
 
                             # Work out UID
-                            # TODO this is not quite right - if there is more than one device of same type, indexs might not match                            
+                            # TODO this is not quite right - if there is more than one device of
+                            #  same type, indexs might not match
                             index = 0 if not device.model_id in indices else indices[device.model_id]
                             keyboard_device = KeyboardDevice(device, device_path, index)
                             self.devices[device.uid] = keyboard_device

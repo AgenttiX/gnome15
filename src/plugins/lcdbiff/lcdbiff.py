@@ -14,11 +14,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os.path
+import pwd
+import re
+
+import gtk
+from imaplib import IMAP4
+from imaplib import IMAP4_SSL
+from poplib import POP3_SSL
+from poplib import POP3
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("lcdbiff", modfile=__file__).ugettext
-
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15cairo as g15cairo
 import gnome15.util.g15icontools as g15icontools
@@ -27,19 +35,9 @@ import gnome15.g15driver as g15driver
 import gnome15.g15plugin as g15plugin
 import gnome15.g15accounts as g15accounts
 import gnome15.g15globals as g15globals
-import os, os.path
-import pwd
-import gtk
-import re
-from poplib import POP3_SSL
-from poplib import POP3
-from imaplib import IMAP4
-from imaplib import IMAP4_SSL
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("lcdbiff", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "lcdbiff"
@@ -98,7 +96,6 @@ to mail stores and retrieving the number of unread messages.
 
 
 class Checker:
-
     def __init__(self, account_manager):
         self.account_manager = account_manager
 
@@ -139,7 +136,6 @@ the POP3 protocol.
 
 
 class POP3Checker(Checker):
-
     def __init__(self, account_manager):
         Checker.__init__(self, account_manager)
 
@@ -182,7 +178,6 @@ the IMAP protocol.
 
 
 class IMAPChecker(Checker):
-
     def __init__(self, account_manager):
         Checker.__init__(self, account_manager)
 
@@ -274,7 +269,6 @@ POP3 configuration UI
 
 
 class G15BiffPOP3Options(G15BiffOptions):
-
     def __init__(self, account, account_ui):
         G15BiffOptions.__init__(self, account, account_ui)
 
@@ -285,7 +279,6 @@ IMAP configuration UI. Adds the additional Folder widget
 
 
 class G15BiffIMAPOptions(G15BiffOptions):
-
     def __init__(self, account, account_ui):
         G15BiffOptions.__init__(self, account, account_ui)
         folder = self.widget_tree.get_object("Folder")
@@ -303,7 +296,6 @@ Configuration UI
 
 
 class G15BiffPreferences(g15accounts.G15AccountPreferences):
-
     def __init__(self, parent, gconf_client, gconf_key):
         g15accounts.G15AccountPreferences.__init__(self, parent, gconf_client,
                                                    gconf_key,
@@ -391,7 +383,6 @@ Gnome15 LCDBiff plugin
 
 
 class G15Biff(g15plugin.G15MenuPlugin):
-
     def __init__(self, gconf_client, gconf_key, screen):
         g15plugin.G15MenuPlugin.__init__(self, gconf_client, gconf_key, screen, ["mail-inbox", "mail-folder-inbox"], id,
                                          "Email")
@@ -522,8 +513,9 @@ class G15Biff(g15plugin.G15MenuPlugin):
 
     def _start_blink(self):
         if not self.light_control:
-            self.light_control = self.screen.driver.acquire_control_with_hint(g15driver.HINT_MKEYS,
-                                                                              val=g15driver.MKEY_LIGHT_1 | g15driver.MKEY_LIGHT_2 | g15driver.MKEY_LIGHT_3)
+            self.light_control = self.screen.driver.acquire_control_with_hint(
+                g15driver.HINT_MKEYS,
+                val=g15driver.MKEY_LIGHT_1 | g15driver.MKEY_LIGHT_2 | g15driver.MKEY_LIGHT_3)
             self.light_control.blink(off_val=self._get_mkey_value)
 
     def _get_mkey_value(self):

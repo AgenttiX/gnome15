@@ -15,25 +15,22 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-import Queue
-import threading
-import traceback
+import logging
 import sys
-import gobject
+import threading
+from threading import local, RLock
 import time
-from threading import RLock
-from threading import local
+import traceback
+
+import gobject
+
+if sys.version_info < (3, 0):
+    import Queue
+else:
+    import queue as Queue
 
 # Can be adjusted to speed up time to aid debugging.
 TIME_FACTOR = 1
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +74,8 @@ class GTimer:
     def exec_item(self, function, *args):
         try:
             logger.debug("Executing GTimer %s", str(self.task_name))
-            ji = self.task_queue.run(self.stack, function, *args)
+            # ji = self.task_queue.run(self.stack, function, *args)
+            self.task_queue.run(self.stack, function, *args)
             logger.debug("Executed GTimer %s", str(self.task_name))
         finally:
             self.scheduler.all_jobs_lock.acquire()
@@ -108,12 +106,15 @@ class GTimer:
             self.scheduler.all_jobs_lock.release()
 
 
+class FakeException(Exception):
+    pass
+
+
 """
 Task scheduler. Tasks may be added to the queue to execute
 after a specified interval. The timer is done by the gobject
 event loop, which then executes the job on a different thread
 """
-
 
 class JobScheduler:
 
@@ -152,23 +153,24 @@ class JobScheduler:
 
     def execute(self, queue_name, name, function, *args):
         logger.debug("Executing on queue %s", queue_name)
-        if not queue_name in self.queues:
+        if queue_name not in self.queues:
             self.queues[queue_name] = JobQueue(name=queue_name)
         self.queues[queue_name].run(self._get_stack(), function, *args)
 
     @staticmethod
     def _get_stack():
         try:
-            1 / 0
-        except:
-            tb = sys.exc_info()[2]
+            raise FakeException
+        except FakeException:
+            # logger.exception(e)
+            # tb = sys.exc_info()[2]
             return traceback.extract_stack()[:-5]
 
     def queue(self, queue_name, name, interval, function, *args):
         if not hasattr(function, "__call__"):
             raise Exception("Not a function")
         logger.debug("Queueing %s on %s for execution in %f", name, queue_name, interval)
-        if not queue_name in self.queues:
+        if queue_name not in self.queues:
             self.queues[queue_name] = JobQueue(name=queue_name)
 
         if interval == 0:
@@ -296,4 +298,4 @@ class JobQueue:
             try:
                 logger.info("Exited queue %s", self.name)
             except Exception as e:
-                pass
+                logger.exception(e)

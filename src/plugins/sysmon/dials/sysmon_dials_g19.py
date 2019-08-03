@@ -14,11 +14,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gnome15.util.g15convert as g15convert
-import gnome15.util.g15cairo as g15cairo
 import os
-import rsvg
+
 import cairo
+import rsvg
+
+# import gnome15.util.g15convert as g15convert
+import gnome15.util.g15cairo as g15cairo
 
 needles = {
     "cpu_pc": (170, 90, rsvg.Handle(os.path.join(os.path.dirname(__file__), "g19-large-needle.svg"))),

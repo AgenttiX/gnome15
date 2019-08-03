@@ -25,7 +25,7 @@ GdkPixbuf thumbnail sink
 import gobject
 import gst
 import struct
-import time
+# import time
 
 big_to_cairo_alpha_mask = struct.unpack('=i', '\xFF\x00\x00\x00')[0]
 big_to_cairo_red_mask = struct.unpack('=i', '\x00\xFF\x00\x00')[0]

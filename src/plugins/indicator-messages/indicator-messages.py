@@ -14,13 +14,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+# import time
+
+import dbus
+# import gobject
+import gtk
+# from lxml import etree
+# from PIL import Image
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("indicator-messages", modfile=__file__).ugettext
-
-import gnome15.g15globals as g15globals
+# import gnome15.g15globals as g15globals
 import gnome15.g15screen as g15screen
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15cairo as g15cairo
@@ -28,22 +35,13 @@ import gnome15.util.g15icontools as g15icontools
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.g15plugin as g15plugin
-import gobject
-import time
-import dbus
-import os
-import gtk
-from PIL import Image
 import gnome15.dbusmenu as dbusmenu
 
-from lxml import etree
-
-import logging
-
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("indicator-messages", modfile=__file__).ugettext
 
 # Only works in Unity
-if not "XDG_CURRENT_DESKTOP" in os.environ or os.environ["XDG_CURRENT_DESKTOP"] != "Unity":
+if "XDG_CURRENT_DESKTOP" not in os.environ or os.environ["XDG_CURRENT_DESKTOP"] != "Unity":
     raise Exception("Only works in Ubuntu Unity desktop")
 
 # Plugin details - All of these must be provided
@@ -129,7 +127,6 @@ class IndicatorMessagesMenu(dbusmenu.DBUSMenu):
 
 
 class G15IndicatorMessages(g15plugin.G15MenuPlugin):
-
     def __init__(self, gconf_client, gconf_key, screen):
         g15plugin.G15MenuPlugin.__init__(self, gconf_client, gconf_key, screen, ["indicator-messages"], id, name)
         self._hide_timer = None

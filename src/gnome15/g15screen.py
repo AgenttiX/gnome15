@@ -14,10 +14,45 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gnome15.g15locale as g15locale
-import gnome15.g15devices as g15devices
+"""
+This module contains the root component for a single device (i.e. the 'screen'), and all
+of the supporting classes. The screen object is responsible for maintaining the connection
+to the driver, starting and stopping all the device's plugins,  tracking the current memory
+bank, performing the actual painting for the associated device and more.
 
+To this screen, 'pages' will be added by plugins and other subsystems. Only a single page
+is ever visible at one time, and the screen is responsible for switching between them.
+You can think of the screen as the window manager.
+"""
+
+import logging
+import os.path
+# import sys
+import threading
+from threading import RLock
+import time
+
+import cairo
+import gconf
+
+import gnome15.g15locale as g15locale
+import g15driver
+import util.g15scheduler as g15scheduler
+import util.g15pythonlang as g15pythonlang
+import util.g15gconf as g15gconf
+import util.g15cairo as g15cairo
+import util.g15icontools as g15icontools
+import g15profile
+import g15globals
+import g15drivermanager
+import g15keyboard
+import g15actions
+import gnome15.g15devices as g15devices
+from g15exceptions import NotConnectedException
+from g15exceptions import RetryException
 # from gnome15 import g15pluginmanager
+
+logger = logging.getLogger(__name__)
 _ = g15locale.get_translation("gnome15").ugettext
 
 """
@@ -35,6 +70,9 @@ PRI_NORMAL = 50
 PRI_LOW = 20
 PRI_INVISIBLE = 0
 
+# This has to be below the priority definitions to prevent problems caused by the import loop
+import g15theme
+
 """
 Paint stages
 """
@@ -46,42 +84,6 @@ Simple colors
 """
 COLOURS = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255),
            (255, 255, 255)]
-
-import g15driver
-import util.g15scheduler as g15scheduler
-import util.g15pythonlang as g15pythonlang
-import util.g15gconf as g15gconf
-import util.g15cairo as g15cairo
-import util.g15icontools as g15icontools
-import g15profile
-import g15globals
-import g15drivermanager
-import g15keyboard
-import g15theme
-import g15actions
-import time
-import threading
-import cairo
-import gconf
-import os.path
-import sys
-import logging
-from threading import RLock
-from g15exceptions import NotConnectedException
-from g15exceptions import RetryException
-
-logger = logging.getLogger(__name__)
-
-"""
-This module contains the root component for a single device (i.e. the 'screen'), and all
-of the supporting classes. The screen object is responsible for maintaining the connection
-to the driver, starting and stopping all the device's plugins,  tracking the current memory
-bank, performing the actual painting for the associated device and more.
-
-To this screen, 'pages' will be added by plugins and other subsystems. Only a single page
-is ever visible at one time, and the screen is responsible for switching between them. 
-You can think of the screen as the window manager.
-"""
 
 
 def check_on_redraw():
@@ -100,7 +102,7 @@ def run_on_redraw(cb, *args):
     g15scheduler.queue(REDRAW_QUEUE, "Redraw", 0, cb, *args)
 
 
-class ScreenChangeAdapter:
+class ScreenChangeAdapter(object):
     """
     Adapter class for screen change listeners to save such listeners having to
     implement all callbacks, just override the ones you want
@@ -332,8 +334,8 @@ class G15Screen:
             if choose_profile is None:
                 default_profile = g15profile.get_default_profile(self.device)
 
-                if (
-                        active_profile is None or active_profile.id != default_profile.id) and default_profile.activate_on_focus:
+                if (active_profile is None or active_profile.id != default_profile.id) \
+                        and default_profile.activate_on_focus:
                     default_profile.make_active()
                     found = True
             elif active_profile is None or choose_profile.id != active_profile.id:
@@ -414,7 +416,7 @@ class G15Screen:
         self.notify_handles = []
 
         # Shutdown effects
-        if self.is_active() and not quickly and (self.service.fade_screen_on_close \
+        if self.is_active() and not quickly and (self.service.fade_screen_on_close
                                                  or self.service.fade_keyboard_backlight_on_close):
             # Start fading keyboard
             acquisition = None
@@ -452,7 +454,7 @@ class G15Screen:
             self.driver.disconnect()
 
     def add_screen_change_listener(self, screen_change_listener):
-        if not screen_change_listener in self.screen_change_listeners:
+        if screen_change_listener not in self.screen_change_listeners:
             self.screen_change_listeners.append(screen_change_listener)
 
     def remove_screen_change_listener(self, screen_change_listener):
@@ -541,7 +543,7 @@ class G15Screen:
             self.page_model_lock.release()
 
     def new_page(self, painter=None, priority=PRI_NORMAL, on_shown=None, on_hidden=None, on_deleted=None,
-                 id="Unknown", thumbnail_painter=None, panel_painter=None, title=None, \
+                 id="Unknown", thumbnail_painter=None, panel_painter=None, title=None,
                  theme_properties_callback=None, theme_attributes_callback=None,
                  originating_plugin=None):
         logger.warning("DEPRECATED call to G15Screen.new_page, use G15Screen.add_page instead")
@@ -575,8 +577,8 @@ class G15Screen:
                         priority = PRI_HIGH
                         break
 
-            page = g15theme.G15Page(id, self, painter, priority, on_shown, on_hidden, on_deleted, \
-                                    thumbnail_painter, panel_painter, theme_properties_callback, \
+            page = g15theme.G15Page(id, self, painter, priority, on_shown, on_hidden, on_deleted,
+                                    thumbnail_painter, panel_painter, theme_properties_callback,
                                     theme_attributes_callback,
                                     originating_plugin=originating_plugin)
             self.pages.append(page)
@@ -620,7 +622,8 @@ class G15Screen:
 
     def set_priority(self, page, priority, revert_after=0.0, delete_after=0.0, do_redraw=True):
         """
-        Change the priority of a page, optionally reverting or deleting after a specified time. Returns timer object used for reverting or deleting. May be canceled
+        Change the priority of a page, optionally reverting or deleting after a specified time.
+        Returns timer object used for reverting or deleting. May be canceled
         
         Keyword arguments:
         page -- page object to change
@@ -723,7 +726,7 @@ class G15Screen:
 
             logger.info("Setting active profile and activating plugins")
             self.set_active_application_name(self.service.get_active_application_name())
-            self._check_active_plugins(splash=self.splash.update_splash if self.splash else None, \
+            self._check_active_plugins(splash=self.splash.update_splash if self.splash else None,
                                        startup=True)
 
             if self.first_page is not None:
@@ -754,7 +757,6 @@ class G15Screen:
             self.resched_cycle()
 
     def resched_cycle(self, arg1=None, arg2=None, arg3=None, arg4=None):
-
         self.reschedule_lock.acquire()
         try:
             logger.debug("Rescheduling cycle")
@@ -1028,8 +1030,8 @@ class G15Screen:
         mod                -- plugin module
         """
         return profile.plugins_mode == g15profile.NO_PLUGINS or \
-               (profile.plugins_mode == g15profile.SELECTED_PLUGINS and not mod.id in profile.selected_plugins) or \
-               (g15pluginmanager.is_needs_network(mod) and not self.service.network_manager.is_network_available())
+            (profile.plugins_mode == g15profile.SELECTED_PLUGINS and mod.id not in profile.selected_plugins) or \
+            (g15pluginmanager.is_needs_network(mod) and not self.service.network_manager.is_network_available())
 
     def _should_activate(self, profile, mod):
         import g15pluginmanager
@@ -1042,7 +1044,7 @@ class G15Screen:
         mod                -- plugin module
         """
         needs_net = g15pluginmanager.is_needs_network(mod)
-        return (profile.plugins_mode == g15profile.ALL_PLUGINS or \
+        return (profile.plugins_mode == g15profile.ALL_PLUGINS or
                 (profile.plugins_mode == g15profile.SELECTED_PLUGINS and mod.id in profile.selected_plugins)) and \
                (not needs_net or (needs_net and self.service.network_manager.is_network_available()))
 
@@ -1062,16 +1064,16 @@ class G15Screen:
             """
             We don't need to deactivate during startup, nothing will be activated 
             """
-            l = []
+            lst = []
             for plugin in self.plugins.activated:
                 mod = self.plugins.plugin_map[plugin]
                 if self._should_deactivate(choose_profile, mod):
-                    l.append(plugin)
-            for plugin in l:
+                    lst.append(plugin)
+            for plugin in lst:
                 self.plugins.deactivate(plugin=plugin)
 
         for plugin in self.plugins.started:
-            if not plugin in self.plugins.activated:
+            if plugin not in self.plugins.activated:
                 mod = self.plugins.plugin_map[plugin]
                 if self._should_activate(choose_profile, mod):
                     to_activate.append(plugin)
@@ -1098,7 +1100,7 @@ class G15Screen:
         logger.info("Driver closed")
 
         for handle in self.control_handles:
-            self.conf_client.notify_remove(handle);
+            self.conf_client.notify_remove(handle)
         self.control_handles = []
         self.acquired_controls = {}
         self.memory_bank_color_control = None
@@ -1251,7 +1253,7 @@ class G15Screen:
                                 str(control.value))
                     self.control_handles.append(
                         self.conf_client.notify_add("/apps/gnome15/%s/%s" % (self.device.uid, control.id),
-                                                    self.control_configuration_changed));
+                                                    self.control_configuration_changed))
                 self.driver.update_controls()
                 self._init_screen()
                 if self.splash is None:
@@ -1353,7 +1355,7 @@ class G15Screen:
 
             # Call the screen's painter
             if self.visible_page is not None:
-                logger.debug("Drawing page %s " \
+                logger.debug("Drawing page %s "
                              "(direction = %s, transitions = %s, redraw_content = %s",
                              self.visible_page.id,
                              direction,
@@ -1582,7 +1584,7 @@ class G15Splash:
             icon_path = os.path.join(g15globals.icons_dir, "hicolor", "apps", "scalable", "gnome15.svg")
         self.logo = g15cairo.load_surface_from_file(icon_path)
         self.page = g15theme.G15Page("Splash", self.screen, priority=PRI_EXCLUSIVE,
-                                     thumbnail_painter=self._paint_thumbnail, \
+                                     thumbnail_painter=self._paint_thumbnail,
                                      theme_properties_callback=self._get_properties,
                                      theme=g15theme.G15Theme(g15globals.image_dir, "background"))
         self.screen.add_page(self.page)

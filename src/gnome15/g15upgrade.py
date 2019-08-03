@@ -20,14 +20,15 @@ upon startup of either g15-config or g15-desktop-service to check whether
 any migration needs to take place.
 """
 
+import logging
 import os.path
+import shutil
+import subprocess
+import sys
+
 import g15devices
 import g15globals
 import util.g15pythonlang as g15pythonlang
-import logging
-import shutil
-import sys
-import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -64,16 +65,16 @@ def version_0_x_0_to_0_7_0():
         sub-directories
         """
         devices = g15devices.find_all_devices()
-        for file in os.listdir(macros_dir):
-            if file.endswith(".macros"):
-                profile_file = os.path.join(macros_dir, file)
+        for file_ in os.listdir(macros_dir):
+            if file_.endswith(".macros"):
+                profile_file = os.path.join(macros_dir, file_)
                 for device in devices:
                     device_dir = os.path.join(macros_dir, device.uid)
                     if not os.path.exists(device_dir):
                         logger.info("Creating macro_profile directory for %s", device.uid)
                         os.mkdir(device_dir)
-                    logger.info("Copying macro_profile %s to %s ", file, device.uid)
-                    shutil.copyfile(profile_file, os.path.join(device_dir, file))
+                    logger.info("Copying macro_profile %s to %s ", file_, device.uid)
+                    shutil.copyfile(profile_file, os.path.join(device_dir, file_))
                 os.remove(profile_file)
 
         """

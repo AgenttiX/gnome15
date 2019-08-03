@@ -14,27 +14,25 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+import email.utils
+import logging
+import os
+import time
+
+import gtk
+import pywapi
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("weather-noaa", modfile=__file__).ugettext
-
-import gnome15.g15accounts as g15accounts
-import gnome15.g15globals as g15globals
+# import gnome15.g15accounts as g15accounts
+# import gnome15.g15globals as g15globals
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15pythonlang as g15pythonlang
 import gnome15.util.g15gconf as g15gconf
 import weather
-import gtk
-import os
-import pywapi
-import email.utils
-import time
-import datetime
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("weather-noaa", modfile=__file__).ugettext
 
 """
 Plugin definition
@@ -79,13 +77,11 @@ class NOAAWeatherOptions(weather.WeatherOptions):
 
 
 class NOAAWeatherData(weather.WeatherData):
-
     def __init__(self, station_id):
         weather.WeatherData.__init__(self, station_id)
 
 
 class NOAAWeatherBackend(weather.WeatherBackend):
-
     def __init__(self, gconf_client, gconf_key):
         weather.WeatherBackend.__init__(self, gconf_client, gconf_key)
 

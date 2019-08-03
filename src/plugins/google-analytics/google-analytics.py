@@ -14,10 +14,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# import calendar
+import datetime
+import logging
+import os.path
+# import time
+
+import cairo
+import cairoplot
+import gdata.analytics.client
+# import gobject
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("cal", modfile=__file__).ugettext
-
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.util.g15convert as g15convert
@@ -25,23 +34,12 @@ import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15cairo as g15cairo
 import gnome15.util.g15icontools as g15icontools
-import gnome15.g15screen as g15screen
+# import gnome15.g15screen as g15screen
 import gnome15.g15accounts as g15accounts
 import gnome15.g15globals as g15globals
-import datetime
-import time
-import os, os.path
-import gobject
-import calendar
-import gtk
-import gdata.analytics.client
-import cairoplot
-import cairo
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("cal", modfile=__file__).ugettext
 
 id = "google-analytics"
 name = _("Google Analytics")
@@ -89,13 +87,11 @@ def get_update_time(gconf_client, gconf_key):
 
 
 class Site:
-
     def __init__(self):
         self.name = "Unknown"
 
 
 class SiteMenuItem(g15theme.MenuItem):
-
     def __init__(self, entry, account):
         g15theme.MenuItem.__init__(self, entry.GetProperty('ga:webPropertyId').value)
         self._entry = entry
@@ -134,7 +130,6 @@ class GoogleAnalyticsOptions(g15accounts.G15AccountOptions):
 
 
 class G15VisitsGraph(g15theme.Component):
-
     def __init__(self, component_id, plugin):
         g15theme.Component.__init__(self, component_id)
         self.plugin = plugin
@@ -214,7 +209,6 @@ class G15GoogleAnalyticsPreferences(g15accounts.G15AccountPreferences):
 
 
 class G15GoogleAnalytics:
-
     def __init__(self, gconf_key, gconf_client, screen):
 
         self._screen = screen

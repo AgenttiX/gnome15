@@ -17,19 +17,21 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import gnome15.util.g15convert as g15convert
+import os
+# import subprocess
+# import time
+
+# import feedparser
+import gconf
+import gtk
+from launchpadlib.launchpad import Launchpad
+
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15cairo as g15cairo
 import gnome15.util.g15icontools as g15icontools
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
-import subprocess
-import time
-import os
-import feedparser
-import gtk
-import gconf
-from launchpadlib.launchpad import Launchpad
 
 # Plugin details - All of these must be provided
 id = "ppstats"
@@ -227,14 +229,14 @@ class G15PPAStats:
 
         # Add new pages
         for url in ppa_list:
-            if not url in self.pages:
+            if url not in self.pages:
                 self.pages[url] = G15PPAPage(self, url)
 
         # Remove pages that no longer exist
         to_remove = []
         for page_url in self.pages:
             page = self.pages[page_url]
-            if not page.url in feed_list:
+            if page.url not in feed_list:
                 self.screen.del_page(page.page)
                 to_remove.append(page_url)
         for page in to_remove:

@@ -16,10 +16,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 import sys
 import os
+# import time
+
 import glib
-import time
 
 # Allow running from local path
 path = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), ".."))
@@ -74,7 +76,7 @@ def start_service(options):
         service.start_loop()
     except dbus.exceptions.NameExistsException as e:
         logger.debug("DBus service already exist", exc_info=e)
-        print "Gnome15 desktop service is already running"
+        print("Gnome15 desktop service is already running")
         sys.exit(1)
 
 
@@ -101,7 +103,7 @@ if __name__ == "__main__":
         session_bus = dbus.SessionBus()
         if not check_service_status(session_bus):
             if args[0] == "stop":
-                print "Gnome15 desktop service is not running"
+                print("Gnome15 desktop service is not running")
         else:
             session_bus.get_object('org.gnome15.Gnome15', '/org/gnome15/Service').Stop()
             while check_service_status(session_bus):
@@ -111,7 +113,7 @@ if __name__ == "__main__":
     if len(args) == 0 or (len(args) == 1 and (args[0] == "start" or args[0] == "restart")):
         session_bus = dbus.SessionBus()
         if check_service_status(session_bus):
-            print "Gnome15 desktop service already running"
+            print("Gnome15 desktop service already running")
         else:
             if options.foreground or (not options.foreground and os.fork() == 0):
                 start_service(options)

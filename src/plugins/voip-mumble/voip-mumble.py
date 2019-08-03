@@ -15,22 +15,25 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# import base64
+# import errno
+import logging
+# import os
+# import socket
+# from threading import Thread
+# from threading import Lock
+# from threading import RLock
+# from threading import Semaphore
+
+# import ts3
+import voip
+
 import gnome15.g15locale as g15locale
+import gnome15.g15driver as g15driver
+# import gnome15.util.g15convert as g15convert
+
 
 _ = g15locale.get_translation("voip-mumble", modfile=__file__).ugettext
-
-import gnome15.g15driver as g15driver
-import gnome15.util.g15convert as g15convert
-import ts3
-from threading import Thread
-from threading import Lock
-from threading import RLock
-from threading import Semaphore
-import voip
-import os
-import base64
-import socket
-import errno
 
 # Plugin details 
 id = "voip-mumble"
@@ -46,9 +49,6 @@ unsupported_models = [g15driver.MODEL_G110, g15driver.MODEL_G11, g15driver.MODEL
 # This plugin only supplies classes to the 'voip' plugin and so is never activated 
 passive = True
 global_plugin = True
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,6 @@ Mumble backend
 
 
 class MumbleBackend(voip.VoipBackend):
-
     def __init__(self):
         voip.VoipBackend.__init__(self)
 
@@ -75,46 +74,46 @@ class MumbleBackend(voip.VoipBackend):
         raise _("Mumble")
 
     def start(self, plugin):
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def stop(self):
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def get_current_channel(self):
         """
         Get the current channel
         """
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def get_talking(self):
         """
         Get who is talking
         """
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def get_me(self):
         """
         Get the local user's buddy entry
         """
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def get_channels(self):
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def get_buddies(self, current_channel=True):
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def get_icon(self):
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def set_audio_input(self, mute):
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def set_audio_output(self, mute):
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def away(self):
-        raise Exception("Not implemented")
+        raise NotImplementedError
 
     def online(self):
-        raise Exception("Not implemented")
+        raise NotImplementedError

@@ -19,32 +19,36 @@ Main implementation of a G15Driver that uses g15daemon to control and query the
 keyboard
 """
 
+# Asyncore is deprecated since Python 3.6
+# https://docs.python.org/3.7/library/asyncore.html
+import asyncore
+import logging
+import os.path
+import socket
+import struct
+# import sys
+from threading import Lock, Thread
+import time
+
+import cairo
+import gconf
+import gtk
+from PIL import ImageMath
+from PIL import Image
+
 import gnome15.g15driver as g15driver
 import gnome15.g15globals as g15globals
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15scheduler as g15scheduler
-import gtk
-import os.path
-import socket
-import cairo
-import gconf
-from PIL import ImageMath
-from PIL import Image
-from threading import Thread
-from threading import Lock
-import struct
-import time
-import logging
-import asyncore
-import sys
 
 logger = logging.getLogger(__name__)
 
 # Driver information (used by driver selection UI)
 name = "MX5500"
 id = "mx5500"
-description = "For use with the Logitech G15v1, G15v2, G13, G510 and G110. This driver uses mx5500tools, available from " + \
-              "<a href=\"http://download.gna.org/mx5000tools/\">mx5500tools</a>. The mx5500d service " + \
+description = "For use with the Logitech G15v1, G15v2, G13, G510 and G110. " \
+              "This driver uses mx5500tools, available from " \
+              "<a href=\"http://download.gna.org/mx5000tools/\">mx5500tools</a>. The mx5500d service " \
               "must be installed and running when starting Gnome15."
 has_preferences = True
 
@@ -171,7 +175,7 @@ class G15Dispatcher(asyncore.dispatcher):
                 self.last_key = val
                 self.callback(self.convert_from_g15daemon_code(self.last_key), g15driver.KEY_STATE_UP)
                 # Repeat
-                self.key_stage == 1
+                self.key_stage = 1
         elif self.key_stage == 3:
             # Final value should be zero, indicating key release             
             val = struct.unpack("<L", data)[0]
@@ -221,7 +225,7 @@ class G15Dispatcher(asyncore.dispatcher):
     def send_with_options(self, buffer, options=0):
         try:
             return self.socket.send(buffer, options)
-        except socket.error, why:
+        except socket.error as why:
             self.oob_buffer = ""
             if why.args[0] == EWOULDBLOCK:
                 return 0
@@ -284,7 +288,8 @@ class Driver(g15driver.AbstractDriver):
     def get_controls(self):
         return [invert_control]
 
-    def get_antialias(self):
+    @staticmethod
+    def get_antialias():
         return cairo.ANTIALIAS_NONE
 
     def get_action_keys(self):

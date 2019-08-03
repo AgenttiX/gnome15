@@ -14,10 +14,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+import subprocess
+from threading import Thread
+import time
+
+import gconf
+import gtk
+import xdg.Mime as mime
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("tails", modfile=__file__).ugettext
-
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15cairo as g15cairo
 import gnome15.util.g15icontools as g15icontools
@@ -25,17 +32,10 @@ import gnome15.util.g15markup as g15markup
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.g15screen as g15screen
-import subprocess
-import time
 import tailer
-import os
-import gtk
-import gconf
-import logging
-import xdg.Mime as mime
-from threading import Thread
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("tails", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "tails"
@@ -46,8 +46,8 @@ like the <b>tail</b> command.\n\n\
 Warning: When monitoring large files that grow quickly, this plugin may \
 cause massive memory usage.\n\n\
 Uses the pytailer library (http://code.google.com/p/pytailer/), licensed \
-under the LGPL. See %s and %s for more details." % (
-os.path.join(__file__, "LICENSE"), os.path.join(__file__, "README")))
+under the LGPL. See %s and %s for more details." %
+                (os.path.join(__file__, "LICENSE"), os.path.join(__file__, "README")))
 author = "Brett Smith <tanktarta@blueyonder.co.uk>"
 copyright = _("Copyright (C)2011 Brett Smith, Michael Thornton")
 site = "http://www.russo79.com/gnome15"
@@ -75,7 +75,6 @@ def changed(widget, key, gconf_client):
 
 
 class G15TailsPreferences:
-
     def __init__(self, parent, driver, gconf_client, gconf_key):
         self._gconf_client = gconf_client
         self._gconf_key = gconf_key
@@ -228,7 +227,6 @@ class G15TailThread(Thread):
 
 
 class G15TailPage(g15theme.G15Page):
-
     def __init__(self, plugin, file_path):
 
         self._gconf_client = plugin._gconf_client
@@ -311,7 +309,6 @@ class G15TailPage(g15theme.G15Page):
 
 
 class G15Tails:
-
     def __init__(self, gconf_client, gconf_key, screen):
         self._screen = screen
         self._gconf_key = gconf_key
@@ -350,7 +347,7 @@ class G15Tails:
         def init():
             # Add new pages
             for file_path in file_list:
-                if not file_path in self._pages:
+                if file_path not in self._pages:
                     pg = G15TailPage(self, file_path)
                     self._pages[file_path] = pg
                 else:
@@ -360,7 +357,7 @@ class G15Tails:
             to_remove = []
             for file_path in self._pages:
                 page = self._pages[file_path]
-                if not page.file_path in file_list:
+                if page.file_path not in file_list:
                     self._screen.del_page(page)
                     to_remove.append(file_path)
             for page in to_remove:

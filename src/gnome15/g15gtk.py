@@ -57,7 +57,7 @@ def create_cairo_font_face_for_file(filename, faceindex=0, loadoptions=0):
         # initialize freetype
         _ft_lib = ctypes.c_void_p()
         if FT_Err_Ok != _freetype_so.FT_Init_FreeType(ctypes.byref(_ft_lib)):
-            raise "Error initialising FreeType library."
+            raise Exception("Error initialising FreeType library.")
 
         class PycairoContext(ctypes.Structure):
             _fields_ = [("PyObject_HEAD", ctypes.c_byte * object.__basicsize__),
@@ -91,7 +91,6 @@ def create_cairo_font_face_for_file(filename, faceindex=0, loadoptions=0):
 
 
 class G15OffscreenWindow(g15theme.Component):
-
     def __init__(self, component_id):
         g15theme.Component.__init__(self, component_id)
         self.window = None
@@ -138,7 +137,7 @@ class G15OffscreenWindow(g15theme.Component):
 
     def _create_window(self):
         screen = self.get_screen()
-        window = G15Window(screen, self.get_root(), self.view_bounds[0], self.view_bounds[1], \
+        window = G15Window(screen, self.get_root(), self.view_bounds[0], self.view_bounds[1],
                            self.view_bounds[2], self.view_bounds[3])
         if self.content is not None:
             self.window.set_content(self.content)
@@ -147,7 +146,6 @@ class G15OffscreenWindow(g15theme.Component):
 
 
 class G15Window(gtk.OffscreenWindow):
-
     def __init__(self, screen, page, area_x, area_y, area_width, area_height):
         gtk.OffscreenWindow.__init__(self)
         self.pixbuf = None

@@ -22,21 +22,21 @@ patterns and send events to interested DBUS clients
 """
 
 from __future__ import print_function
+import logging
 import sys
 import os
-import glib
-
-# Logging
-import logging
+# import glib
 
 logging.basicConfig(format='%(threadName)s:%(name)s:%(message)s')
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
-LEVELS = {'debug': logging.DEBUG,
-          'info': logging.INFO,
-          'warning': logging.WARNING,
-          'error': logging.ERROR,
-          'critical': logging.CRITICAL}
+LEVELS = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warning': logging.WARNING,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL
+}
 
 import gobject
 
@@ -55,7 +55,7 @@ DBusGMainLoop(set_as_default=True)
 
 def check_service_status(system_dbus):
     try:
-        system_bus.get_object('org.gnome15.GameWrap', '/org/gnome15/GameWrap').GetServerInformation()
+        system_dbus.get_object('org.gnome15.GameWrap', '/org/gnome15/GameWrap').GetServerInformation()
         return True
     except Exception as e:
         logger.debug("D-Bus service not available.", exc_info=e)
@@ -64,6 +64,7 @@ def check_service_status(system_dbus):
 
 def start_service(args, bus, no_trap=False, ):
     try:
+        # https://pypi.org/project/setproctitle/
         import setproctitle
         setproctitle.setproctitle(os.path.basename(os.path.abspath(sys.argv[0])))
     except ImportError as ie:

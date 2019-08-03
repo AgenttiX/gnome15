@@ -22,21 +22,18 @@ as the repetition functions.
 All key events are handled on a queue (one per instance of a key handler). 
 
 """
+import logging
 
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("gnome15").ugettext
-
 import g15profile
 import util.g15scheduler as g15scheduler
 import g15driver
 import g15actions
 import g15uinput
-import g15screen
-
-import logging
+# import g15screen
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("gnome15").ugettext
 
 
 class KeyState:
@@ -285,7 +282,8 @@ class G15KeyHandler:
                     key_state = self.__key_states[k]
                     if not key_state.is_consumed() and key_state.state_id == g15driver.KEY_STATE_DOWN:
                         down.append(key_state)
-                    if not key_state.is_consumed() and key_state.state_id == g15driver.KEY_STATE_UP and not key_state.defeat_release:
+                    if not key_state.is_consumed() and key_state.state_id == g15driver.KEY_STATE_UP \
+                            and not key_state.defeat_release:
                         up.append(key_state)
                     if not key_state.is_consumed() and key_state.state_id == g15driver.KEY_STATE_HELD:
                         held.append(key_state)
@@ -350,14 +348,14 @@ class G15KeyHandler:
         key        -- single key
         state_id   -- state_id (g15driver.KEY_STATE_UP, _DOWN or _HELD)
         """
-        if state_id == g15driver.KEY_STATE_HELD and not key in self.__key_states:
+        if state_id == g15driver.KEY_STATE_HELD and key not in self.__key_states:
             """
             All keys were released before the HOLD timer kicked in, so we
             totally ignore this key
             """
             pass
         else:
-            if not key in self.__key_states:
+            if key not in self.__key_states:
                 self.__key_states[key] = KeyState(key)
             key_state = self.__key_states[key]
 
@@ -373,9 +371,9 @@ class G15KeyHandler:
                 Key is now down, let's set up a timer to produce a held event
                 """
                 key_state.timer = g15scheduler.queue(self.queue_name,
-                                                     "HoldKey%s" % str(key), \
-                                                     self.__screen.service.key_hold_duration, \
-                                                     self._do_key_received, [key], \
+                                                     "HoldKey%s" % str(key),
+                                                     self.__screen.service.key_hold_duration,
+                                                     self._do_key_received, [key],
                                                      g15driver.KEY_STATE_HELD)
             elif state_id == g15driver.KEY_STATE_UP:
                 """
@@ -402,12 +400,12 @@ class G15KeyHandler:
         if macro_keys is None:
             macro_keys = []
 
-        if state == None:
+        if state is None:
             state = g15driver.KEY_STATE_UP
 
         bank = self.__screen.get_memory_bank()
         for m in profile.macros[state][bank - 1]:
-            if not m.key_list_key in macro_keys:
+            if m.key_list_key not in macro_keys:
                 if (not mapped_to_key and not m.is_uinput()) or \
                         (mapped_to_key and m.is_uinput()):
                     macro_list.append(m)
@@ -430,7 +428,7 @@ class G15KeyHandler:
 
         bank = self.__screen.get_memory_bank()
         for m in profile.macros[g15driver.KEY_STATE_UP][bank - 1]:
-            if not m.key_list_key in macro_keys:
+            if m.key_list_key not in macro_keys:
                 if m.is_uinput():
                     self.__uinput_macros.append(m)
                 else:
@@ -438,7 +436,7 @@ class G15KeyHandler:
                 macro_keys.append(m.key_list_key)
 
         for m in profile.macros[g15driver.KEY_STATE_DOWN][bank - 1]:
-            if not m.key_list_key in down_macro_keys:
+            if m.key_list_key not in down_macro_keys:
                 if m.is_uinput():
                     self.__uinput_macros.append(m)
                 else:
@@ -446,7 +444,7 @@ class G15KeyHandler:
                 down_macro_keys.append(m.key_list_key)
 
         for m in profile.macros[g15driver.KEY_STATE_HELD][bank - 1]:
-            if not m.key_list_key in held_macro_keys:
+            if m.key_list_key not in held_macro_keys:
                 if not m.is_uinput():
                     self.__normal_held_macros.append(m)
                 held_macro_keys.append(m.key_list_key)
@@ -456,7 +454,8 @@ class G15KeyHandler:
             if profile is not None:
                 self._build_macros(profile, macro_keys, held_macro_keys, down_macro_keys)
 
-    def _check_key_state(self, new_state_id, key_state):
+    @staticmethod
+    def _check_key_state(new_state_id, key_state):
         """
         Sanity check
         
@@ -480,7 +479,8 @@ class G15KeyHandler:
 
         return True
 
-    def _send_uinput_keypress(self, macro, uc, uinput_repeat=False):
+    @staticmethod
+    def _send_uinput_keypress(macro, uc, uinput_repeat=False):
         g15uinput.locks[macro.type].acquire()
         try:
             if uinput_repeat:
@@ -535,7 +535,7 @@ class G15KeyHandler:
                     """
                     Start repeating
                     """
-                    if not macro in self.__repeat_macros:
+                    if macro not in self.__repeat_macros:
                         self._defeat_release(key_states)
                         self.__repeat_macros.append(macro)
                         if macro.repeat_delay != -1:
@@ -608,7 +608,7 @@ class G15KeyHandler:
                 self.__cancel_macro_repeat_timer()
                 self.__repeat_macros.remove(macro)
             else:
-                if not macro in self.__repeat_macros and not repetition:
+                if macro not in self.__repeat_macros and not repetition:
                     self.__repeat_macros.append(macro)
                 else:
                     self._process_macro(macro, state, key_states)
@@ -623,7 +623,7 @@ class G15KeyHandler:
                 self.__cancel_macro_repeat_timer()
                 self.__repeat_macros.remove(macro)
             else:
-                if state == g15driver.KEY_STATE_HELD and not macro in self.__repeat_macros and not repetition:
+                if state == g15driver.KEY_STATE_HELD and macro not in self.__repeat_macros and not repetition:
                     self.__repeat_macros.append(macro)
                 self._process_macro(macro, state, key_states)
 

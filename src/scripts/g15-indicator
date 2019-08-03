@@ -62,12 +62,10 @@ import gnome15.g15desktop as g15desktop
 
 
 class G15Indicator(g15desktop.G15GtkMenuPanelComponent):
-
     def __init__(self):
         g15desktop.G15GtkMenuPanelComponent.__init__(self)
 
     def create_component(self):
-
         item = gtk.MenuItem("Preferences")
         item.connect("activate", self.show_configuration)
         self.menu.append(item)

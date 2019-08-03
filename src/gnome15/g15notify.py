@@ -17,11 +17,12 @@
 """
 Notifications
 """
-import dbus
-import g15globals
 
-# Logging
 import logging
+
+import dbus
+
+import g15globals
 
 logger = logging.getLogger(__name__)
 

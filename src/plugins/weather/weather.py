@@ -15,12 +15,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+# import sys
+# import time
+
+import gtk
+import pango
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("weather", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15pythonlang as g15pythonlang
@@ -31,14 +36,9 @@ import gnome15.g15driver as g15driver
 import gnome15.g15globals as g15globals
 import gnome15.g15text as g15text
 import gnome15.g15plugin as g15plugin
-import gtk
-import os
-import pango
-import logging
-import time
-import sys
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("weather", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "weather"
@@ -142,8 +142,8 @@ class G15WeatherPreferences:
 
         self._sources_model = self._widget_tree.get_object("SourcesModel")
         for b in get_available_backends():
-            l = [b, get_backend(b).backend_name]
-            self._sources_model.append(l)
+            lst = [b, get_backend(b).backend_name]
+            self._sources_model.append(lst)
         g15uigconf.configure_combo_from_gconf(gconf_client, "%s/source" % gconf_key, "Source",
                                               self._sources_model[0][0] if len(self._sources_model) > 0 else None,
                                               self._widget_tree)
@@ -207,19 +207,16 @@ class G15WeatherPreferences:
 
 
 class WeatherOptions:
-
     def __init__(self):
         pass
 
 
 class WeatherData:
-
     def __init__(self, location):
         self.location = location
 
 
 class WeatherBackend:
-
     def __init__(self, gconf_client, gconf_key):
         self.gconf_client = gconf_client
         self.gconf_key = gconf_key
@@ -229,7 +226,6 @@ class WeatherBackend:
 
 
 class G15Weather(g15plugin.G15RefreshingPlugin):
-
     def __init__(self, gconf_key, gconf_client, screen):
         g15plugin.G15RefreshingPlugin.__init__(self, gconf_client, gconf_key, screen, "weather-few-clouds", id, name)
         self.only_refresh_when_visible = False

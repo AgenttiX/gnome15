@@ -121,7 +121,7 @@ class Tailer(object):
         self.seek_end()
         end_pos = self.file.tell()
 
-        for i in xrange(lines):
+        for i in range(lines):
             if not self.seek_line():
                 break
 
@@ -137,7 +137,7 @@ class Tailer(object):
         """
         self.seek(0)
 
-        for i in xrange(lines):
+        for i in range(lines):
             if not self.seek_line_forward():
                 break
 
@@ -222,8 +222,8 @@ def follow(file, delay=1.0):
     Iterator generator that returns lines as data is added to the file.
 
     >>> import os
-    >>> f = file('test_follow.txt', 'w')
-    >>> fo = file('test_follow.txt', 'r')
+    >>> f = open('test_follow.txt', 'w')
+    >>> fo = open('test_follow.txt', 'r')
     >>> generator = follow(fo)
     >>> f.write('Line 1\\n')
     >>> f.flush()

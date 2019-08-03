@@ -14,6 +14,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import colorsys
+import logging
+from threading import Event
+# from threading import Lock
+import time
+
+import util.g15scheduler as g15scheduler
+
+logger = logging.getLogger(__name__)
+
+
 """
 Default actions
 
@@ -173,15 +184,6 @@ HINT_RED_BLUE_LED = 1 << 8
 CAIRO_IMAGE_FORMAT = 4
 
 FX_QUEUE = "ControlEffects"
-
-import util.g15scheduler as g15scheduler
-import time
-import colorsys
-from threading import Lock
-from threading import Event
-import logging
-
-logger = logging.getLogger(__name__)
 
 seq_no = 0
 
@@ -707,7 +709,8 @@ class AbstractDriver(object):
                 l.control_updated(control)
             self.on_update_control(control)
 
-    def check_control(self, control):
+    @staticmethod
+    def check_control(control):
         if isinstance(control.value, int):
             if control.value > control.upper:
                 control.value = control.upper

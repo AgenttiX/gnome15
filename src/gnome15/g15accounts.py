@@ -24,23 +24,26 @@ configuration widgets.
 Accounts are stored as simple XML files in .g
 """
 
+import logging
 import os
-from lxml import etree
+import pwd
+from threading import Lock
+
+import gobject
 import gtk
+import keyring
+from lxml import etree
+import pyinotify
+
 import g15globals
+import gnome15.g15locale as g15locale
 import util.g15scheduler as g15scheduler
 import util.g15gconf as g15gconf
 import util.g15os as g15os
 import util.g15pythonlang as g15pythonlang
-import pyinotify
-import pwd
-from threading import Lock
-import gobject
-import keyring
-
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("gnome15-drivers").ugettext
 
 """
 Functions
@@ -57,8 +60,8 @@ mask = pyinotify.IN_DELETE | pyinotify.IN_MODIFY | pyinotify.IN_CREATE | pyinoti
 
 
 class EventHandler(pyinotify.ProcessEvent):
-
-    def _notify(self, event):
+    @staticmethod
+    def _notify(event):
         for a in account_listeners:
             a(event)
 
@@ -90,18 +93,18 @@ class Status:
 
 STATUS = Status()
 
-'''
+"""
 Helper classes for getting a secret from the keyring
-'''
+"""
 
 
 class G15Keyring:
-
     def __init__(self):
         self.lock = Lock()
         self.password = None
 
-    def get_username(self, account):
+    @staticmethod
+    def get_username(account):
         username = account.get_property("username", "")
         return username if username != "" else CURRENT_USERNAME
 
@@ -170,12 +173,12 @@ a password change).") % (account.name, username))
 
         _, name = self.get_uri_and_props(account, hostname, port)
 
-        '''
+        """
         Find the item. It appears gnome keyring access must be run on the gobject loop? I don't 
         really understand the problem, but doing this seems to fix it
         
         TODO find out what is actually happening
-        '''
+        """
         if g15pythonlang.is_gobject_thread():
             self.find_secret(account, name, False)
         else:
@@ -386,7 +389,7 @@ class G15AccountPreferences:
         dialog = self.widget_tree.get_object("AccountDialog")
         dialog.set_transient_for(parent)
 
-        ah = gconf_client.notify_add(gconf_key + "/urls", self._urls_changed);
+        ah = gconf_client.notify_add(gconf_key + "/urls", self._urls_changed)
         dialog.run()
         dialog.hide()
         gconf_client.notify_remove(ah)
@@ -518,10 +521,12 @@ class G15AccountPreferences:
         if self.visible_options is not None:
             self.visible_options.component.reparent(place_holder)
         else:
-            l = gtk.Label("No options found for this account\ntype. Do you have all the required\nplugins installed?")
-            l.xalign = 0.5
-            l.show()
-            place_holder.add(l)
+            label = gtk.Label(
+                "No options found for this account\ntype. Do you have all the required\nplugins installed?"
+            )
+            label.xalign = 0.5
+            label.show()
+            place_holder.add(label)
 
     def _select_account(self, widget=None):
         account = self._get_selected_account()

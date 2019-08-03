@@ -23,12 +23,11 @@ Gnome15 uses).
 This class is stop gap until a better solution can be found
 """
 
-import dbus
-import os
-import gobject
-
-# Logging
 import logging
+import os
+
+import dbus
+import gobject
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,6 @@ EAVESDROP_MATCH_STRING = "eavesdrop='true',%s" % PASSIVE_MATCH_STRING
 
 
 class GSettingsCallback:
-
     def __init__(self, handle, key, callback):
         self.handle = handle
         self.key = key
@@ -45,7 +43,6 @@ class GSettingsCallback:
 
 
 class GSettings:
-
     def __init__(self, schema_id):
         self.schema_id = schema_id
         self._handle = 1
@@ -65,10 +62,10 @@ class GSettings:
         self._session_bus.add_message_filter(self._msg_cb)
 
     def connect(self, key, callback):
-        l = key.split(":")
-        if l[0] != "changed":
+        lst = key.split(":")
+        if lst[0] != "changed":
             raise Exception("Only currently supported changed events")
-        key = l[2]
+        key = lst[2]
         handle = self._handle
         self._handle += 1
         self._monitors[handle] = GSettingsCallback(handle, key, callback)

@@ -14,28 +14,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+import time
+
+import dbus
+import gobject
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("processes", modfile=__file__).ugettext
-
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15cairo as g15cairo
 import gnome15.util.g15icontools as g15icontools
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.g15plugin as g15plugin
-import os
-import dbus
-import time
-import gobject
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("processes", modfile=__file__).ugettext
 
 try:
     import gtop
-except Exception as e:
-    logger.debug("Could not import gtop module. Will use g15top instead", exc_info=e)
+except Exception as __e:
+    logger.debug("Could not import gtop module. Will use g15top instead", exc_info=__e)
     # API compatible work around for Ubuntu 12.10
     import gnome15.g15top as gtop
 
@@ -104,7 +104,6 @@ class ProcessMenuItem(g15theme.MenuItem):
 
 
 class G15Processes(g15plugin.G15MenuPlugin):
-
     def __init__(self, gconf_client, gconf_key, screen):
         g15plugin.G15MenuPlugin.__init__(self, gconf_client, gconf_key, screen, ["utilities-system-monitor"], id, name)
         self.item_id = 0
@@ -201,7 +200,7 @@ class G15Processes(g15plugin.G15MenuPlugin):
     def _send_event(self, win, ctype, data, mask=None):
         """ Send a ClientMessage event to the root """
         data = (data + [0] * (5 - len(data)))[:5]
-        ev = Xlib.protocol.event.ClientMessage(window=win, client_type=ctype, data=(32, (data)))
+        ev = Xlib.protocol.event.ClientMessage(window=win, client_type=ctype, data=(32, data))
 
         if not mask:
             mask = (X.SubstructureRedirectMask | X.SubstructureNotifyMask)
@@ -352,7 +351,7 @@ class G15Processes(g15plugin.G15MenuPlugin):
 
         # Remove any missing items
         for item in self.menu.get_children():
-            if not item.id in this_items:
+            if item.id not in this_items:
                 self.menu.remove_child(item)
 
         # Make sure selected still exists

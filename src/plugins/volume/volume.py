@@ -14,10 +14,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+import select
+from threading import Thread
+
+import alsaaudio
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("volume", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15uigconf as g15uigconf
@@ -28,15 +33,8 @@ import gnome15.g15driver as g15driver
 import gnome15.g15devices as g15devices
 import gnome15.g15actions as g15actions
 
-import alsaaudio
-import select
-import os
-import gtk
-import logging
-
 logger = logging.getLogger(__name__)
-
-from threading import Thread
+_ = g15locale.get_translation("volume", modfile=__file__).ugettext
 
 # Custom actions
 VOLUME_UP = "volume-up"

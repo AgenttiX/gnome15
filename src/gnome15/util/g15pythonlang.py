@@ -186,8 +186,11 @@ def total_seconds(time_delta):
     time_delta: The timedelta value for which the number of seconds should be
     calculated.
     """
-    return (time_delta.microseconds + (
-                time_delta.seconds + time_delta.days * 24.0 * 3600.0) * 10.0 ** 6.0) / 10.0 ** 6.0
+    return (
+        time_delta.microseconds + (
+            time_delta.seconds + time_delta.days * 24.0 * 3600.0
+        ) * 10.0 ** 6.0
+    ) / 10.0 ** 6.0
 
 
 """

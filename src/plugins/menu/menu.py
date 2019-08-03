@@ -14,22 +14,26 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import base64
+import logging
+import sys
+
+import cairo
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("menu", modfile=__file__).ugettext
-
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.g15screen as g15screen
 import gnome15.g15plugin as g15plugin
 from gnome15.util.g15pythonlang import find
-import sys
-import cairo
-import base64
-from cStringIO import StringIO
-import logging
+
+if sys.version_info < (3, 0):
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("menu", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "menu"

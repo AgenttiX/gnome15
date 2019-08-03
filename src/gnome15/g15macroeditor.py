@@ -19,10 +19,16 @@ Manages the UI for editing a single macro.
 """
 
 from __future__ import print_function
+import logging
+import os
+
+import gconf
+import gobject
+import gtk
+import pango
+import pygtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("gnome15").ugettext
-
 import g15globals
 import g15profile
 import util.g15scheduler as g15scheduler
@@ -33,18 +39,10 @@ import g15devices
 import g15driver
 import g15keyio
 import g15actions
-import pygtk
-
-pygtk.require('2.0')
-import gtk
-import gobject
-import os
-import pango
-import gconf
-
-import logging
 
 logger = logging.getLogger(__name__)
+pygtk.require('2.0')
+_ = g15locale.get_translation("gnome15").ugettext
 
 # Key validation constants
 IN_USE = "in-use"
@@ -54,7 +52,6 @@ OK = "ok"
 
 
 class G15MacroEditor:
-
     def __init__(self, parent=None):
         """
         Constructor. Create a new macro editor. You must call set_driver() 

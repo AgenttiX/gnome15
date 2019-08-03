@@ -16,12 +16,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import gobject
+import gtk
+import webkit
+
 import gnome15.g15driver as g15driver
 import gnome15.g15gtk  as g15gtk
 import gnome15.g15plugin  as g15plugin
-import gtk
-import gobject
-import webkit
 
 # Plugin details - All of these must be provided
 id = "webkitbrowser"
@@ -39,7 +40,6 @@ def create(gconf_key, gconf_client, screen):
 
 
 class G15WebkitBrowser(g15plugin.G15PagePlugin):
-
     def __init__(self, gconf_client, gconf_key, screen):
         g15plugin.G15PagePlugin.__init__(self, gconf_client, gconf_key, screen,
                                          ["browser", "gnome-web-browser", "web-browser", "www-browser",

@@ -17,8 +17,7 @@
 import shlex
 
 
-class Wraplet():
-
+class Wraplet:
     def __init__(self, filename):
         self.filename = filename
 

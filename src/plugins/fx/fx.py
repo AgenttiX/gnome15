@@ -14,18 +14,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+import random
+import time
+
+import cairo
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("fx", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.g15driver as g15driver
 import gnome15.util.g15uigconf as g15uigconf
-import gtk
-import os
-import time
-import cairo
-import random
+
+_ = g15locale.get_translation("fx", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "fx"
@@ -62,7 +63,6 @@ effects = ["vertical-scroll", "horizontal-scroll", "fade", "zoom"]
 
 
 class G15Fx:
-
     def __init__(self, gconf_key, gconf_client, screen):
         self.screen = screen
         self.gconf_client = gconf_client
@@ -79,8 +79,7 @@ class G15Fx:
     def destroy(self):
         pass
 
-    ''' Callbacks
-    '''
+    """ Callbacks """
 
     def config_changed(self, client, connection_id, entry, args):
         self.screen.redraw()

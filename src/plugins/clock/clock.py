@@ -14,10 +14,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+# import locale
+import os
+
+import gtk
+import pango
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("clock", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.g15theme as g15theme
 import gnome15.util.g15scheduler as g15scheduler
@@ -26,11 +30,8 @@ import gnome15.g15driver as g15driver
 import gnome15.g15globals as g15globals
 import gnome15.g15text as g15text
 import gnome15.g15plugin as g15plugin
-import datetime
-import gtk
-import pango
-import os
-import locale
+
+_ = g15locale.get_translation("clock", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "clock"
@@ -150,8 +151,9 @@ class G15Clock(g15plugin.G15Plugin):
         self._reload_theme()
 
         """
-        Most plugins will usually want to draw on the screen. To do so, a 'page' is created. We also supply a callback here to
-        perform the painting. You can also supply 'on_shown' and 'on_hidden' callbacks here to be notified when your
+        Most plugins will usually want to draw on the screen. To do so, a 'page' is created. We also supply a callback
+        here to perform the painting.
+        You can also supply 'on_shown' and 'on_hidden' callbacks here to be notified when your
         page actually gets shown and hidden.
         
         A thumbnail painter function is also provided. This is used by other plugins want a thumbnail representation
@@ -195,7 +197,7 @@ class G15Clock(g15plugin.G15Plugin):
         """
         Stop updating
         """
-        if self.timer != None:
+        if self.timer is not None:
             self.timer.cancel()
             self.timer = None
 
@@ -238,7 +240,7 @@ class G15Clock(g15plugin.G15Plugin):
                 font_size = 8
                 factor = 2
                 font_name = g15globals.fixed_size_font_name
-                x = 1
+                # x = 1
                 gap = 1
             else:
                 factor = 1 if horizontal else 2
@@ -249,11 +251,11 @@ class G15Clock(g15plugin.G15Plugin):
                 else:
                     text = properties["time"]
                     font_size = allocated_size / 2
-                x = 4
+                # x = 4
                 gap = 8
 
             self.text.set_canvas(canvas)
-            self.text.set_attributes(text, align=pango.ALIGN_CENTER, font_desc=font_name, \
+            self.text.set_attributes(text, align=pango.ALIGN_CENTER, font_desc=font_name,
                                      font_absolute_size=font_size * pango.SCALE / factor)
             x, y, width, height = self.text.measure()
             if horizontal:

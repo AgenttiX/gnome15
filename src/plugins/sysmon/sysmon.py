@@ -14,11 +14,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+import socket
+# import sys
+
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("sysmon", modfile=__file__).ugettext
-
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15cairo as g15cairo
@@ -29,16 +32,15 @@ import time
 import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("sysmon", modfile=__file__).ugettext
+
 try:
     import gtop
 except Exception as e:
     logger.debug("Could not import gtop. Falling back to g15top", exc_info=e)
     # API compatible work around for Ubuntu 12.10
     import gnome15.g15top as gtop
-import gtk
-import os
-import sys
-import socket
+
 
 id = "sysmon"
 name = _("System Monitor")
@@ -79,7 +81,6 @@ def show_preferences(parent, driver, gconf_client, gconf_key):
 
 
 class Net:
-
     def __init__(self, net_no, name):
         self.net_no = net_no
         self.name = name
@@ -149,7 +150,6 @@ class Net:
 
 
 class CPU:
-
     def __init__(self, number):
         self.number = number
         self.name = "cpu%d" % number if number >= 0 else "cpu"
@@ -159,7 +159,6 @@ class CPU:
         self.last_times = None
 
     def new_times(self, time_list):
-
         if self.last_times is not None:
             working_list = list(time_list)
 
@@ -293,7 +292,6 @@ class G15SysMon(g15plugin.G15RefreshingPlugin):
                     return True
 
     def refresh(self):
-
         # Memory
         mem = self._get_mem_info()
         now = time.time()
@@ -340,9 +338,9 @@ class G15SysMon(g15plugin.G15RefreshingPlugin):
         self._reschedule_refresh()
 
     def _set_panel(self, client=None, connection_id=None, entry=None, args=None):
-        self.page.panel_painter = self._paint_panel if g15gconf.get_bool_or_default(self.gconf_client,
-                                                                                    self.gconf_key + "/show_cpu_on_panel",
-                                                                                    True) else None
+        self.page.panel_painter = self._paint_panel \
+            if g15gconf.get_bool_or_default(self.gconf_client, self.gconf_key + "/show_cpu_on_panel", True) \
+            else None
 
     def _refresh(self):
         if self.page is not None:
@@ -355,31 +353,27 @@ class G15SysMon(g15plugin.G15RefreshingPlugin):
             self._schedule_refresh()
 
     def get_theme_properties(self):
-
-        properties = {}
-        properties["cpu_pc"] = "%3d" % self.selected_cpu.pc
-
-        properties["mem_total"] = "%f" % (self.total / 1024)
-        properties["mem_free_k"] = "%f" % (self.free / 1024)
-        properties["mem_used_k"] = "%f" % (self.used / 1024)
-        properties["mem_cached_k"] = "%f" % (self.cached / 1024)
-        properties["mem_noncached_k"] = "%f" % (self.noncached / 1024)
-
-        properties["mem_total_mb"] = "%.2f" % (self.total / 1024 / 1024)
-        properties["mem_free_mb"] = "%.2f" % (self.free / 1024 / 1024)
-        properties["mem_used_mb"] = "%.2f" % (self.used / 1024 / 1024)
-        properties["mem_cached_mb"] = "%3d" % (self.cached / 1024 / 1024)
-        properties["mem_noncached_mb"] = "%3d" % (self.noncached / 1024 / 1024)
-
-        properties["mem_total_gb"] = "%.1f" % (self.total / 1024 / 1024 / 1024)
-        properties["mem_free_gb"] = "%.1f" % (self.free / 1024 / 1024 / 1024)
-        properties["mem_used_gb"] = "%.1f" % (self.used / 1024 / 1024 / 1024)
-        properties["mem_cached_gb"] = "%.1f" % (self.cached / 1024 / 1024 / 1024)
-        properties["mem_noncached_gb"] = "%.1f" % (self.noncached / 1024 / 1024 / 1024)
-
-        properties["mem_used_pc"] = int(self.used * 100.0 / self.total)
-        properties["mem_cached_pc"] = int(self.cached * 100.0 / self.total)
-        properties["mem_noncached_pc"] = int(self.noncached * 100.0 / self.total)
+        properties = {
+            "cpu_pc": "%3d" % self.selected_cpu.pc,
+            "mem_total": "%f" % (self.total / 1024),
+            "mem_free_k": "%f" % (self.free / 1024),
+            "mem_used_k": "%f" % (self.used / 1024),
+            "mem_cached_k": "%f" % (self.cached / 1024),
+            "mem_noncached_k": "%f" % (self.noncached / 1024),
+            "mem_total_mb": "%.2f" % (self.total / 1024 / 1024),
+            "mem_free_mb": "%.2f" % (self.free / 1024 / 1024),
+            "mem_used_mb": "%.2f" % (self.used / 1024 / 1024),
+            "mem_cached_mb": "%3d" % (self.cached / 1024 / 1024),
+            "mem_noncached_mb": "%3d" % (self.noncached / 1024 / 1024),
+            "mem_total_gb": "%.1f" % (self.total / 1024 / 1024 / 1024),
+            "mem_free_gb": "%.1f" % (self.free / 1024 / 1024 / 1024),
+            "mem_used_gb": "%.1f" % (self.used / 1024 / 1024 / 1024),
+            "mem_cached_gb": "%.1f" % (self.cached / 1024 / 1024 / 1024),
+            "mem_noncached_gb": "%.1f" % (self.noncached / 1024 / 1024 / 1024),
+            "mem_used_pc": int(self.used * 100.0 / self.total),
+            "mem_cached_pc": int(self.cached * 100.0 / self.total),
+            "mem_noncached_pc": int(self.noncached * 100.0 / self.total)
+        }
 
         if self.selected_net is not None:
             properties["net_recv_pc"] = int(self.selected_net.recv_bps * 100.0 / self.selected_net.max_recv)
@@ -388,8 +382,9 @@ class G15SysMon(g15plugin.G15RefreshingPlugin):
             properties["net_send_mbps"] = "%.2f" % (self.selected_net.send_bps / 1024 / 1024)
             properties["net_no"] = self.selected_net.name.upper()
             idx = self.net_data.index(self.selected_net)
-            properties["next_net_no"] = self.net_list[idx + 1].upper() if idx < (len(self.net_list) - 1) else \
-            self.net_list[0].upper()
+            properties["next_net_no"] = self.net_list[idx + 1].upper() \
+                if idx < (len(self.net_list) - 1) \
+                else self.net_list[0].upper()
         else:
             for c in ["net_recv_pc", "net_send_pc", "net_recv_mbps", "net_send_mbps"]:
                 properties[c] = ""
@@ -407,8 +402,9 @@ class G15SysMon(g15plugin.G15RefreshingPlugin):
 
         properties["cpu_no"] = self.selected_cpu.name.upper()
         idx = self.cpu_data.index(self.selected_cpu)
-        properties["next_cpu_no"] = self.cpu_data[idx + 1].name.upper() if idx < (len(self.cpu_data) - 1) else \
-        self.cpu_data[0].name.upper()
+        properties["next_cpu_no"] = self.cpu_data[idx + 1].name.upper() \
+            if idx < (len(self.cpu_data) - 1) \
+            else self.cpu_data[0].name.upper()
 
         return properties
 

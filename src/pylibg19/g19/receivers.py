@@ -14,12 +14,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from keys import (Data, Key)
-from runnable import Runnable
-
+import logging
 import threading
 import time
-import logging
+
+from keys import (Data, Key)
+from runnable import Runnable
 
 logger = logging.getLogger(__name__)
 

@@ -23,10 +23,9 @@ This is done using the NetworkManager DBUS interface, although the number of
 states available is reduced to connected/disconnected
 """
 
-import dbus
-
-# Logging
 import logging
+
+import dbus
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +56,8 @@ class NetworkManager:
             self._handle = self._interface.connect_to_signal('StateChanged', self._set_state)
         except dbus.DBusException as e:
             logger.warning(
-                "NetworkManager DBUS interface could not be contacted. All plugins will assume the network is available, and may behave unexpectedly.")
+                "NetworkManager DBUS interface could not be contacted. "
+                "All plugins will assume the network is available, and may behave unexpectedly.")
             logger.debug("NetworkManager connection attempt below :", exc_info=e)
 
             # Assume connected

@@ -15,15 +15,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 import gobject
 import g15pythonlang
 
-# Logging
-import logging
+import jobqueue
 
 logger = logging.getLogger(__name__)
-
-import jobqueue
 
 """
 Default scheduler

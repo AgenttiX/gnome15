@@ -30,7 +30,10 @@ device.
 import os
 import logging
 
+import gnome15.g15locale as g15locale
+
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("gnome15-drivers").ugettext
 
 # Find all drivers
 drivers_dir = os.path.realpath(os.path.join(os.path.dirname(__file__), "drivers"))
@@ -40,9 +43,9 @@ imported_drivers = {}
 driverfiles = [fname[:-3] for fname in os.listdir(drivers_dir) if fname.endswith(".py") and fname.startswith("driver_")]
 for d in driverfiles:
     try:
-        driver_mod = __import__("gnome15.drivers.%s" % d, fromlist=[])
-        mod = getattr(getattr(driver_mod, "drivers"), d)
-        imported_drivers[d] = mod
+        __driver_mod = __import__("gnome15.drivers.%s" % d, fromlist=[])
+        __mod = getattr(getattr(__driver_mod, "drivers"), d)
+        imported_drivers[d] = __mod
     except Exception as e:
         logger.warning("Failed to load driver.", exc_info=e)
 
@@ -80,7 +83,7 @@ def get_driver(conf_client, device, on_close=None):
         return driver
 
     driver_mod_key = "driver_" + driver_name
-    if not driver_mod_key in imported_drivers:
+    if driver_mod_key not in imported_drivers:
         # If the previous driver is no longer installed, get the best remaining driver
         driver = _get_best_driver(device, on_close)
         if driver is None:
@@ -93,7 +96,7 @@ def get_driver(conf_client, device, on_close=None):
     else:
         driver = imported_drivers[driver_mod_key].Driver(device, on_close=on_close)
 
-    if not device.model_id in driver.get_model_names():
+    if device.model_id not in driver.get_model_names():
         # If the configured driver is now incorrect for the device model, just use the best driver
         # If no driver has yet been configured, always use the best driver
         driver = _get_best_driver(device, on_close)
@@ -108,14 +111,14 @@ def get_driver(conf_client, device, on_close=None):
 
 
 def _get_best_driver(device, on_close=None):
-    '''
+    """
     Get the "best driver" available. This will be the first driver that
     supports the provided device.
     
     Keyword arguments:
     device -- device to find driver for
     on_close -- callback passed to driver that is executed when the driver closes.
-    '''
+    """
     for driver_mod_key in imported_drivers:
         driver = imported_drivers[driver_mod_key].Driver(device, on_close=on_close)
         if device.model_id in driver.get_model_names():

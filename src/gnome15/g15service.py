@@ -17,13 +17,25 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import pygtk
-from gnome15 import g15accounts
-
-pygtk.require('2.0')
+import logging
 import os
+import signal
+# import sys
+from threading import Thread
+import time
+
+import dbus
+import gconf
 import gobject
+import gtk.gdk
+import pygtk
+import Xlib.X
+import Xlib.ext
+import Xlib.XK
+import Xlib.display
+import Xlib.protocol
+
+# from gnome15 import g15accounts
 import g15globals
 import g15screen
 import g15profile
@@ -34,27 +46,15 @@ import g15uinput
 import g15network
 import g15accounts
 import g15driver
-import gconf
 import util.g15scheduler as g15scheduler
 import util.g15gconf as g15gconf
 import util.g15os as g15os
-import Xlib.X
-import Xlib.ext
-import Xlib.XK
-import Xlib.display
-import Xlib.protocol
-import time
-import dbus
-import signal
 import g15pluginmanager
 import g15actions
-from threading import Thread
-import gtk.gdk
-
-# Logging
-import logging
+import g15upgrade
 
 logger = logging.getLogger(__name__)
+pygtk.require('2.0')
 
 # Used for getting logout  / shutdown signals
 master_client = None
@@ -68,8 +68,6 @@ if g15desktop.get_desktop() in ["gnome", "gnome-shell"]:
         pass
 
 # Upgrade
-import g15upgrade
-
 g15upgrade.upgrade()
 
 NAME = "Gnome15"
@@ -148,7 +146,6 @@ class StartThread(Thread):
 
 
 class MacroHandler(object):
-
     def __init__(self):
         self.buffered_executions = []
         self.cancelled = False
@@ -413,7 +410,7 @@ class MacroHandler(object):
         self.cancelled = False
         self.init_xtest()
         if self.virtual_keyboard is None and (not self.use_x_test or not self.x_test_available):
-            self.window = self.local_dpy.get_input_focus()._data["focus"];
+            self.window = self.local_dpy.get_input_focus()._data["focus"]
 
         if macro.type == g15profile.MACRO_COMMAND:
             logger.warning("Running external command '%s'", macro.macro)
@@ -428,7 +425,6 @@ class MacroHandler(object):
 
 
 class MacroScriptExecution(object):
-
     def __init__(self, macro, handler):
         self.macro = macro
         self.handler = handler
@@ -455,7 +451,8 @@ class MacroScriptExecution(object):
          If we get the state we are waiting for, OR if we get an UP before 
          getting a HELD, we remove this key from this key from the list we are waiting for
          """
-        if state_id == self.wait_for_state or state_id == g15driver.KEY_STATE_UP and self.wait_for_state == g15driver.KEY_STATE_HELD:
+        if state_id == self.wait_for_state or state_id == g15driver.KEY_STATE_UP \
+                and self.wait_for_state == g15driver.KEY_STATE_HELD:
             for k in keys:
                 self.wait_for_keys.remove(k)
 
@@ -489,7 +486,8 @@ class MacroScriptExecution(object):
                     else:
                         logger.warning("Unknown goto label %s in macro script. Ignoring", val)
                 elif op == "delay":
-                    if not self.handler.cancelled and self.macro.profile.send_delays and not self.macro.profile.fixed_delays:
+                    if not self.handler.cancelled and self.macro.profile.send_delays \
+                            and not self.macro.profile.fixed_delays:
                         time.sleep(float(
                             val) / 1000.0 if not self.macro.profile.fixed_delays else self.macro.profile.delay_amount)
                 elif op == "press":
@@ -804,7 +802,9 @@ class G15Service(g15desktop.G15AbstractService):
             logger.debug("Error opening uinput devices", exc_info=e)
             if e.errno == 13 or e.errno == 2:
                 raise Exception(
-                    "Failed to open uinput devices. Do you have the uinput module loaded (try modprobe uinput), and are the permissions of /dev/uinput correct?  If you have just installed Gnome15 for the first time, you may need to simply reboot.")
+                    "Failed to open uinput devices. Do you have the uinput module loaded (try modprobe uinput), "
+                    "and are the permissions of /dev/uinput correct? "
+                    "If you have just installed Gnome15 for the first time, you may need to simply reboot.")
             else:
                 raise
 
@@ -952,8 +952,10 @@ class G15Service(g15desktop.G15AbstractService):
                 client_path = session_manager_object.RegisterClient('gnome15.desktop', '',
                                                                     dbus_interface="org.mate.SessionManager")
 
-                self.session_manager_client_object = self.session_bus.get_object("org.mate.SessionManager", client_path,
-                                                                                 "org.mate.SessionManager.ClientPrivate")
+                self.session_manager_client_object = self.session_bus.get_object(
+                    "org.mate.SessionManager",
+                    client_path,
+                    "org.mate.SessionManager.ClientPrivate")
                 self.session_manager_client_object.connect_to_signal("QueryEndSession", self._sm_query_end_session)
                 self.session_manager_client_object.connect_to_signal("EndSession", self._sm_end_session)
                 self.session_manager_client_object.connect_to_signal("CancelEndSession", self._sm_cancel_end_session)
@@ -1021,7 +1023,8 @@ class G15Service(g15desktop.G15AbstractService):
             self.this_session_path = console_kit_manager.GetSessionForCookie(os.environ['XDG_SESSION_COOKIE'])
             logger.info("This session %s", self.this_session_path)
 
-            # TODO GetCurrentSession doesn't seem to work as i would expect. Investigate. For now, assume we are the active session
+            # TODO GetCurrentSession doesn't seem to work as i would expect. Investigate.
+            #            For now, assume we are the active session
             #            current_session = console_kit_manager.GetCurrentSession()
             #            logger.info("Current session %s ", current_session)
             #            self.session_active = current_session == self.this_session_path
@@ -1121,13 +1124,18 @@ class G15Service(g15desktop.G15AbstractService):
                                                              2000) / 1000.0
         self.macro_handler.use_x_test = g15gconf.get_bool_or_default(self.conf_client, '/apps/gnome15/use_x_test', True)
         self.disable_svg_glow = g15gconf.get_bool_or_default(self.conf_client, '/apps/gnome15/disable_svg_glow', False)
-        self.fade_screen_on_close = g15gconf.get_bool_or_default(self.conf_client, '/apps/gnome15/fade_screen_on_close',
-                                                                 True)
-        self.all_off_on_disconnect = g15gconf.get_bool_or_default(self.conf_client,
-                                                                  '/apps/gnome15/all_off_on_disconnect', True)
-        self.fade_keyboard_backlight_on_close = g15gconf.get_bool_or_default(self.conf_client,
-                                                                             '/apps/gnome15/fade_keyboard_backlight_on_close',
-                                                                             True)
+        self.fade_screen_on_close = g15gconf.get_bool_or_default(
+            self.conf_client,
+            '/apps/gnome15/fade_screen_on_close',
+            True)
+        self.all_off_on_disconnect = g15gconf.get_bool_or_default(
+            self.conf_client,
+            '/apps/gnome15/all_off_on_disconnect',
+            True)
+        self.fade_keyboard_backlight_on_close = g15gconf.get_bool_or_default(
+            self.conf_client,
+            '/apps/gnome15/fade_keyboard_backlight_on_close',
+            True)
         self.start_in_threads = g15gconf.get_bool_or_default(self.conf_client, '/apps/gnome15/start_in_threads', False)
         self._mark_all_pages_dirty()
 

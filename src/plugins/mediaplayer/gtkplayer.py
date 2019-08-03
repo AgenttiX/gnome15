@@ -66,7 +66,8 @@ class Main:
         print("stop")
         self.pipeline.set_state(gst.STATE_READY)
 
-    def OnQuit(self, widget):
+    @staticmethod
+    def OnQuit(widget):
         gtk.main_quit()
 
 

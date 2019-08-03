@@ -14,30 +14,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("gnome15-drivers").ugettext
-
-from threading import Thread
-from pyinputevent.pyinputevent import SimpleDevice
-
+import fcntl
+import logging
+import os
+import re
 import select
+from threading import Thread
+
+import cairo
+import gconf
+import gtk
+from pyinputevent.pyinputevent import SimpleDevice
 import pyinputevent.scancodes as S
+import usb
+
+import gnome15.g15locale as g15locale
 import gnome15.g15driver as g15driver
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.g15globals as g15globals
 import gnome15.g15uinput as g15uinput
-import gconf
-import fcntl
-import os
-import gtk
-import cairo
-import re
-import usb
 
-# Logging
-import logging
+_ = g15locale.get_translation("gnome15-drivers").ugettext
 
 logger = logging.getLogger(__name__)
 

@@ -14,13 +14,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gtk
+import os
+
 import cairo
+import gtk
 from gtk import gdk
 import gobject
+
 import g15globals
 import util.g15convert as g15convert
-import os
+
 
 COLORS_REDBLUE = [(0, 0, 0, 1), (255, 0, 0, 1), (255, 0, 255, 1), (0, 0, 255, 1)]
 COLORS_FULL = [(0, 0, 0, 1), (255, 0, 0, 1), (0, 255, 0, 1), (0, 0, 255, 1), (255, 255, 0, 1), (0, 255, 255, 1),
@@ -81,8 +84,11 @@ class ColorPreview(gtk.DrawingArea):
         self.picker_down = False
 
         def _update_adj(c):
-            self.picker._select_color((int(r_adjustment.get_value()), \
-                                       0, int(b_adjustment.get_value())))
+            self.picker._select_color((
+                int(r_adjustment.get_value()),
+                0,
+                int(b_adjustment.get_value())
+            ))
 
         def _set_color(c):
             r_adjustment.set_value(c[0])

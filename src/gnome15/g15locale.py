@@ -26,16 +26,16 @@ in memory.
 Translations may be required for Python code, SVG or Glade files. 
 """
 
-import os
-import locale
+import datetime
 import gettext
+import locale
+import logging
+import os
+import re
+import time
+
 import g15globals
 import util.g15gconf as g15gconf
-import time
-import datetime
-import re
-
-import logging
 
 logger = logging.getLogger(__name__)
 

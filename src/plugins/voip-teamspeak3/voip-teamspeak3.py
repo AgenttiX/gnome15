@@ -17,23 +17,26 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+import base64
+import errno
+import logging
+import os
+import re
+import socket
+# from threading import Thread
+# from threading import Lock
+# from threading import RLock
+# from threading import Semaphore
+
+import ts3
+import voip
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("voip-teamspeak3", modfile=__file__).ugettext
-
 import gnome15.g15driver as g15driver
 import gnome15.util.g15icontools as g15icontools
-import ts3
-from threading import Thread
-from threading import Lock
-from threading import RLock
-from threading import Semaphore
-import voip
-import os
-import base64
-import socket
-import errno
-import re
+
+_ = g15locale.get_translation("voip-teamspeak3", modfile=__file__).ugettext
+logger = logging.getLogger(__name__)
 
 # Plugin details 
 id = "voip-teamspeak3"
@@ -49,11 +52,6 @@ unsupported_models = [g15driver.MODEL_G110, g15driver.MODEL_G11, g15driver.MODEL
 # This plugin only supplies classes to the 'voip' plugin and so is never activated 
 passive = True
 global_plugin = True
-
-# Logging
-import logging
-
-logger = logging.getLogger(__name__)
 
 """
 Calendar Back-end module functions
@@ -85,7 +83,6 @@ Teamspeak3 backend
 
 
 class Teamspeak3BuddyMenuItem(voip.BuddyMenuItem):
-
     def __init__(self, db_id, clid, nickname, channel, client_type, plugin):
         voip.BuddyMenuItem.__init__(self, "client-%s" % clid, nickname, channel, plugin)
         self.db_id = db_id
@@ -100,7 +97,6 @@ class Teamspeak3BuddyMenuItem(voip.BuddyMenuItem):
 
 
 class Teamspeak3ServerMenuItem(voip.ChannelMenuItem):
-
     def __init__(self, schandlerid, name, backend):
         voip.ChannelMenuItem.__init__(self, "server-%s" % schandlerid, name, backend, icon=g15icontools.get_icon_path(
             ['server', 'redhat-server', 'network-server', 'redhat-network-server', 'gnome-fs-server'],
@@ -112,7 +108,6 @@ class Teamspeak3ServerMenuItem(voip.ChannelMenuItem):
 
 
 class Teamspeak3ChannelMenuItem(voip.ChannelMenuItem):
-
     def __init__(self, schandlerid, cid, cpid, name, order, backend):
         voip.ChannelMenuItem.__init__(self, "channel-%s-%d" % (cid, schandlerid), name, backend)
         self.group = False
@@ -168,7 +163,6 @@ class Teamspeak3ChannelMenuItem(voip.ChannelMenuItem):
 
 
 class Teamspeak3Backend(voip.VoipBackend):
-
     def __init__(self):
         voip.VoipBackend.__init__(self)
         self._buddies = None

@@ -21,42 +21,42 @@ class Key(object):
     # G/M keys
     # light switch
     LIGHT, \
-    M1, \
-    M2, \
-    M3, \
-    MR, \
-    G01, \
-    G02, \
-    G03, \
-    G04, \
-    G05, \
-    G06, \
-    G07, \
-    G08, \
-    G09, \
-    G10, \
-    G11, \
-    G12 = range(17)
+        M1, \
+        M2, \
+        M3, \
+        MR, \
+        G01, \
+        G02, \
+        G03, \
+        G04, \
+        G05, \
+        G06, \
+        G07, \
+        G08, \
+        G09, \
+        G10, \
+        G11, \
+        G12 = range(17)
 
     # special keys at display
     BACK, \
-    DOWN, \
-    LEFT, \
-    MENU, \
-    OK, \
-    RIGHT, \
-    SETTINGS, \
-    UP = range(G12 + 1, G12 + 9)
+        DOWN, \
+        LEFT, \
+        MENU, \
+        OK, \
+        RIGHT, \
+        SETTINGS, \
+        UP = range(G12 + 1, G12 + 9)
 
     # multimedia keys
     WINKEY_SWITCH, \
-    NEXT, \
-    PREV, \
-    STOP, \
-    PLAY, \
-    MUTE, \
-    SCROLL_UP, \
-    SCROLL_DOWN = range(UP + 1, UP + 9)
+        NEXT, \
+        PREV, \
+        STOP, \
+        PLAY, \
+        MUTE, \
+        SCROLL_UP, \
+        SCROLL_DOWN = range(UP + 1, UP + 9)
 
     displayKeys = {
         BACK,
@@ -104,9 +104,9 @@ class Key(object):
 class Data(object):
     """Static container with all data values for all keys."""
 
-    ##
-    ## display keys
-    ##
+    #
+    # display keys
+    #
 
     # special keys at display
     # The current state of pressed keys is an OR-combination of the following
@@ -125,9 +125,9 @@ class Data(object):
         0x80: Key.UP
     }
 
-    ##
-    ## G- and M-Keys
-    ##
+    #
+    # G- and M-Keys
+    #
 
     # these are the bit fields for setting the currently illuminated keys
     # (see set_enabled_m_keys())
@@ -183,9 +183,9 @@ class Data(object):
         KEY_LIGHT: Key.LIGHT
     }
 
-    ##
-    ## MM-keys
-    ##
+    #
+    # MM-keys
+    #
 
     # multimedia keys
     # received as [0x01, key]

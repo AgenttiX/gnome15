@@ -15,12 +15,13 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import print_function
+import fcntl
 import optparse
 import select
-import fcntl
+
 import pyinputevent.scancodes as S
-from pyinputevent.uinput import UInputDevice
+# from pyinputevent.uinput import UInputDevice
 from pyinputevent.pyinputevent import InputEvent, SimpleDevice
 from pyinputevent.keytrans import *
 
@@ -54,21 +55,22 @@ class ForwardDevice(SimpleDevice):
             code += 4
         return code
     
-    def receive(self, event):
-        print "Event: %s" % str(event)
+    @staticmethod
+    def receive(event):
+        print("Event: %s" % str(event))
         if event.etype == S.EV_KEY:
             key = str(event.ecode)
             if event.evalue == 2:
-                print "Auto %s" % key
+                print("Auto %s" % key)
             else:
                 if event.evalue == 1:
-                    print "Down %s" % key
+                    print("Down %s" % key)
                 else:
-                    print "Up %s" % key
+                    print("Up %s" % key)
         elif event.etype == 0:
-            print "Etype 0"
+            print("Etype 0")
         else:
-            print "Unhandled event: %s" % str(event)
+            print("Unhandled event: %s" % str(event))
 
 
 if __name__ == "__main__":

@@ -14,31 +14,32 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from threading import Thread
-from PIL import Image
-from PIL import ImageMath
-from PIL import ImageOps
 import array
 import asyncore
-import cairo
-import gnome15.g15driver as g15driver
-import gnome15.g15locale as g15locale
-import gnome15.g15screen as g15screen
-import gnome15.g15theme as g15theme
-import gnome15.util.g15convert as g15convert
-import gnome15.util.g15uigconf as g15uigconf
-import gnome15.util.g15gconf as g15gconf
-import gnome15.util.g15cairo as g15cairo
-import gobject
-import gtk
 import logging
 import os
 import socket
 import struct
-import sys
+# import sys
+from threading import Thread
+
+# import cairo
+# import gobject
+import gtk
+from PIL import Image
+# from PIL import ImageMath
+# from PIL import ImageOps
+
+import gnome15.g15driver as g15driver
+import gnome15.g15locale as g15locale
+import gnome15.g15screen as g15screen
+import gnome15.g15theme as g15theme
+# import gnome15.util.g15convert as g15convert
+import gnome15.util.g15uigconf as g15uigconf
+import gnome15.util.g15gconf as g15gconf
+import gnome15.util.g15cairo as g15cairo
 
 _ = g15locale.get_translation("g15daemon-server", modfile=__file__).ugettext
-
 logger = logging.getLogger(__name__)
 
 # Plugin details - All of these must be provided
@@ -277,7 +278,7 @@ class G15DaemonClient(asyncore.dispatcher):
 
     @staticmethod
     def dump_buf(buf):
-        i = 0
+        # i = 0
         for y in range(43):
             l = ""
             for x in range(160):

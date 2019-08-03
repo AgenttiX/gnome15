@@ -14,11 +14,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cairo
+import cairoplot
+
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.util.g15convert as g15convert
-import cairoplot
-import cairo
 
 
 def create(theme):
@@ -38,7 +39,6 @@ def destroy(theme):
 #    page.remove_child(page.get_child_by_id("mem"))
 
 class G15Graph(g15theme.Component):
-
     def __init__(self, component_id, plugin):
         g15theme.Component.__init__(self, component_id)
         self.plugin = plugin
@@ -85,7 +85,6 @@ class G15Graph(g15theme.Component):
 
 
 class G15CPUGraph(G15Graph):
-
     def __init__(self, component_id, plugin):
         G15Graph.__init__(self, component_id, plugin)
 
@@ -104,7 +103,6 @@ class G15CPUGraph(G15Graph):
 
 
 class G15NetGraph(G15Graph):
-
     def __init__(self, component_id, plugin):
         G15Graph.__init__(self, component_id, plugin)
 

@@ -14,40 +14,44 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gnome15.g15locale as g15locale
+import array
+import fcntl
+import logging
+import os
+import re
+import select
+import struct
+import sys
+from threading import Thread
 
-_ = g15locale.get_translation("gnome15-drivers").ugettext
-
-from cStringIO import StringIO
 from pyinputevent.uinput import UInputDevice
 from pyinputevent.pyinputevent import InputEvent, SimpleDevice
 from pyinputevent.keytrans import *
-from threading import Thread
-
-import select
 import pyinputevent.scancodes as S
+
+import gnome15.g15locale as g15locale
 import gnome15.g15driver as g15driver
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.g15globals as g15globals
 import gnome15.g15uinput as g15uinput
-import gconf
-import fcntl
-import os
-import gtk
-import cairo
-import re
-import usb
 import fb
+
+import cairo
+import dbus
+import gconf
+import gobject
+import gtk
 from PIL import Image
 from PIL import ImageMath
-import array
-import struct
-import dbus
-import gobject
+import usb
 
-# Logging
-import logging
+if sys.version_info < (3, 0):
+    from cStringIO import StringIO
+else:
+    from io import StringIO
+
+_ = g15locale.get_translation("gnome15-drivers").ugettext
 
 logger = logging.getLogger(__name__)
 
@@ -697,23 +701,24 @@ class KeyboardReceiveThread(Thread):
         logger.info("Thread left")
 
 
-'''
+"""
 SimpleDevice implementation that does nothing with events. This is used to
 work-around a problem where X ends up getting the G19 F-key events
-'''
+"""
 
 
 class SinkDevice(SimpleDevice):
     def __init__(self, *args, **kwargs):
         SimpleDevice.__init__(self, *args, **kwargs)
 
-    def receive(self, event):
+    @staticmethod
+    def receive(event):
         logger.debug("Sunk event %s", str(event))
 
 
-'''
+"""
 Abstract input device
-'''
+"""
 
 
 class AbstractInputDevice(SimpleDevice):
@@ -730,9 +735,9 @@ class AbstractInputDevice(SimpleDevice):
             logger.warning("Unmapped key for event: %s", event_code)
 
 
-'''
+"""
 SimpleDevice implementation for handling multi-media keys. 
-'''
+"""
 
 
 class MultiMediaDevice(AbstractInputDevice):
@@ -750,11 +755,11 @@ class MultiMediaDevice(AbstractInputDevice):
             logger.warning("Unhandled event: %s", str(event))
 
 
-'''
+"""
 SimpleDevice implementation that translates kernel input events
 into Gnome15 key events and forwards them to the registered 
 Gnome15 keyboard callback.
-'''
+"""
 
 
 class ForwardDevice(AbstractInputDevice):
@@ -882,7 +887,8 @@ class ForwardDevice(AbstractInputDevice):
         else:
             self._emit_macro(event)
 
-    def _translate_mouse_buttons(self, ecode):
+    @staticmethod
+    def _translate_mouse_buttons(ecode):
         """
         Translate the default joystick event codes to default mouse
         event codes
@@ -951,7 +957,8 @@ class ForwardDevice(AbstractInputDevice):
                 self.callback([k], g15driver.KEY_STATE_UP)
                 self.held_keys.remove(k)
 
-    def _clamp(self, minimum, x, maximum):
+    @staticmethod
+    def _clamp(minimum, x, maximum):
         return max(minimum, min(x, maximum))
 
     def _mouse_move(self):
@@ -1162,10 +1169,10 @@ class Driver(g15driver.AbstractDriver):
             argb_context.set_source_surface(img)
             argb_context.paint()
 
-            '''
+            """
             Now convert the ARGB to a PIL image so it can be converted to a 1 bit monochrome image, with all
             colours dithered. It would be nice if Cairo could do this :( Any suggestions?
-            '''
+            """
             pil_img = Image.frombuffer("RGBA", (width, height), argb_surface.get_data(), "raw", "RGBA", 0, 1)
             pil_img = ImageMath.eval("convert(pil_img,'1')", pil_img=pil_img)
             pil_img = ImageMath.eval("convert(pil_img,'P')", pil_img=pil_img)
@@ -1256,9 +1263,9 @@ class Driver(g15driver.AbstractDriver):
             self.key_thread.devices.append(MultiMediaDevice(callback, self.device_info.key_map, devpath, devpath))
         self.key_thread.start()
 
-    '''
+    """
     Private
-    '''
+    """
 
     def _on_connect(self):
         self.notify_handles = []
@@ -1277,7 +1284,7 @@ class Driver(g15driver.AbstractDriver):
                 raise usb.USBError("No matching framebuffer device found")
             if self.fb_mode != self.framebuffer_mode:
                 raise usb.USBError("Unexpected framebuffer mode %s, expected %s for device %s" % (
-                self.fb_mode, self.framebuffer_mode, self.device_name))
+                    self.fb_mode, self.framebuffer_mode, self.device_name))
 
             # Open framebuffer
             logger.info("Using framebuffer %s", self.device_name)
@@ -1331,8 +1338,8 @@ It should be launched automatically if Gnome15 is installed correctly.")
             self._write_to_led(leds[2], lights & g15driver.MKEY_LIGHT_3 != 0)
             self._write_to_led(leds[3], lights & g15driver.MKEY_LIGHT_MR != 0)
         else:
-            logger.warning(" Setting MKey lights on " + self.device.model_id + " not yet supported. " + \
-                           "Please report this as a bug, providing the contents of your /sys/class/led" + \
+            logger.warning(" Setting MKey lights on " + self.device.model_id + " not yet supported. " +
+                           "Please report this as a bug, providing the contents of your /sys/class/led" +
                            "directory and the keyboard model you use.")
 
     def _stop_receiving_keys(self):
@@ -1436,15 +1443,17 @@ It should be launched automatically if Gnome15 is installed correctly.")
                         if os.path.exists(device_file):
                             usb_id = os.path.basename(os.path.realpath(device_file)).split(".")[0].split(":")
                             if len(usb_id) > 2:
-                                if usb_id[1].lower() == "%04x" % self.device.controls_usb_id[0] and usb_id[
-                                    2].lower() == "%04x" % self.device.controls_usb_id[1]:
+                                if usb_id[1].lower() == "%04x" % self.device.controls_usb_id[0] \
+                                        and usb_id[2].lower() == "%04x" % self.device.controls_usb_id[1]:
                                     self.device_name = "/dev/%s" % fb
                                     break
 
                                     # If still no device name, give up
             if self.device_name is None or self.device_name == "" or self.device_name == "auto":
                 raise Exception(
-                    "No frame buffer device specified, and none could be found automatically. Are the kernel modules loaded?")
+                    "No frame buffer device specified, and none could be found automatically. "
+                    "Are the kernel modules loaded?"
+                )
 
             # Get the mode of the device
             f = open("/sys/class/graphics/" + os.path.basename(self.device_name) + "/name", "r")

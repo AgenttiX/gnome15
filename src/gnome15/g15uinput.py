@@ -20,12 +20,14 @@ joystick events) into the kernel.
 """
 
 import logging
-import uinput
-import util.g15os as g15os
 import os
 import subprocess
-from uinput.ev import *
 from threading import RLock
+
+import uinput
+from uinput.ev import *
+
+import util.g15os as g15os
 from gnome15 import g15globals
 
 logger = logging.getLogger(__name__)
@@ -62,8 +64,8 @@ registered_parameters = {MOUSE: {},
                          KEYBOARD: {}}
 uinput_devices = {}
 locks = {}
-for t in DEVICE_TYPES:
-    locks[t] = RLock()
+for __t in DEVICE_TYPES:
+    locks[__t] = RLock()
 
 """
 These are the very unofficial vendor / produce codes used for the virtual
@@ -111,12 +113,12 @@ Load the X Keysym to UInput map
 __keysym_map = {}
 __keysym_map_path = "%s/keysym-to-uinput" % g15globals.ukeys_dir
 if os.path.exists(__keysym_map_path):
-    f = open(__keysym_map_path, "r")
-    b = []
-    for line in f.readlines():
-        line = line.strip()
-        if not line == "" and not line.startswith("#"):
-            arr = line.split("=")
+    __f = open(__keysym_map_path, "r")
+    # b = []
+    for __line in __f.readlines():
+        __line = __line.strip()
+        if not __line == "" and not __line.startswith("#"):
+            arr = __line.split("=")
             if len(arr) > 1:
                 __keysym_map[arr[0].lower()] = arr[1]
 else:
@@ -132,8 +134,8 @@ def get_keysym_to_uinput_mapping(keysym):
     """
     if keysym.lower() in __keysym_map:
         return __keysym_map[keysym.lower()]
-    logger.warning("Failed to translate X keysym %s to UInput code. " \
-                   "You can add a mapping by editing %s. " \
+    logger.warning("Failed to translate X keysym %s to UInput code. "
+                   "You can add a mapping by editing %s. "
                    "Please also report this on the Gnome15 project forums.",
                    keysym,
                    __keysym_map_path)
@@ -171,7 +173,7 @@ def calibrate(device_type):
     device_type    --    device type
     """
     if are_calibration_tools_available():
-        if not device_type in [JOYSTICK, DIGITAL_JOYSTICK]:
+        if device_type not in [JOYSTICK, DIGITAL_JOYSTICK]:
             raise Exception("Cannot calibrate this device type (%s)" % device_type)
         device_file = get_device(device_type)
         if device_file:
@@ -188,7 +190,7 @@ def save_calibration(device_type):
     device_type    --    device type
     """
     if are_calibration_tools_available():
-        if not device_type in [JOYSTICK, DIGITAL_JOYSTICK]:
+        if device_type not in [JOYSTICK, DIGITAL_JOYSTICK]:
             raise Exception("Cannot calibrate this device type (%s)" % device_type)
         device_file = get_device(device_type)
         if device_file:
@@ -210,7 +212,7 @@ def load_calibration(device_type):
     device_type    --    device type
     """
     if are_calibration_tools_available():
-        if not device_type in [JOYSTICK, DIGITAL_JOYSTICK]:
+        if device_type not in [JOYSTICK, DIGITAL_JOYSTICK]:
             raise Exception("Cannot calibrate this device type (%s)" % device_type)
         device_file = get_device(device_type)
         if device_file:
@@ -295,7 +297,7 @@ def emit(target, code, value, syn=True):
     value          --    uinput value
     syn            --    emit SYN (defaults to True)
     """
-    if not target in DEVICE_TYPES:
+    if target not in DEVICE_TYPES:
         raise Exception("Invalid target. '%s' must be one of %s" % (target, str(DEVICE_TYPES)))
 
     if not isinstance(code, tuple):
@@ -344,11 +346,13 @@ def emit(target, code, value, syn=True):
 
 
 def __get_keys(prefix, exclude=None):
-    l = []
-    for k in sorted(capabilities.iterkeys()):
-        if k.startswith(prefix) and (exclude == None or not k.startswith(exclude)):
-            l.append(capabilities[k])
-    return l
+    lst = []
+    # Previously sorted(capabilities.iterkeys()) has been used here.
+    # However, iterkeys() is not available on Python 3
+    for key in sorted(capabilities.keys()):
+        if key.startswith(prefix) and (exclude is None or not key.startswith(exclude)):
+            lst.append(capabilities[key])
+    return lst
 
 
 def get_keys(device_type):
@@ -376,7 +380,7 @@ def get_buttons(device_type, real_uinput_only=False):
 
 def __check_devices():
     for device_type in DEVICE_TYPES:
-        if not device_type in uinput_devices:
+        if device_type not in uinput_devices:
             logger.info("Opening uinput device for %s", device_type)
             keys = []
             for b, _ in get_buttons(device_type, True):

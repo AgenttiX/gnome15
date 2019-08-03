@@ -16,10 +16,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 import gnome15.g15theme as g15theme
 import gnome15.g15screen as g15screen
 import gnome15.g15driver as g15driver
-import os
 
 # Plugin details - All of these must be provided
 id = "nm"
@@ -37,14 +38,12 @@ def create(gconf_key, gconf_client, screen):
 
 
 class MenuItem:
-
     def __init__(self, page):
         self.page = page
         self.thumbnail = None
 
 
 class G15NM:
-
     def __init__(self, gconf_client, gconf_key, screen):
         self.screen = screen
         self.gconf_client = gconf_client

@@ -16,27 +16,30 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 """
 Helper classes for implementing desktop components that can monitor and control some functions
 of the desktop service. It is used for Indicators, System tray icons and panel applets and
 deals with all the hard work of connecting to DBus and monitoring events.
 """
 
-import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("gnome15").ugettext
-
-import sys
-import pygtk
-
-pygtk.require('2.0')
-import gtk
+from __future__ import print_function
+import logging
+import operator
+import os.path
+import shutil
 import subprocess
+# import sys
+from threading import RLock, Thread
+
+import dbus
 import gconf
 import gobject
-import shutil
+import gtk
+import pygtk
+import xdg.DesktopEntry
+import xdg.BaseDirectory
+
+import gnome15.g15locale as g15locale
 import gnome15.g15globals as g15globals
 import gnome15.g15screen as g15screen
 import gnome15.util.g15pythonlang as g15pythonlang
@@ -44,19 +47,10 @@ import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15os as g15os
 import gnome15.g15notify as g15notify
 import gnome15.util.g15icontools as g15icontools
-import dbus
-import os.path
-import operator
-import xdg.DesktopEntry
-import xdg.BaseDirectory
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
-
-from threading import RLock
-from threading import Thread
+pygtk.require('2.0')
+_ = g15locale.get_translation("gnome15").ugettext
 
 icon_theme = gtk.icon_theme_get_default()
 if g15globals.dev:
@@ -918,7 +912,8 @@ def set_gnome_shell_extension_enabled(extension, enabled):
                 s += ","
             s += "'%s'" % c
         try:
-            status, text = g15os.get_command_output("gsettings set org.gnome.shell enabled-extensions \"[%s]\"" % s)
+            # status, text =
+            g15os.get_command_output("gsettings set org.gnome.shell enabled-extensions \"[%s]\"" % s)
         except Exception as e:
             logger.debug("Failed to set extension enabled.", exc_info=e)
 
@@ -932,10 +927,10 @@ def browse(url):
     """
     b = g15gconf.get_string_or_default(gconf.client_get_default(),
                                        "/apps/gnome15/browser", "default")
-    if not b in __browsers and not b == "default":
+    if b not in __browsers and b != "default":
         logger.warning("Could not find browser %s, falling back to default", b)
         b = "default"
-    if not b in __browsers:
+    if b not in __browsers:
         raise Exception("Could not find browser %s" % b)
     __browsers[b].browse(url)
 
@@ -1235,7 +1230,7 @@ class G15DesktopComponent:
 
     def _attention_requested(self, message=None, path=None):
         screen_path = path
-        if not screen_path in self.attention_messages:
+        if screen_path not in self.attention_messages:
             self.attention_messages[screen_path] = message
             self.rebuild_desktop_component()
 
@@ -1243,10 +1238,12 @@ class G15DesktopComponent:
     Private
     """
 
-    def _enable(self, widget, device):
+    @staticmethod
+    def _enable(widget, device):
         device.Enable()
 
-    def _disable(self, widget, device):
+    @staticmethod
+    def _disable(widget, device):
         device.Disable()
 
     def _cycle_screens_option_changed(self, client, connection_id, entry, args):
@@ -1360,7 +1357,7 @@ class G15DesktopComponent:
     def _add_page(self, screen_path, page_path, page):
         logger.debug("Adding page %s to %s", page_path, screen_path)
         items = self.screens[screen_path].items
-        if not page_path in items:
+        if page_path not in items:
             items[page_path] = page.GetTitle()
             self.rebuild_desktop_component()
 
@@ -1372,7 +1369,6 @@ class G15DesktopComponent:
 
 
 class G15GtkMenuPanelComponent(G15DesktopComponent):
-
     def __init__(self):
         self.screen_number = 0
         self.devices = []

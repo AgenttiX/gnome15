@@ -18,12 +18,20 @@
 Alternative implementation of a G19 Driver that uses pylibg19 to communicate directly
 with the keyboard 
 """
-import gnome15.g15locale as g15locale
 
-_ = g15locale.get_translation("gnome15-drivers").ugettext
-
+import array
+import logging
+import os
+import sys
 from threading import RLock
+
 import cairo
+import gconf
+import gtk
+from PIL import ImageMath
+from PIL import Image
+
+import gnome15.g15locale as g15locale
 import gnome15.g15driver as g15driver
 import gnome15.g15globals as g15globals
 import gnome15.util.g15scheduler as g15scheduler
@@ -31,14 +39,8 @@ import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
 import gnome15.g15uinput as g15uinput
 import gnome15.g15exceptions as g15exceptions
-import sys
-import os
-import gconf
-import gtk
-import logging
-from PIL import ImageMath
-from PIL import Image
-import array
+
+_ = g15locale.get_translation("gnome15-drivers").ugettext
 
 logger = logging.getLogger(__name__)
 load_error = None
@@ -55,10 +57,12 @@ if g15globals.dev:
 # Driver information (used by driver selection UI)
 name = _("G15 Direct")
 id = "g15direct"
-description = _("For use with the G15 based devices only, this driver communicates directly, " + \
-                "with the keyboard and so is more efficient than the g15daemon driver. Note, " + \
-                "you will have to ensure the permissions of the USB devices are read/write " + \
-                "for your user.")
+description = _(
+    "For use with the G15 based devices only, this driver communicates directly, "
+    "with the keyboard and so is more efficient than the g15daemon driver. Note, "
+    "you will have to ensure the permissions of the USB devices are read/write "
+    "for your user."
+)
 has_preferences = True
 
 DEBUG_LIBG15 = "DEBUG_LIBG15" in os.environ
@@ -118,8 +122,12 @@ for k in EXT_KEY_MAP.keys():
 mkeys_control = g15driver.Control("mkeys", _("Memory Bank Keys"), 1, 0, 15, hint=g15driver.HINT_MKEYS)
 color_backlight_control = g15driver.Control("backlight_colour", _("Keyboard Backlight Colour"), (0, 255, 0),
                                             hint=g15driver.HINT_DIMMABLE | g15driver.HINT_SHADEABLE)
-red_blue_backlight_control = g15driver.Control("backlight_colour", _("Keyboard Backlight Colour"), (255, 0, 0),
-                                               hint=g15driver.HINT_DIMMABLE | g15driver.HINT_SHADEABLE | g15driver.HINT_RED_BLUE_LED)
+red_blue_backlight_control = g15driver.Control(
+    "backlight_colour",
+    _("Keyboard Backlight Colour"),
+    (255, 0, 0),
+    hint=g15driver.HINT_DIMMABLE | g15driver.HINT_SHADEABLE | g15driver.HINT_RED_BLUE_LED
+)
 backlight_control = g15driver.Control("keyboard_backlight", _("Keyboard Backlight Level"), 2, 0, 2,
                                       hint=g15driver.HINT_DIMMABLE | g15driver.HINT_SHADEABLE)
 lcd_backlight_control = g15driver.Control("lcd_backlight", _("LCD Backlight Level"), 2, 0, 2,
@@ -243,7 +251,8 @@ class Driver(g15driver.AbstractDriver):
         # We can only have one instance of this driver active in a single runtime
         self.allow_multiple = False
 
-    def get_antialias(self):
+    @staticmethod
+    def get_antialias():
         return cairo.ANTIALIAS_NONE
 
     def get_size(self):
@@ -256,17 +265,16 @@ class Driver(g15driver.AbstractDriver):
         return controls[self.device.model_id]
 
     def get_key_layout(self):
-        if self.get_model_name() == g15driver.MODEL_G13 and "macro" == self.conf_client.get_string(
-                "/apps/gnome15/%s/joymode" % self.device.uid):
-            """
-            This driver with the G13 supports some additional keys
-            """
-            l = list(self.device.key_layout)
-            l.append([g15driver.G_KEY_UP])
-            l.append(
+        if self.get_model_name() == g15driver.MODEL_G13 \
+                and "macro" == self.conf_client.get_string("/apps/gnome15/%s/joymode" % self.device.uid):
+
+            # This driver with the G13 supports some additional keys
+            lst = list(self.device.key_layout)
+            lst.append([g15driver.G_KEY_UP])
+            lst.append(
                 [g15driver.G_KEY_JOY_LEFT, g15driver.G_KEY_LEFT, g15driver.G_KEY_JOY_CENTER, g15driver.G_KEY_RIGHT])
-            l.append([g15driver.G_KEY_JOY_DOWN, g15driver.G_KEY_DOWN])
-            return l
+            lst.append([g15driver.G_KEY_JOY_DOWN, g15driver.G_KEY_DOWN])
+            return lst
         else:
             return self.device.key_layout
 
@@ -299,10 +307,11 @@ class Driver(g15driver.AbstractDriver):
         self.callback = callback
         self.last_keys = None
         self.last_ext_keys = None
-        self.thread = pylibg15.grab_keyboard(self._handle_key_event,
-                                             g15gconf.get_int_or_default(self.conf_client,
-                                                                         "/apps/gnome15/usb_key_read_timeout", 100),
-                                             self._on_error)
+        self.thread = pylibg15.grab_keyboard(
+            self._handle_key_event,
+            g15gconf.get_int_or_default(self.conf_client, "/apps/gnome15/usb_key_read_timeout", 100),
+            self._on_error
+        )
         self.thread.on_unplug = self._keyboard_unplugged
 
     def is_connected(self):
@@ -440,10 +449,10 @@ class Driver(g15driver.AbstractDriver):
             logger.info("Exiting pylibg15")
             self.connected = False
             if self.thread is not None:
-                self.thread.on_exit = pylibg15.exit
+                self.thread.on_exit = pylibg15.exit_g15
                 self.thread.deactivate()
             else:
-                pylibg15.exit()
+                pylibg15.exit_g15()
             if self.on_close is not None:
                 self.on_close(self)
         else:
@@ -549,7 +558,7 @@ class Driver(g15driver.AbstractDriver):
         last_keys = self.last_keys
 
         for k in this_keys:
-            if last_keys is None or not k in last_keys:
+            if last_keys is None or k not in last_keys:
                 down.append(k)
 
                 """
@@ -565,7 +574,7 @@ class Driver(g15driver.AbstractDriver):
 
         if last_keys is not None:
             for k in last_keys:
-                if not k in this_keys and not k in down and not k in up:
+                if k not in this_keys and k not in down and k not in up:
                     up.append(k)
 
         if (ext_code > 0) and self.get_model_name() == g15driver.MODEL_G510:
@@ -688,7 +697,7 @@ class Driver(g15driver.AbstractDriver):
     def _check_buttons(self, target, this_keys, key, button):
         if key in this_keys:
             this_keys.remove(key)
-            if not key in self.down:
+            if key not in self.down:
                 g15uinput.emit(target, button, 1)
                 self.down.append(key)
         elif key in self.down:

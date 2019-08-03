@@ -22,8 +22,8 @@ used by the kernel driver support to set the brightness of keyboard lights (the 
 files of which require root access, as they are in /sys). 
 """
 
-import sys
 import os
+import sys
 import glib
 
 # Allow running from local path

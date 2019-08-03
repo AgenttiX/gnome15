@@ -39,24 +39,25 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
+import datetime
+import json
+import logging
+import os
+# import time
+from urllib import quote
+import urllib2
+# import re
+
+import gtk
+from xml.dom import minidom
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("weather-yahoo", modfile=__file__).ugettext
-
-import gnome15.g15accounts as g15accounts
-import gnome15.g15globals as g15globals
+# import gnome15.g15accounts as g15accounts
+# import gnome15.g15globals as g15globals
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15pythonlang as g15pythonlang
 import gnome15.util.g15gconf as g15gconf
 import weather
-import gtk
-import os
-import datetime
-import urllib2, re
-import json
-from xml.dom import minidom
-from urllib import quote
-import time
 
 # select * from xml where url="http://weather.yahooapis.com/forecastrss?w=26350898"
 
@@ -64,10 +65,8 @@ YAHOO_WEATHER_URL = 'http://xml.weather.yahoo.com/forecastrss?w=%s&u=%s&d=5'
 YAHOO_WEATHER_URL_JSON = 'http://query.yahooapis.com/v1/public/yql?q=select%20item%20from%20weather.forecast%20where%20location%3D%2248907%22&format=json'
 YAHOO_WEATHER_NS = 'http://xml.weather.yahoo.com/ns/rss/1.0'
 
-# Logging
-import logging
-
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("weather-yahoo", modfile=__file__).ugettext
 
 """
 Plugin definition
@@ -156,7 +155,6 @@ class YahooWeatherData(weather.WeatherData):
 
 
 class YahooWeatherBackend(weather.WeatherBackend):
-
     def __init__(self, gconf_client, gconf_key):
         weather.WeatherBackend.__init__(self, gconf_client, gconf_key)
 
@@ -272,7 +270,8 @@ class YahooWeatherBackend(weather.WeatherBackend):
                 "high": today_high,
                 "temp_c": g15pythonlang.to_float_or_none(condition_el["temp"]),
                 "icon": self._translate_icon(condition_code),
-                "fallback_icon": "http://l.yimg.com/a/i/us/we/52/%s.gif" % condition_code if condition_code is not None else None
+                "fallback_icon": "http://l.yimg.com/a/i/us/we/52/%s.gif" %
+                                 condition_code if condition_code is not None else None
             }
         }
 
@@ -338,13 +337,16 @@ class YahooWeatherBackend(weather.WeatherBackend):
         Parameters 
         location_id: A five digit US zip code or location ID. To find your location ID, 
         browse or search for your city from the Weather home page(http://weather.yahoo.com/)
-        The weather ID is in the URL for the forecast page for that city. You can also get the location ID by entering your zip code on the home page. For example, if you search for Los Angeles on the Weather home page, the forecast page for that city is http://weather.yahoo.com/forecast/USCA0638.html. The location ID is USCA0638.
+        The weather ID is in the URL for the forecast page for that city.
+        You can also get the location ID by entering your zip code on the home page. For example, if you search for Los Angeles on the Weather home page, the forecast page for that city is http://weather.yahoo.com/forecast/USCA0638.html. The location ID is USCA0638.
     
         units: type of units. 'metric' for metric and '' for  non-metric
-        Note that choosing metric units changes all the weather units to metric, for example, wind speed will be reported as kilometers per hour and barometric pressure as millibars.
+        Note that choosing metric units changes all the weather units to metric, for example,
+        wind speed will be reported as kilometers per hour and barometric pressure as millibars.
      
         Returns:
-        weather_data: a dictionary of weather data that exists in XML feed. See  http://developer.yahoo.com/weather/#channel
+        weather_data: a dictionary of weather data that exists in XML feed.
+            See http://developer.yahoo.com/weather/#channel
         """
         location_id = quote(location_id)
         if units == 'metric':
@@ -373,7 +375,8 @@ class YahooWeatherBackend(weather.WeatherBackend):
             'condition': ('text', 'code', 'temp', 'date', 'day')
         }
 
-        for (tag, attrs) in ns_data_structure.iteritems():
+        # iteritems() has been replaced with items() for Python 3 compatibility
+        for (tag, attrs) in ns_data_structure.items():
             weather_data[tag] = xml_get_ns_yahoo_tag(dom, YAHOO_WEATHER_NS, tag, attrs)
 
         weather_data['geo'] = {}

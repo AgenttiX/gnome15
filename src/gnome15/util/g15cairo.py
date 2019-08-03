@@ -20,34 +20,39 @@ Cairo utilities
 Has functions to transform, load and convert cairo surfaces
 """
 
-import gtk.gdk
-import os, os.path
-import cairo
-import math
-import rsvg
-import urllib
 import base64
+import logging
+
+import math
+import os
+import sys
+import urllib
+
+import cairo
+import gtk.gdk
+import rsvg
 import xdg.Mime as mime
+
 import g15convert
 import g15os
-import gnome15.g15globals
+# import gnome15.g15globals
 
-# Logging
-import logging
+if sys.version_info < (3, 0):
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
 logger = logging.getLogger(__name__)
 
-from cStringIO import StringIO
-
 
 def rotate(context, degrees):
-    context.rotate(g15convert.degrees_to_radians(degrees));
+    context.rotate(g15convert.degrees_to_radians(degrees))
 
 
 def rotate_around_center(context, width, height, degrees):
-    context.translate(height * 0.5, width * 0.5);
-    context.rotate(degrees * (math.pi / 180));
-    context.translate(-width * 0.5, -height * 0.5);
+    context.translate(height * 0.5, width * 0.5)
+    context.rotate(degrees * (math.pi / 180))
+    context.translate(-width * 0.5, -height * 0.5)
 
 
 def flip_horizontal(context, width, height):

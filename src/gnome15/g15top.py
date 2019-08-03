@@ -40,24 +40,23 @@ class CPU:
 class CPUS(CPU):
     def __init__(self):
         CPU.__init__(self, "CPUS")
-        cpudata = open('/proc/stat')
+        cpu_data = open('/proc/stat')
         self.cpus = []
         try:
-            for line in cpudata:
+            for line in cpu_data:
                 if line.startswith("cpu"):
                     (name, cuse, cn, csys, idle, tail) = line.split(None, 5)
-                    cpu = self if name == "cpu" else CPU(name)
+                    cpu_obj = self if name == "cpu" else CPU(name)
                     self.user = int(cuse)
                     self.nice = int(cn)
                     self.sys = int(csys)
                     self.idle = int(idle)
-                    self.cpus.append(cpu)
+                    self.cpus.append(cpu_obj)
         finally:
-            cpudata.close()
+            cpu_data.close()
 
 
 class ProcState:
-
     def __init__(self, pid):
         self.uid = 0
         self.cmd = ""
@@ -71,12 +70,12 @@ class ProcState:
         finally:
             memdata.close()
 
-    def _get_value(self, line):
+    @staticmethod
+    def _get_value(line):
         return line[line.index(':') + 1:].strip().split()
 
 
 class NetworkLoad:
-
     def __init__(self, net, bytes_in, bytes_out):
         self.net = net
         self.bytes_in = bytes_in
@@ -84,7 +83,6 @@ class NetworkLoad:
 
 
 class Mem:
-
     def __init__(self):
         self.total = 0
         self.free = 0
@@ -101,7 +99,8 @@ class Mem:
         finally:
             memdata.close()
 
-    def _get_value(self, line):
+    @staticmethod
+    def _get_value(line):
         return int(line[line.index(':') + 1:line.index('kB')]) * 1024
 
 
@@ -205,17 +204,14 @@ def uptime():
     """
     Get the uptime of the computer
     """
-    cmddata = open('/proc/uptime')
-    try:
-        for line in cmddata:
+    with open('/proc/uptime') as cmd_data:
+        for line in cmd_data:
             vals = line.strip('\n').split(' ')
-    finally:
-        cmddata.close()
 
     return Uptime(float(vals[0]), float(vals[1]))
 
 
 if __name__ == "__main__":
-    for d in proclist():
-        ps = proc_state(d)
-        print(d, ps.cmd, ps.uid, proc_args(d))
+    for __d in proclist():
+        ps = proc_state(__d)
+        print(__d, ps.cmd, ps.uid, proc_args(__d))

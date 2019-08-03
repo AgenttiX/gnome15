@@ -17,25 +17,27 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
+import logging
 import os
+# import Queue
+import subprocess
 import sys
+import tempfile
+# from threading import Timer
+# from threading import Thread
+# from threading import RLock
 import time
+
 import dbus
 import dbus.service
 import dbus.exceptions
+from dbus.exceptions import NameExistsException
+import gconf
 import gtk
 import gtk.gdk
-from PIL import Image
-import subprocess
-import tempfile
 import lxml.html
-import Queue
-import gconf
+# from PIL import Image
 
-from threading import Timer
-from threading import Thread
-from threading import RLock
-from dbus.exceptions import NameExistsException
 
 # run it in a gtk window
 if __name__ == "__main__":
@@ -143,7 +145,6 @@ Queued notification message
 
 
 class G15Message:
-
     def __init__(self, id, icon, summary, body, timeout, actions, hints):
         self.id = id
         self.set_details(icon, summary, body, timeout, actions, hints)
@@ -199,7 +200,6 @@ DBus service implementing the freedesktop notification specification
 
 
 class G15NotifyService(dbus.service.Object):
-
     def __init__(self, gconf_client, gconf_key, service, driver, bus):
         self.id = 1
         self._gconf_client = gconf_client
@@ -450,7 +450,6 @@ Gnome15 notification plugin
 
 
 class G15NotifyLCD:
-
     def __init__(self, gconf_client, gconf_key, service, driver, bus):
         self._service = service
         self._bus = bus
@@ -525,7 +524,6 @@ class G15NotifyLCD:
 
 
 if __name__ == "__main__":
-
     try:
         import setproctitle
 

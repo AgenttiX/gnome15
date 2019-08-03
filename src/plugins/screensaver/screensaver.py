@@ -14,23 +14,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os.path
+from threading import Timer
+
+import dbus
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("screensaver", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.g15driver as g15driver
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15icontools as g15icontools
 import gnome15.g15theme as g15theme
-from threading import Timer
-import gtk
-import dbus
-import logging
-import os.path
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("screensaver", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "screensaver"
@@ -178,7 +178,7 @@ class G15ScreenSaver:
         if self._in_screensaver:
             if self._screen.driver.get_bpp() != 0 and self._page is None:
                 self._reload_theme()
-                self._page = g15theme.G15Page(id, self._screen, priority=g15screen.PRI_EXCLUSIVE, \
+                self._page = g15theme.G15Page(id, self._screen, priority=g15screen.PRI_EXCLUSIVE,
                                               title=name, theme=self._theme,
                                               theme_properties_callback=self._get_theme_properties,
                                               originating_plugin=self)

@@ -57,7 +57,14 @@ actions = [
         ]
 
 
-class ActionBinding():
+def _cmp(a, b):
+    """Python 3 no longer has the function cmp(), so the functionality has to be replicated manually
+    https://stackoverflow.com/a/22490617
+    """
+    return (a > b) - (a < b)
+
+
+class ActionBinding:
     """
     Created when an action is invoked and contains the keys that activated
     the action (if any), the state they were in and the action ID
@@ -68,5 +75,5 @@ class ActionBinding():
         self.keys = keys
         
     def __cmp__(self, other):
-        f = cmp(self.keys, other.keys)
-        return f if f != 0 else cmp(self.state, other.state)
+        f = _cmp(self.keys, other.keys)
+        return f if f != 0 else _cmp(self.state, other.state)

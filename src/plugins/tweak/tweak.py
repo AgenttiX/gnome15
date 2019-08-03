@@ -14,13 +14,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os.path
+
+import gtk
+
 import gnome15.g15locale as g15locale
+import gnome15.util.g15uigconf as g15uigconf
 
 _ = g15locale.get_translation("tweak", modfile=__file__).ugettext
-
-import gnome15.util.g15uigconf as g15uigconf
-import gtk
-import os.path
 
 # Plugin details - All of these must be provided
 id = "tweak"

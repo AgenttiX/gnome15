@@ -15,20 +15,18 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("gnome15").ugettext
+import logging
 
 import usb
+
+import gnome15.g15locale as g15locale
 import g15driver
 import g15actions
 import util.g15pythonlang as g15pythonlang
 import g15drivermanager
 
-# Logging
-import logging
-
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("gnome15").ugettext
 
 """
 Keyboard layouts 

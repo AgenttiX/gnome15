@@ -19,31 +19,30 @@ Pommodoro timer plugin for Gnome15.
 This plugin allows a user to apply the Pommodoro Technique to manage their time.
 """
 
+import datetime
+# import locale
+import logging
+import os
+
+import gtk
+# import pango
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("pommodoro", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
-import gnome15.g15theme as g15theme
-import gnome15.util.g15scheduler as g15scheduler
-import gnome15.util.g15pythonlang as g15pythonlang
+# import gnome15.g15theme as g15theme
+# import gnome15.util.g15scheduler as g15scheduler
+# import gnome15.util.g15pythonlang as g15pythonlang
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.g15driver as g15driver
-import gnome15.g15globals as g15globals
-import gnome15.g15text as g15text
+# import gnome15.g15globals as g15globals
+# import gnome15.g15text as g15text
 import gnome15.g15plugin as g15plugin
 import gnome15.util.g15cairo as g15cairo
 import gnome15.util.g15scheduler as g15scheduler
-import datetime
-import gtk
-import pango
-import os
-import locale
-
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("pommodoro", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "pommodoro"
@@ -479,8 +478,8 @@ class G15PommodoroPlugin(g15plugin.G15RefreshingPlugin):
             return "- {0}".format(str(datetime.timedelta(0, x)))
 
     def _get_progress_in_percent(self):
-        return 100 - int(self.pommodoro_timer.value.total_seconds() \
-                         / self.pommodoro_timer.timer_value.total_seconds() \
+        return 100 - int(self.pommodoro_timer.value.total_seconds()
+                         / self.pommodoro_timer.timer_value.total_seconds()
                          * 100)
 
     def _config_changed(self, client, connection_id, entry, args):

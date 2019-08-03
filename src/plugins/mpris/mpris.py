@@ -16,13 +16,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+import time
+import urllib
+
+import dbus
+from dbus.exceptions import DBusException
+import xdg.Mime as mime
+import xdg.BaseDirectory
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("mpris", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.g15driver as g15driver
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15pythonlang as g15pythonlang
 import gnome15.util.g15cairo as g15cairo
@@ -31,19 +38,9 @@ import gnome15.g15theme as g15theme
 import gnome15.g15plugin as g15plugin
 import gnome15.g15devices as g15devices
 import gnome15.g15actions as g15actions
-import dbus
-import os
-import time
-
-import xdg.Mime as mime
-import xdg.BaseDirectory
-import urllib
-
-# Logging
-import logging
-from dbus.exceptions import DBusException
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("mpris", modfile=__file__).ugettext
 
 # Custom actions
 NEXT_TRACK = "mpris-next-track"
@@ -98,7 +95,6 @@ def create(gconf_key, gconf_client, screen):
 
 
 class AbstractMPRISPlayer:
-
     def __init__(self, gconf_client, screen, players, interface_name, session_bus, title, theme):
         logger.info("Starting player %s", interface_name)
         self.stopped = False
@@ -390,7 +386,6 @@ class AbstractMPRISPlayer:
 
 
 class MPRIS1Player(AbstractMPRISPlayer):
-
     def __init__(self, gconf_client, screen, players, bus_name, session_bus, theme):
         self.timer = None
         root_obj = session_bus.get_object(bus_name, '/')
@@ -501,7 +496,6 @@ class MPRIS1Player(AbstractMPRISPlayer):
 
 
 class MPRIS2Player(AbstractMPRISPlayer):
-
     def __init__(self, gconf_client, screen, players, bus_name, session_bus, theme):
         self.last_properties = None
         self.tracks = []
@@ -718,7 +712,6 @@ class MPRIS2Player(AbstractMPRISPlayer):
 
 
 class G15MPRIS(g15plugin.G15Plugin):
-
     def __init__(self, gconf_client, gconf_key, screen):
         g15plugin.G15Plugin.__init__(self, gconf_client, gconf_key, screen)
         self.session_bus = None
@@ -769,15 +762,15 @@ class G15MPRIS(g15plugin.G15Plugin):
             logger.info("MPRIS2 Name owner changed for %s from %s to %s", name, old_owner, new_owner)
             if new_owner == "" and name in self.players:
                 self.players[name].stop()
-            elif old_owner == "" and not name in self.players:
+            elif old_owner == "" and name not in self.players:
                 self.players[name] = MPRIS2Player(self.gconf_client, self.screen, self.players, name, self.session_bus,
                                                   self.create_theme())
         elif name.startswith("org.mpris."):
             logger.info("MPRIS1 Name owner changed for %s from %s to %s", name, old_owner, new_owner)
             if new_owner == "" and name in self.players:
                 self.players[name].stop()
-            elif old_owner == "" and not name in self.players:
-                if not name in mpris_blacklist:
+            elif old_owner == "" and name not in self.players:
+                if name not in mpris_blacklist:
                     self.players[name] = MPRIS1Player(self.gconf_client, self.screen, self.players, name,
                                                       self.session_bus, self.create_theme())
                 else:
@@ -787,13 +780,13 @@ class G15MPRIS(g15plugin.G15Plugin):
         # Find new players
         active_list = self.session_bus.list_names()
         for name in active_list:
-            if not name in mpris_blacklist:
+            if name not in mpris_blacklist:
                 # MPRIS 2
-                if not name in self.players and name.startswith("org.mpris.MediaPlayer2"):
+                if name not in self.players and name.startswith("org.mpris.MediaPlayer2"):
                     self.players[name] = MPRIS2Player(self.gconf_client, self.screen, self.players, name,
                                                       self.session_bus, self.create_theme())
                 # MPRIS 1
-                elif not name in self.players and name.startswith("org.mpris."):
+                elif name not in self.players and name.startswith("org.mpris."):
                     self.players[name] = MPRIS1Player(self.gconf_client, self.screen, self.players, name,
                                                       self.session_bus, self.create_theme())
 

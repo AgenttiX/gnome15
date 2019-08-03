@@ -19,25 +19,29 @@
 Icon utilities
 """
 
+import base64
+import logging
+import os
+import sys
+import urllib
+
+import cairo
+import gtk.gdk
+from PIL import Image
+
 from gnome15 import g15globals
 import g15cairo
-import gtk.gdk
-import os
-import cairo
-from PIL import Image
-import urllib
-import base64
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
 
-from cStringIO import StringIO
+if sys.version_info < (3, 0):
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
-'''
+"""
 Look for icons locally as well if running from source
-'''
+"""
 gtk_icon_theme = gtk.icon_theme_get_default()
 if g15globals.dev:
     gtk_icon_theme.prepend_search_path(g15globals.icons_dir)
@@ -59,7 +63,7 @@ def get_embedded_image_url(path):
                 file_str.write("image/png")
                 path.write_to_png(img_data)
             else:
-                if not "://" in path:
+                if "://" not in path:
                     # File
                     surface = load_surface_from_file(path)
                     file_str.write("image/png")
@@ -91,7 +95,7 @@ def get_icon_path(icon=None, size=128, warning=True, include_missing=True):
             if p is not None:
                 return p
         logger.warning("Icon %s (%d) not found", str(icon), size)
-        if include_missing and not icon in ["image-missing", "gtk-missing-image"]:
+        if include_missing and icon not in ["image-missing", "gtk-missing-image"]:
             return get_icon_path(["image-missing", "gtk-missing-image"], size, warning)
     else:
         if icon is not None:
@@ -102,7 +106,7 @@ def get_icon_path(icon=None, size=128, warning=True, include_missing=True):
             fn = icon.get_filename()
             if os.path.isfile(fn):
                 return fn
-            elif include_missing and not icon in ["image-missing", "gtk-missing-image"]:
+            elif include_missing and icon not in ["image-missing", "gtk-missing-image"]:
                 if warning:
                     logger.warning("Icon %s (%d) not found, using missing image", o_icon, size)
                 return get_icon_path(["image-missing", "gtk-missing-image"], size, warning)
@@ -112,7 +116,7 @@ def get_icon_path(icon=None, size=128, warning=True, include_missing=True):
             else:
                 if warning:
                     logger.warning("Icon %s (%d) not found", o_icon, size)
-                if include_missing and not icon in ["image-missing", "gtk-missing-image"]:
+                if include_missing and icon not in ["image-missing", "gtk-missing-image"]:
                     return get_icon_path(["image-missing", "gtk-missing-image"], size, warning)
 
 

@@ -19,12 +19,16 @@
 Various conversions
 """
 
-import gtk.gdk
+import logging
 import math
+
+import gtk.gdk
+
+logger = logging.getLogger(__name__)
 
 
 def rgb_to_string(rgb):
-    if rgb == None:
+    if rgb is None:
         return None
     else:
         return "%d,%d,%d" % rgb
@@ -32,14 +36,14 @@ def rgb_to_string(rgb):
 
 def get_alt_color(color):
     if color[0] == color[1] == color[2]:
-        return (1.0 - color[0], 1.0 - color[1], 1.0 - color[2], color[3])
+        return 1.0 - color[0], 1.0 - color[1], 1.0 - color[2], color[3]
     else:
-        return (color[1], color[2], color[0], color[3])
+        return color[1], color[2], color[0], color[3]
 
 
 def color_to_rgb(color):
     i = (color.red >> 8, color.green >> 8, color.blue >> 8)
-    return (i[0], i[1], i[2])
+    return i[0], i[1], i[2]
 
 
 def to_rgb(string_rgb, default=None):
@@ -85,7 +89,11 @@ def rgb_to_hex(rgb):
     # Unfortunately, for running g15-system-service, there is no DISPLAY
     # set in it's environment, so it would make it throw an error.
     # See https://projects.russo79.com/issues/173
-    import g15driver
+    try:
+        import g15driver
+    except ImportError:
+        logger.error("g15driver import failed. Using fallback.")
+        import gnome15.g15driver as g15driver
     return g15driver.rgb_to_hex(rgb)
 
 

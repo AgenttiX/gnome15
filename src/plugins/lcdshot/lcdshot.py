@@ -16,31 +16,29 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os.path
+import shutil
+import subprocess
+from threading import Thread
+
+import gobject
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("lcdshot", modfile=__file__).ugettext
-
 import gnome15.g15driver as g15driver
 import gnome15.g15devices as g15devices
 import gnome15.g15globals as g15globals
 import gnome15.g15actions as g15actions
-import os.path
-import gtk
-import gobject
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.g15notify as g15notify
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15os as g15os
 import gnome15.util.g15cairo as g15cairo
-import subprocess
-import shutil
-from threading import Thread
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("lcdshot", modfile=__file__).ugettext
 
 # Custom actions
 SCREENSHOT = "screenshot"
@@ -169,10 +167,12 @@ class G15LCDShot:
                     self._start_recording()
 
     def _encode(self):
-        cmd = ["mencoder", "-really-quiet", "mf://%s.tmp/*.jpeg" % self._record_to, "-mf",
-               "w=%d:h=%d:fps=%d:type=jpg" % (
-               self._screen.device.lcd_size[0], self._screen.device.lcd_size[1], self._record_fps), "-ovc", "lavc",
-               "-lavcopts", "vcodec=mpeg4", "-oac", "copy", "-o", self._record_to]
+        cmd = [
+            "mencoder", "-really-quiet", "mf://%s.tmp/*.jpeg" % self._record_to, "-mf",
+            "w=%d:h=%d:fps=%d:type=jpg" % (
+                self._screen.device.lcd_size[0], self._screen.device.lcd_size[1], self._record_fps),
+            "-ovc", "lavc", "-lavcopts", "vcodec=mpeg4", "-oac", "copy", "-o", self._record_to
+        ]
         try:
             ret = subprocess.call(cmd)
             if ret == 0:
@@ -224,7 +224,7 @@ class G15LCDShot:
             self._recording_timer = gobject.timeout_add(1000 / self._record_fps, self._frame)
 
     def _find_next_free_filename(self, ext, title):
-        dir_path = g15gconf.get_string_or_default(self._gconf_client, "%s/folder" % \
+        dir_path = g15gconf.get_string_or_default(self._gconf_client, "%s/folder" %
                                                   self._gconf_key, os.path.expanduser("~/Desktop"))
         for i in range(1, 9999):
             path = "%s/%s-%s-%d.%s" % (dir_path,

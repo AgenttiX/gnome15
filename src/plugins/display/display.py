@@ -14,10 +14,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+import re
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("profiles", modfile=__file__).ugettext
-
 import gnome15.g15driver as g15driver
 import gnome15.g15theme as g15theme
 import gnome15.g15plugin as g15plugin
@@ -26,11 +27,9 @@ import gnome15.g15actions as g15actions
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15pythonlang as g15pythonlang
 import gnome15.util.g15icontools as g15icontools
-import logging
-import os
-import re
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("profiles", modfile=__file__).ugettext
 
 ICONS = ["display", "gnome-display-properties", "system-config-display", "video-display", "xfce4-display",
          "display-capplet"]
@@ -201,6 +200,8 @@ class G15XRandR(g15plugin.G15MenuPlugin):
         pipe = os.popen('{ ' + cmd + '; } 2>/dev/null', 'r')
         text = pipe.read()
         sts = pipe.close()
-        if sts is None: sts = 0
-        if text[-1:] == '\n': text = text[:-1]
+        if sts is None:
+            sts = 0
+        if text[-1:] == '\n':
+            text = text[:-1]
         return sts, text

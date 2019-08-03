@@ -14,29 +14,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("cal-evolution", modfile=__file__).ugettext
-
-import gnome15.g15accounts as g15accounts
-import gnome15.g15globals as g15globals
-import cal
-import gtk
-import os
-import datetime
 import calendar
+import datetime
+import logging
+import os
+# import socket
+import subprocess
+
 import gdata.calendar.data
 import gdata.calendar.client
 import gdata.acl.data
 import gdata.service
-import iso8601
-import subprocess
-import socket
+import gtk
 
-# Logging
-import logging
+import gnome15.g15locale as g15locale
+import gnome15.g15accounts as g15accounts
+import gnome15.g15globals as g15globals
+import iso8601
+
+import cal
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("cal-evolution", modfile=__file__).ugettext
 
 """
 Plugin definition
@@ -158,7 +157,9 @@ class GoogleCalendarBackend(cal.CalendarBackend):
         end_date = datetime.date(now.year, now.month, calendar.monthrange(now.year, now.month)[1])
         feeds = self.cal_client.GetAllCalendarsFeed()
 
-        for i, a_calendar in zip(xrange(len(feeds.entry)), feeds.entry):
+        # Previously xrange() has been used for these ranges, but it has been
+        # replaced with range() for Python 3 compatibility.
+        for i, a_calendar in zip(range(len(feeds.entry)), feeds.entry):
             query = gdata.calendar.client.CalendarEventQuery(start_min=start_date, start_max=end_date)
             logger.info("Retrieving events from %s to %s", str(start_date), str(end_date))
             feed = self.cal_client.GetCalendarEventFeed(a_calendar.content.src, q=query)
@@ -166,7 +167,7 @@ class GoogleCalendarBackend(cal.CalendarBackend):
             # TODO - Color doesn't seem to work 
             color = None
 
-            for i, an_event in zip(xrange(len(feed.entry)), feed.entry):
+            for i, an_event in zip(range(len(feed.entry)), feed.entry):
                 logger.info('Adding event %s (%s)', an_event.title.text, str(an_event.when))
 
                 """

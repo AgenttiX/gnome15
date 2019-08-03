@@ -14,28 +14,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from receivers import G19Receiver
-
-import sys
+# import array
+import logging
+# import sys
 import threading
 import time
-import usb
+
 from PIL import Image as Img
-import logging
-import array
+import usb
+
+from receivers import G19Receiver
 
 logger = logging.getLogger(__name__)
 
 
 class G19(object):
-    '''Simple access to Logitech G19 features.
+    """Simple access to Logitech G19 features.
 
     All methods are thread-safe if not denoted otherwise.
 
-    '''
-
+    """
     def __init__(self, resetOnStart=False, enable_mm_keys=False, write_timeout=10000, reset_wait=0):
-        '''Initializes and opens the USB device.'''
+        """Initializes and opens the USB device."""
 
         logger.info("Setting up G19 with write timeout of %d", write_timeout)
         self.enable_mm_keys = enable_mm_keys
@@ -87,17 +87,17 @@ class G19(object):
         @return 16bit highcolor value in little-endian.
 
         """
-        rBits = r * 2 ** 5 / 255
-        gBits = g * 2 ** 6 / 255
-        bBits = b * 2 ** 5 / 255
+        r_bits = r * 2 ** 5 / 255
+        g_bits = g * 2 ** 6 / 255
+        b_bits = b * 2 ** 5 / 255
 
-        rBits = rBits if rBits <= 0b00011111 else 0b00011111
-        gBits = gBits if gBits <= 0b00111111 else 0b00111111
-        bBits = bBits if bBits <= 0b00011111 else 0b00011111
+        r_bits = r_bits if r_bits <= 0b00011111 else 0b00011111
+        g_bits = g_bits if g_bits <= 0b00111111 else 0b00111111
+        b_bits = b_bits if b_bits <= 0b00011111 else 0b00011111
 
-        valueH = (rBits << 3) | (gBits >> 3)
-        valueL = (gBits << 5) | bBits
-        return valueL << 8 | valueH
+        value_h = (r_bits << 3) | (g_bits >> 3)
+        value_l = (g_bits << 5) | b_bits
+        return value_l << 8 | value_h
 
     def add_input_processor(self, input_processor):
         self.__keyReceiver.add_input_processor(input_processor)
@@ -111,9 +111,9 @@ class G19(object):
         # 16bit highcolor format: 5 red, 6 gree, 5 blue
         # saved in little-endian, because USB is little-endian
         value = self.rgb_to_uint16(r, g, b)
-        valueH = value & 0xff
-        valueL = value >> 8
-        frame = [valueL, valueH] * (320 * 240)
+        value_h = value & 0xff
+        value_l = value >> 8
+        frame = [value_l, value_h] * (320 * 240)
         self.send_frame(frame)
 
     def load_image(self, filename):
@@ -394,7 +394,7 @@ class G19UsbController(object):
                 logger.debug("Re-opened multimedia keys device")
 
             config = self.__kbd_device.configurations[0]
-            ifacMM = config.interfaces[1][0]
+            ifac_mm = config.interfaces[1][0]
 
             try:
                 self.handleIfMM.setConfiguration(1)
@@ -403,7 +403,7 @@ class G19UsbController(object):
                 pass
             try:
                 logger.debug("Detaching kernel driver for multimedia keys device")
-                self.handleIfMM.detachKernelDriver(ifacMM)
+                self.handleIfMM.detachKernelDriver(ifac_mm)
                 logger.debug("Detached kernel driver for multimedia keys device")
             except usb.USBError as e:
                 logger.debug("Detaching kernel driver for multimedia keys device failed.", exc_info=e)

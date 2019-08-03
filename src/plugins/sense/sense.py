@@ -16,29 +16,27 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os.path
+import subprocess
+from threading import Lock
+
+import dbus
+import gconf
+import gobject
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("sensors", modfile=__file__).ugettext
-
 import gnome15.g15driver as g15driver
 import gnome15.g15plugin as g15plugin
 import gnome15.g15theme as g15theme
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15svg as g15svg
-import os.path
-import dbus
+
 import sensors
-import gtk
-import gconf
-import gobject
-
-import subprocess
-from threading import Lock
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("sensors", modfile=__file__).ugettext
 
 id = "sense"
 name = _("Sensors")
@@ -240,7 +238,7 @@ class UDisksSource:
                     if len(result) > 0:
                         try:
                             kelvin = int(result)
-                            kelvin /= 1000;
+                            kelvin /= 1000
                             temp_c = kelvin - 273.15
                             sensor.value = temp_c
                         except ValueError as ve:
@@ -359,7 +357,7 @@ class LibsensorsSource:
                 sensor_name = feature.label
 
                 # Prevent name conflicts across chips
-                if not sensor_name in sensor_names:
+                if sensor_name not in sensor_names:
                     sensor_names.append(sensor_name)
                 else:
                     o = sensor_name
@@ -405,8 +403,10 @@ class NvidiaSource:
         pipe = os.popen('{ ' + cmd + '; } 2>/dev/null', 'r')
         text = pipe.read()
         sts = pipe.close()
-        if sts is None: sts = 0
-        if text[-1:] == '\n': text = text[:-1]
+        if sts is None:
+            sts = 0
+        if text[-1:] == '\n':
+            text = text[:-1]
         return sts, text
 
     @staticmethod
@@ -423,7 +423,6 @@ class NvidiaSource:
 
 
 class SensorMenuItem(g15theme.MenuItem):
-
     def __init__(self, item_id, sensor, sensor_label):
         g15theme.MenuItem.__init__(self, item_id)
         self.sensor = sensor
@@ -444,7 +443,6 @@ class SensorMenuItem(g15theme.MenuItem):
 
 
 class G15Sensors(g15plugin.G15RefreshingPlugin):
-
     def __init__(self, gconf_key, gconf_client, screen):
         g15plugin.G15RefreshingPlugin.__init__(self, gconf_client, gconf_key, screen, ["system", "applications-system"],
                                                id, name, 5.0)
@@ -535,7 +533,7 @@ class G15Sensors(g15plugin.G15RefreshingPlugin):
             gauge_data = needle_center.get("title").split(",")
             lower_val = float(gauge_data[0])
             upper_val = float(gauge_data[1])
-            middle_val = float(gauge_data[2])
+            # middle_val = float(gauge_data[2])
             lower_deg = float(gauge_data[3])
             upper_deg = float(gauge_data[4])
 

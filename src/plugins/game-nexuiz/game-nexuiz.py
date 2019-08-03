@@ -14,11 +14,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# import locale
+import os
+
+import gnome15.g15locale as g15locale
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.g15profile as g15profile
-import os
-import locale
+
+_ = g15locale.get_translation("game-nexuiz", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "game-nexuiz"
@@ -41,7 +45,6 @@ def create(gconf_key, gconf_client, screen):
 
 
 class GameNexuiz:
-
     def __init__(self, gconf_key, gconf_client, screen):
         self._screen = screen
         self._gconf_client = gconf_client

@@ -14,11 +14,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import dbus
-
-from lxml import etree
-import time
 import logging
+import time
+
+import dbus
+from lxml import etree
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +98,6 @@ class DBUSMenuEntry:
 
 
 class DBUSMenu:
-
     def __init__(self, session_bus, object_name, path, interface, on_change=None, natty=False):
         self.natty = natty
         self.session_bus = session_bus
@@ -162,7 +161,7 @@ class DBUSMenu:
     def _item_property_updated(self, id, prop, value):
         if str(id) in self.menu_map:
             menu = self.menu_map[str(id)]
-            if not prop in menu.properties or value != menu.properties[prop]:
+            if prop not in menu.properties or value != menu.properties[prop]:
                 menu.properties[prop] = value
                 menu.set_properties(menu.properties)
                 if self.on_change is not None:

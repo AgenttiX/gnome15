@@ -16,8 +16,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import os
+import sys
 
 # with pygobject-3.14.0 this seems to fix the import error
 import gconf

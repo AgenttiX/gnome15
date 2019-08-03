@@ -14,6 +14,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+import logging
+import os
+import sys
+
+import gobject
+import gtk
+
 import gnome15.g15screen as g15screen
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15uigconf as g15uigconf
@@ -21,14 +29,6 @@ import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15os as g15os
 import gnome15.g15driver as g15driver
 import gnome15.g15theme as g15theme
-import gobject
-import gtk
-import os
-import sys
-import datetime
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ def show_preferences(parent, driver, gconf_client, gconf_key):
     status, output = g15os.get_command_output("pacmd list-sources")
     source_name = "0"
     if status == 0 and len(output) > 0:
-        i = 0
+        # i = 0
         for line in output.split("\n"):
             line = line.strip()
             if line.startswith("index: "):
@@ -114,7 +114,6 @@ def show_preferences(parent, driver, gconf_client, gconf_key):
 
 
 class G15ImpulsePainter(g15screen.Painter):
-
     def __init__(self, plugin):
         g15screen.Painter.__init__(self, g15screen.BACKGROUND_PAINTER, -5000)
         self.theme_module = None
@@ -179,7 +178,7 @@ class G15ImpulsePainter(g15screen.Painter):
                 t += min(255, list[z] * 340)
                 z += 1
             cols.append(int(t / each))
-        return (cols[0], cols[1], cols[2])
+        return cols[0], cols[1], cols[2]
 
     @staticmethod
     def _tot_avg(list):
@@ -215,7 +214,7 @@ class G15ImpulsePainter(g15screen.Painter):
             self.backlight_acquisition = None
 
 
-class G15Impulse():
+class G15Impulse:
     def __init__(self, gconf_key, gconf_client, screen):
         self.screen = screen
         self.hidden = False
@@ -335,7 +334,7 @@ class G15Impulse():
             self.painter.theme_module.load_theme(self)
 
     def _activate_painter(self):
-        if not self.painter in self.screen.painters:
+        if self.painter not in self.screen.painters:
             self.screen.painters.append(self.painter)
 
     def _clear_painter(self):

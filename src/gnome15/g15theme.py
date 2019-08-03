@@ -38,11 +38,21 @@ for progress bars, scroll bars.
 """
 
 from __future__ import print_function
+import base64
+from copy import deepcopy
+import logging
+from lxml import etree
 import os
-import cairo
-import rsvg
+from string import Template
 import sys
+from threading import RLock
+import time
+
+import cairo
 import pango
+import rsvg
+import xml.sax.saxutils as saxutils
+
 import g15driver
 import g15globals
 import g15screen
@@ -53,19 +63,16 @@ import g15locale
 import util.g15cairo as g15cairo
 import util.g15svg as g15svg
 import util.g15icontools as g15icontools
-import xml.sax.saxutils as saxutils
-import base64
 import dbusmenu
-import logging
-import time
+
+if sys.version_info < (3, 0):
+    import ConfigParser
+    from cStringIO import StringIO
+else:
+    import configparser as ConfigParser
+    from io import StringIO
 
 logger = logging.getLogger(__name__)
-from string import Template
-from copy import deepcopy
-from cStringIO import StringIO
-from lxml import etree
-from threading import RLock
-import ConfigParser
 
 BASE_PX = 18.0
 DEBUG_SVG = False
@@ -231,7 +238,6 @@ class LayoutManager(object):
 
 
 class GridLayoutManager(LayoutManager):
-
     def __init__(self, columns, rows=-1):
         self.rows = rows
         self.columns = columns
@@ -271,7 +277,6 @@ class Childlist(list):
 
 
 class Component(object):
-
     def __init__(self, id):
         self.id = id
         self.theme = None

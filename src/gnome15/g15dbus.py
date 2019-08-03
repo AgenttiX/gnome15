@@ -14,7 +14,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import sys
+
 import dbus.service
+import gobject
+
 import g15globals
 import g15theme
 import util.g15scheduler as g15scheduler
@@ -23,9 +28,11 @@ import util.g15cairo as g15cairo
 import util.g15icontools as g15icontools
 import g15driver
 import g15devices
-import gobject
 
-from cStringIO import StringIO
+if sys.version_info < (3, 0):
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
 BUS_NAME = "org.gnome15.Gnome15"
 NAME = "/org/gnome15/Service"
@@ -39,14 +46,10 @@ CONTROL_ACQUISITION_IF_NAME = "org.gnome15.Control"
 SCREEN_IF_NAME = "org.gnome15.Screen"
 DEVICE_IF_NAME = "org.gnome15.Device"
 
-# Logging
-import logging
-
 logger = logging.getLogger(__name__)
 
 
 class AbstractG15DBUSService(dbus.service.Object):
-
     def __init__(self, conn=None, object_path=None, bus_name=None):
         dbus.service.Object.__init__(self, conn, object_path, bus_name)
         self._reserved_keys = []
@@ -79,7 +82,6 @@ class AbstractG15DBUSService(dbus.service.Object):
 
 
 class G15DBUSDeviceService(AbstractG15DBUSService):
-
     def __init__(self, dbus_service, device):
         AbstractG15DBUSService.__init__(self, dbus_service._bus_name, "%s/%s" % (DEVICE_NAME, device.uid))
         self._dbus_service = dbus_service
@@ -140,7 +142,6 @@ class G15DBUSDeviceService(AbstractG15DBUSService):
 
 
 class G15DBUSClient:
-
     def __init__(self, bus_name):
         self.bus_name = bus_name
         self.pages = []
@@ -154,7 +155,6 @@ class G15DBUSClient:
 
 
 class G15DBUSScreenService(AbstractG15DBUSService):
-
     def __init__(self, dbus_service, screen):
         self._bus_name = "%s/%s" % (SCREEN_NAME, screen.device.uid)
         AbstractG15DBUSService.__init__(self, dbus_service._bus_name, self._bus_name)
@@ -540,7 +540,6 @@ class G15DBUSScreenService(AbstractG15DBUSService):
 
 
 class G15DBUSControlAcquisition(AbstractG15DBUSService):
-
     def __init__(self, screen_service, acquisition, sequence_number):
         self._bus_name = "%s%s" % (CONTROL_ACQUISITION_NAME, str(sequence_number))
         AbstractG15DBUSService.__init__(self, screen_service._dbus_service._bus_name, self._bus_name)
@@ -611,7 +610,6 @@ class G15DBUSControlAcquisition(AbstractG15DBUSService):
 
 
 class G15DBUSPageService(AbstractG15DBUSService):
-
     def __init__(self, screen_service, page, sequence_number):
         self._bus_name = "%s%s" % (PAGE_NAME, str(sequence_number))
         AbstractG15DBUSService.__init__(self, screen_service._dbus_service._bus_name, self._bus_name)

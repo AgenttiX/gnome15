@@ -14,35 +14,36 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+# import locale
+import logging
+import os
+# import time
+
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("trafficstats", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.g15theme as g15theme
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15os as g15os
-import gnome15.g15actions as g15actions
-import gnome15.g15devices as g15devices
+# import gnome15.g15actions as g15actions
+# import gnome15.g15devices as g15devices
 import gnome15.g15driver as g15driver
-import gnome15.g15globals as g15globals
-import gnome15.g15text as g15text
+# import gnome15.g15globals as g15globals
+# import gnome15.g15text as g15text
 import gnome15.g15plugin as g15plugin
-import time
-import datetime
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("trafficstats", modfile=__file__).ugettext
+
 try:
     import gtop
 except Exception as e:
     logger.debug("Could not import gtop. Falling back to g15top", exc_info=e)
     # API compatible work around for Ubuntu 12.10
     import gnome15.g15top as gtop
-import os
-import gtk
-import locale
 
 # Plugin details - All of these must be provided
 id = "trafficstats"
@@ -117,10 +118,9 @@ class G15TrafficStats(g15plugin.G15RefreshingPlugin):
     def __init__(self, gconf_key, gconf_client, screen):
         self.gconf_client = gconf_client
         self.gconf_key = gconf_key
-        g15plugin.G15RefreshingPlugin.__init__(self, gconf_client, gconf_key,
-                                               screen, ICON, id, name, g15gconf.get_float_or_default(self.gconf_client,
-                                                                                                     self.gconf_key + "/refresh_interval",
-                                                                                                     10.0))
+        g15plugin.G15RefreshingPlugin.__init__(
+            self, gconf_client, gconf_key, screen, ICON, id, name,
+            g15gconf.get_float_or_default(self.gconf_client, self.gconf_key + "/refresh_interval", 10.0))
         self.hidden = False
 
     def activate(self):

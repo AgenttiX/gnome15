@@ -22,26 +22,36 @@ A number of utility functions are also supplied to do things such as
 getting the default or active profile.
 """
 
-import gconf
+import codecs
+import logging
+import os.path
+import re
+import stat
+import sys
 import time
+import zipfile
+
+import gconf
+import pyinotify
+
 import util.g15convert as g15convert
 import util.g15gconf as g15gconf
 import util.g15os as g15os
 import util.g15icontools as g15icontools
 import g15globals
 import g15actions
-import g15devices
+# import g15devices
 import g15uinput
 import g15driver
-import ConfigParser
-import codecs
-import os.path
-import stat
-import pyinotify
-import logging
-import re
-import zipfile
-from cStringIO import StringIO
+
+if sys.version_info < (3, 0):
+    import ConfigParser
+    from cStringIO import StringIO
+    _long = long
+else:
+    import configparser as ConfigParser
+    from io import StringIO
+    _long = int
 
 logger = logging.getLogger(__name__)
 active_profile = None
@@ -223,7 +233,8 @@ def create_default(device):
         default_profile.activate_on_focus = True
         default_profile.activate_on_launch = False
         create_profile(default_profile)
-        wdd = wm.add_watch(conf_dir, mask, rec=True)
+        # wdd = wm.add_watch(conf_dir, mask, rec=True)
+        wm.add_watch(conf_dir, mask, rec=True)
     return get_default_profile(device)
 
 
@@ -241,7 +252,7 @@ def create_profile(profile):
 
 
 def generate_profile_id():
-    return long(time.time())
+    return _long(time.time())
 
 
 def get_profile(device, profile_id):
@@ -257,7 +268,7 @@ def get_profile(device, profile_id):
     for profile_dir in get_all_profile_dirs(device):
         path = "%s/%s.macros" % (profile_dir, profile_id)
         if os.path.exists(path):
-            return G15Profile(device, profile_id, file_path=path);
+            return G15Profile(device, profile_id, file_path=path)
 
 
 def get_active_profile(device):
@@ -490,7 +501,7 @@ class G15Macro(object):
         macro is not of a type that maps to a uinput key, an exception
         will be thrown
         """
-        if not self.type in [MACRO_MOUSE, MACRO_KEYBOARD, MACRO_JOYSTICK, MACRO_DIGITAL_JOYSTICK]:
+        if self.type not in [MACRO_MOUSE, MACRO_KEYBOARD, MACRO_JOYSTICK, MACRO_DIGITAL_JOYSTICK]:
             raise Exception("Macro of type %s, is not a type that maps to a uinput code." % self.type)
         return g15uinput.capabilities[self.macro][1] if self.macro in g15uinput.capabilities else 0
 
@@ -679,7 +690,8 @@ class G15Macro(object):
 
     def __repr__(self):
         return "[Macro %d/%s (%s) [%s]" % (
-        self.memory, self.name, self.key_list_key, to_key_state_name(self.activate_on))
+            self.memory, self.name, self.key_list_key, to_key_state_name(self.activate_on)
+        )
 
 
 class G15Profile(object):
@@ -1069,29 +1081,29 @@ class G15Profile(object):
         # Info section
         self.name = self.parser.get("DEFAULT", "name").strip() if self.parser.has_option("DEFAULT", "name") else ""
         self.icon = self.parser.get("DEFAULT", "icon").strip() if self.parser.has_option("DEFAULT", "icon") else ""
-        self.background = self.parser.get("DEFAULT", "background").strip() if self.parser.has_option("DEFAULT",
-                                                                                                     "background") else ""
-        self.author = self.parser.get("DEFAULT", "author").strip() if self.parser.has_option("DEFAULT",
-                                                                                             "author") else ""
-        self.window_name = self.parser.get("DEFAULT", "window_name").strip() if self.parser.has_option("DEFAULT",
-                                                                                                       "window_name") else ""
-        self.models = self.parser.get("DEFAULT", "models").strip().split(",") if self.parser.has_option("DEFAULT",
-                                                                                                        "models") else [
+        self.background = self.parser.get("DEFAULT", "background").strip() \
+            if self.parser.has_option("DEFAULT", "background") else ""
+        self.author = self.parser.get("DEFAULT", "author").strip() \
+            if self.parser.has_option("DEFAULT", "author") else ""
+        self.window_name = self.parser.get("DEFAULT", "window_name").strip() \
+            if self.parser.has_option("DEFAULT", "window_name") else ""
+        self.models = self.parser.get("DEFAULT", "models").strip().split(",") \
+            if self.parser.has_option("DEFAULT", "models") else [
             self.device.model_id]
-        self.plugins_mode = self.parser.get("DEFAULT", "plugins_mode").strip() if self.parser.has_option("DEFAULT",
-                                                                                                         "plugins_mode") else ALL_PLUGINS
+        self.plugins_mode = self.parser.get("DEFAULT", "plugins_mode").strip() \
+            if self.parser.has_option("DEFAULT", "plugins_mode") else ALL_PLUGINS
         self.selected_plugins = self.parser.get("DEFAULT", "selected_plugins").strip().split(",") \
             if self.parser.has_option("DEFAULT", "selected_plugins") else []
 
         self.activate_on_focus = self.parser.getboolean("DEFAULT", "activate_on_focus") if self.parser.has_option(
             "DEFAULT", "activate_on_focus") else False
-        self.send_delays = self.parser.getboolean("DEFAULT", "send_delays") if self.parser.has_option("DEFAULT",
-                                                                                                      "send_delays") else False
-        self.fixed_delays = self.parser.getboolean("DEFAULT", "fixed_delays") if self.parser.has_option("DEFAULT",
-                                                                                                        "fixed_delays") else False
+        self.send_delays = self.parser.getboolean("DEFAULT", "send_delays") \
+            if self.parser.has_option("DEFAULT", "send_delays") else False
+        self.fixed_delays = self.parser.getboolean("DEFAULT", "fixed_delays") \
+            if self.parser.has_option("DEFAULT", "fixed_delays") else False
 
-        self.base_profile = self.parser.get("DEFAULT", "base_profile").strip() if self.parser.has_option("DEFAULT",
-                                                                                                         "base_profile") else ""
+        self.base_profile = self.parser.get("DEFAULT", "base_profile").strip() \
+            if self.parser.has_option("DEFAULT", "base_profile") else ""
         if self.base_profile == "-1":
             # For version 1.0 profile format compatibility
             self.base_profile = None
@@ -1192,7 +1204,7 @@ class G15Profile(object):
             with open(tmp_file, 'wb') as configfile:
                 self.parser.write(configfile)
             os.rename(tmp_file, save_file)
-            fhandle = file(save_file, 'a')
+            fhandle = open(save_file, "a")
             try:
                 os.utime(save_file, None)
             finally:

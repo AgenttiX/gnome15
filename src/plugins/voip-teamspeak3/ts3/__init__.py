@@ -14,14 +14,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from telnetlib import Telnet
 from threading import Thread
 from threading import RLock
+
 from message import MessageFactory
 from message import Command
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,6 @@ def _receive_message(client):
 
 
 class TS3CommandException(Exception):
-
     def __init__(self, code, message):
         Exception.__init__(self, message)
         self.code = code

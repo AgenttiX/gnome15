@@ -14,11 +14,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+# import subprocess
+import time
+
+import feedparser
+import gconf
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("rss", modfile=__file__).ugettext
-
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15pythonlang as g15pythonlang
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15uigconf as g15uigconf
@@ -28,15 +34,9 @@ import gnome15.util.g15icontools as g15icontools
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.g15desktop as g15desktop
-import subprocess
-import time
-import os
-import feedparser
-import gtk
-import gconf
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("rss", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "rss"
@@ -73,7 +73,7 @@ def changed(widget, key, gconf_client):
     gconf_client.set_bool(key, widget.get_active())
 
 
-class G15RSSPreferences():
+class G15RSSPreferences:
 
     def __init__(self, parent, driver, gconf_client, gconf_key):
         self._gconf_client = gconf_client
@@ -320,8 +320,7 @@ class G15FeedPage(g15theme.G15Page):
             return g15cairo.paint_thumbnail_image(allocated_size, self._icon_surface, canvas)
 
 
-class G15RSS():
-
+class G15RSS:
     def __init__(self, gconf_client, gconf_key, screen):
         self._screen = screen
         self._gconf_key = gconf_key

@@ -62,16 +62,16 @@ or if Gnome15 itself is closing down.
 
 """
 
+import logging
 import os.path
 import sys
+import threading
+
+import gconf
+
 import g15globals
 import g15driver
 import g15actions
-import gconf
-import threading
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -242,26 +242,26 @@ all_plugin_directories = get_extra_plugin_dirs() + \
                          list_plugin_dirs(g15globals.plugin_dir)
 
 # Phase 1
-for plugindir in all_plugin_directories:
-    if not plugindir in sys.path:
-        sys.path.insert(0, plugindir)
+for _plugin_dir in all_plugin_directories:
+    if _plugin_dir not in sys.path:
+        sys.path.insert(0, _plugin_dir)
 
 # Phase 2
-for plugindir in all_plugin_directories:
-    plugin_name = os.path.basename(plugindir)
-    pluginfiles = [fname[:-3] for fname in os.listdir(plugindir) if fname == plugin_name + ".py"]
-    if not plugindir in sys.path:
-        sys.path.insert(0, plugindir)
+for __plugin_dir in all_plugin_directories:
+    _plugin_name = os.path.basename(__plugin_dir)
+    __plugin_files = [fname[:-3] for fname in os.listdir(__plugin_dir) if fname == _plugin_name + ".py"]
+    if __plugin_dir not in sys.path:
+        sys.path.insert(0, __plugin_dir)
     try:
-        for mod in ([__import__(fname) for fname in pluginfiles]):
-            imported_plugins.append(mod)
+        for __plugin_module in ([__import__(fname) for fname in __plugin_files]):
+            imported_plugins.append(__plugin_module)
             # TODO - we need to be registering actions for a particular device
-            actions = get_actions(mod, None)
-            for a in actions:
-                if not a in g15actions.actions:
-                    g15actions.actions.append(a)
-    except Exception as e:
-        logger.error("Failed to load plugin module %s.", plugindir, exc_info=e)
+            __actions = get_actions(__plugin_module, None)
+            for __a in __actions:
+                if __a not in g15actions.actions:
+                    g15actions.actions.append(__a)
+    except Exception as __plugin_load_exception:
+        logger.error("Failed to load plugin module %s.", __plugin_dir, exc_info=__plugin_load_exception)
 
 
 class G15Plugins:
@@ -353,7 +353,7 @@ class G15Plugins:
             for mod in imported_plugins:
                 plugin_dir_key = self._get_plugin_key(mod.id)
                 if mod.id in added:
-                    logger.warning("Same plugin with ID of %s is already loaded." \
+                    logger.warning("Same plugin with ID of %s is already loaded."
                                    "Only the first copy will be used.", mod.id)
                 else:
                     self.conf_client.add_dir(plugin_dir_key, gconf.CLIENT_PRELOAD_NONE)
@@ -437,7 +437,7 @@ class G15Plugins:
                     # is in the right state
 
                     needs_net = is_needs_network(mod)
-                    if not needs_net or (needs_net and \
+                    if not needs_net or (needs_net and
                                          self.network_manager.is_network_available()):
                         self._activate_instance(plugin, callback, idx)
 
@@ -498,7 +498,7 @@ class G15Plugins:
     def _deactivate_instance(self, plugin):
         mod = self.plugin_map[plugin]
         logger.debug("De-activating %s", mod.id)
-        if not plugin in self.activated:
+        if plugin not in self.activated:
             raise Exception("%s is not activated" % mod.id)
         try:
             plugin.deactivate()
@@ -540,7 +540,7 @@ class G15Plugins:
                 if now_enabled and instance is None:
                     instance = self._create_instance(plugin, self._get_plugin_key(plugin_id))
                     self.started.append(instance)
-                    if self.is_in_active_state() == True:
+                    if self.is_in_active_state():
                         self._activate_instance(instance)
                 elif not now_enabled and instance is not None:
                     if instance in self.activated:

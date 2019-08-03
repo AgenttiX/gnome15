@@ -14,10 +14,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# import datetime
+import logging
+# import os
+# import sys
+from threading import Thread
+# from threading import Timer
+import time
+
+# import gtk
+from Xlib import X, XK, display
+from Xlib.ext import record
+from Xlib.protocol import rq
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("macro-recorder", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.g15theme as g15theme
 import gnome15.g15devices as g15devices
@@ -25,21 +35,9 @@ import gnome15.util.g15icontools as g15icontools
 import gnome15.g15driver as g15driver
 import gnome15.g15profile as g15profile
 import gnome15.g15actions as g15actions
-import datetime
-from threading import Timer
-import gtk
-import os
-import sys
-import time
-import logging
 
 logger = logging.getLogger(__name__)
-
-from Xlib import X, XK, display
-from Xlib.ext import record
-from Xlib.protocol import rq
-
-from threading import Thread
+_ = g15locale.get_translation("macro-recorder", modfile=__file__).ugettext
 
 # Custom actions
 RECORD = "record"
@@ -114,7 +112,6 @@ class MacroRecorderScreenChangeListener(g15screen.ScreenChangeAdapter):
 
 
 class G15MacroRecorder:
-
     def __init__(self, gconf_key, gconf_client, screen):
         self._screen = screen
         self._gconf_client = gconf_client
@@ -156,7 +153,8 @@ class G15MacroRecorder:
 
         if self._record_thread is not None:
             # Let the M1-M3 and MR key be handled as actions 
-            if g15driver.G_KEY_MR in keys or g15driver.G_KEY_M1 in keys or g15driver.G_KEY_M2 in keys or g15driver.G_KEY_M3 in keys:
+            if g15driver.G_KEY_MR in keys or g15driver.G_KEY_M1 in keys \
+                    or g15driver.G_KEY_M2 in keys or g15driver.G_KEY_M3 in keys:
                 return False
 
             # Stop recording on release of a macro key
@@ -330,7 +328,8 @@ class G15MacroRecorder:
 
             if self._message is None:
                 properties["message"] = _(
-                    "Recording on M%s. Type in your macro then press the G-Key to assign it to, or MR to cancel." % self._screen.get_memory_bank())
+                    "Recording on M%s. Type in your macro then press the G-Key to assign it to, or MR to cancel." %
+                    self._screen.get_memory_bank())
             else:
                 properties["message"] = self._message
         else:

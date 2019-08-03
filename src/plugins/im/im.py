@@ -21,16 +21,8 @@
 # class is very loosely based on this, with many modifications. These are licensed under 
 # LGPL. See http://telepathy.freedesktop.org/wiki/Contact%20selector
 
+import logging
 
-import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("im", modfile=__file__).ugettext
-
-import gnome15.util.g15scheduler as g15scheduler
-import gnome15.util.g15icontools as g15icontools
-import gnome15.g15theme as g15theme
-import gnome15.g15driver as g15driver
-import gnome15.g15plugin as g15plugin
 import dbus
 import telepathy
 from telepathy.interfaces import (
@@ -50,10 +42,15 @@ from telepathy.constants import (
     CONNECTION_PRESENCE_TYPE_EXTENDED_AWAY,
     HANDLE_TYPE_LIST)
 
-# Logging
-import logging
+import gnome15.g15locale as g15locale
+import gnome15.util.g15scheduler as g15scheduler
+import gnome15.util.g15icontools as g15icontools
+import gnome15.g15theme as g15theme
+import gnome15.g15driver as g15driver
+import gnome15.g15plugin as g15plugin
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("im", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "im"
@@ -99,6 +96,13 @@ MODES = {
 }
 
 
+def __cmp(a, b):
+    """For Python 3 compatibility
+    https://stackoverflow.com/questions/22490366/how-to-use-cmp-in-python-3
+    """
+    return (a > b) - (a < b)
+
+
 def create(gconf_key, gconf_client, screen):
     """
     Create the plugin instance
@@ -115,7 +119,6 @@ Holds list of contacts for a single connection
 
 
 class ContactList:
-
     def __init__(self, list_store, conn, screen):
         self.menu = list_store
         self._conn = conn
@@ -154,8 +157,8 @@ class ContactList:
         channel = telepathy.client.Channel(
             service_name=self._conn.service_name,
             object_path=channel)
-        DBUS_PROPERTIES = 'org.freedesktop.DBus.Properties'
-        channel[DBUS_PROPERTIES].Get(
+        dbus_properties = 'org.freedesktop.DBus.Properties'
+        channel[dbus_properties].Get(
             CHANNEL_INTERFACE_GROUP,
             'Members',
             reply_handler=self._request_contact_info,
@@ -175,7 +178,8 @@ class ContactList:
 
     def _get_contact_attributes_cb(self, attributes):
         logger.debug("Received contact attributes for %s", str(attributes))
-        for handle, member in attributes.iteritems():
+        # iteritems() has been replaced with items() for Python 3 compatibility
+        for handle, member in attributes.items():
             contact_info = self._parse_member_attributes(member)
             contact, alias, presence = contact_info
             if handle not in self._contact_list:
@@ -184,7 +188,8 @@ class ContactList:
     @staticmethod
     def _parse_member_attributes(member):
         contact_id, alias, presence = None, None, None
-        for key, value in member.iteritems():
+        # iteritems() has been replaced with items() for Python 3 compatibility
+        for key, value in member.items():
             if key == CONNECTION + '/contact-id':
                 contact_id = value
             elif key == CONNECTION_INTERFACE_ALIASING + '/alias':
@@ -201,7 +206,8 @@ class ContactList:
 
     def _contact_presence_changed_cb(self, presences):
         logger.debug("Contact presence changed %s", str(presences))
-        for handle, presence in presences.iteritems():
+        # iteritems() has been replaced with items() for Python 3 compatibility
+        for handle, presence in presences.items():
             if handle in self._contact_list:
                 self._update_contact_presence(handle, presence)
             else:
@@ -253,9 +259,9 @@ class ContactMenuItem(g15theme.MenuItem):
         logger.debug("Setting presence of %s to %s", str(self.contact), str(presence))
         self.presence = presence
 
-    '''
+    """
     Private
-    '''
+    """
 
     @staticmethod
     def _get_status_text(presence):
@@ -293,9 +299,9 @@ def compare_contacts(a, b):
     elif b is None and a is None:
         val = 0
     else:
-        val = cmp(a.presence[0], b.presence[0])
+        val = __cmp(a.presence[0], b.presence[0])
         if val == 0:
-            val = cmp(a.alias, b.alias)
+            val = __cmp(a.alias, b.alias)
 
     return val
 
@@ -439,9 +445,9 @@ class ContactMenu(g15theme.Menu):
                 return
         logger.warning("Got presence update for unknown contact %s", str(presence))
 
-    '''
+    """
     Private
-    '''
+    """
 
     def _connect(self, connection):
         """
@@ -461,8 +467,8 @@ class ContactMenu(g15theme.Menu):
         presence -- presence
         """
         return (self.mode == MODE_ONLINE and presence[0] != 1) or \
-               (self.mode == MODE_AVAILABLE and presence[0] == CONNECTION_PRESENCE_TYPE_AVAILABLE) or \
-               self.mode == MODE_ALL
+            (self.mode == MODE_AVAILABLE and presence[0] == CONNECTION_PRESENCE_TYPE_AVAILABLE) or \
+            self.mode == MODE_ALL
 
 
 """
@@ -515,7 +521,7 @@ class G15Im(g15plugin.G15MenuPlugin):
         Keyword arguments:
         binding -- binding
         """
-        if binding.action == g15driver.VIEW and self.page != None and self.page.is_visible():
+        if binding.action == g15driver.VIEW and self.page is not None and self.page.is_visible():
             mode_index = MODE_LIST.index(self.menu.mode) + 1
             if mode_index >= len(MODE_LIST):
                 mode_index = 0

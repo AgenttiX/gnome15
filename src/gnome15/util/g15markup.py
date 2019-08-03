@@ -19,12 +19,17 @@
 Markup utilities
 """
 
-from HTMLParser import HTMLParser
+import sys
+
+if sys.version_info < (3, 0):
+    from HTMLParser import HTMLParser
+else:
+    from html.parser import HTMLParser
 
 
-class MLStripper(HTMLParser):
+class MLStripper(HTMLParser, object):
     def __init__(self):
-        self.reset()
+        super(MLStripper, self).__init__()
         self.fed = []
 
     def handle_data(self, d):

@@ -18,26 +18,32 @@
 Alternative implementation of a G19 Driver that uses pylibg19 to communicate directly
 with the keyboard 
 """
-import gnome15.g15locale as g15locale
 
-_ = g15locale.get_translation("gnome15-drivers").ugettext
-
-from cStringIO import StringIO
-from threading import RLock
-import cairo
-import gnome15.g15driver as g15driver
-import gnome15.g15globals as g15globals
-import gnome15.util.g15convert as g15convert
-import gnome15.util.g15uigconf as g15uigconf
-import gnome15.util.g15cairo as g15cairo
-import gnome15.g15exceptions as g15exceptions
-import sys
+import array
+import logging
 import os
+import sys
+from threading import RLock
+
+import cairo
 import gconf
 import gtk
 import usb
-import logging
-import array
+
+import gnome15.g15locale as g15locale
+import gnome15.g15driver as g15driver
+import gnome15.g15globals as g15globals
+# import gnome15.util.g15convert as g15convert
+import gnome15.util.g15uigconf as g15uigconf
+import gnome15.util.g15cairo as g15cairo
+import gnome15.g15exceptions as g15exceptions
+
+if sys.version_info < (3, 0):
+    from cStringIO import StringIO
+else:
+    from io import StringIO
+
+_ = g15locale.get_translation("gnome15-drivers").ugettext
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +127,6 @@ def show_preferences(device, parent, gconf_client):
 
 
 class G19DriverPreferences:
-
     def __init__(self, device, parent, gconf_client):
         g15locale.get_translation("driver_g19direct")
         widget_tree = gtk.Builder()
@@ -130,24 +135,30 @@ class G19DriverPreferences:
         self.window = widget_tree.get_object("G19DirectDriverSettings")
         self.window.set_transient_for(parent)
 
-        g15uigconf.configure_checkbox_from_gconf(gconf_client,
-                                                 "/apps/gnome15/%s/reset_usb" % device.uid,
-                                                 "Reset",
-                                                 False,
-                                                 widget_tree,
-                                                 True)
-        g15uigconf.configure_spinner_from_gconf(gconf_client,
-                                                "/apps/gnome15/%s/timeout" % device.uid,
-                                                "Timeout",
-                                                10000,
-                                                widget_tree,
-                                                False)
-        g15uigconf.configure_spinner_from_gconf(gconf_client,
-                                                "/apps/gnome15/%s/reset_wait" % device.uid,
-                                                "ResetWait",
-                                                0,
-                                                widget_tree,
-                                                False)
+        g15uigconf.configure_checkbox_from_gconf(
+            gconf_client,
+            "/apps/gnome15/%s/reset_usb" % device.uid,
+            "Reset",
+            False,
+            widget_tree,
+            True
+        )
+        g15uigconf.configure_spinner_from_gconf(
+            gconf_client,
+            "/apps/gnome15/%s/timeout" % device.uid,
+            "Timeout",
+            10000,
+            widget_tree,
+            False
+        )
+        g15uigconf.configure_spinner_from_gconf(
+            gconf_client,
+            "/apps/gnome15/%s/reset_wait" % device.uid,
+            "ResetWait",
+            0,
+            widget_tree,
+            False
+        )
 
     def run(self):
         self.window.run()
@@ -155,7 +166,6 @@ class G19DriverPreferences:
 
 
 class Driver(g15driver.AbstractDriver):
-
     def __init__(self, device, on_close=None):
         g15driver.AbstractDriver.__init__(self, "g19direct")
         self.on_close = on_close

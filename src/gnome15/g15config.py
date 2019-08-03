@@ -15,19 +15,21 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gnome15.g15locale as g15locale
+import logging
+import os
+import shutil
+import subprocess
+import sys
+# import time
+import zipfile
 
-_ = g15locale.get_translation("gnome15").ugettext
-
+import dbus.service
+import gobject
+import gtk
+import pango
 import pygtk
 
-pygtk.require('2.0')
-import gtk
-import gobject
-import pango
-import dbus.service
-import os
-import sys
+import gnome15.g15locale as g15locale
 import g15globals
 import g15profile
 import gconf
@@ -45,18 +47,13 @@ import util.g15os as g15os
 import util.g15icontools as g15icontools
 import g15theme
 import colorpicker
-import subprocess
-import shutil
-import zipfile
-import time
-
-import logging
-
-logger = logging.getLogger(__name__)
-
-# Upgrade
 import g15upgrade
 
+logger = logging.getLogger(__name__)
+pygtk.require('2.0')
+_ = g15locale.get_translation("gnome15").ugettext
+
+# Upgrade
 g15upgrade.upgrade()
 
 # Determine if appindicator is available, this decides the nature
@@ -64,11 +61,10 @@ g15upgrade.upgrade()
 HAS_APPINDICATOR = False
 try:
     import appindicator
-
-    appindicator.__path__
+    # appindicator.__path__
     HAS_APPINDICATOR = True
-except Exception as e:
-    logger.debug('Could not load appindicator module', exc_info=e)
+except Exception as appindicator_exception:
+    logger.debug('Could not load appindicator module', exc_info=appindicator_exception)
     pass
 
 # Store the temporary profile icons here (for when the icon comes from a window, the filename is not known
@@ -268,10 +264,10 @@ class G15Config:
 
         # Load main Glade file
         g15locale.get_translation("g15-config")
-        g15Config = os.path.join(g15globals.ui_dir, 'g15-config.ui')
+        g15_config = os.path.join(g15globals.ui_dir, 'g15-config.ui')
         self.widget_tree = gtk.Builder()
         self.widget_tree.set_translation_domain("g15-config")
-        self.widget_tree.add_from_file(g15Config)
+        self.widget_tree.add_from_file(g15_config)
         self.main_window = self.widget_tree.get_object("MainWindow")
 
         # Make sure there is only one g15config running
@@ -503,8 +499,8 @@ class G15Config:
         # Populate model and configure other components
         self._load_devices()
         if len(self.device_model) == 0:
-            raise Exception(_("No supported devices could be found. Is the " + \
-                              "device correctly plugged in and powered and " + \
+            raise Exception(_("No supported devices could be found. Is the " 
+                              "device correctly plugged in and powered and "
                               "do you have all the required drivers installed?"))
         else:
             if len(self.device_model) == 1 and not g15devices.is_enabled(self.conf_client, self.selected_device):
@@ -538,8 +534,7 @@ class G15Config:
         g15devices.device_removed_listeners.append(self._devices_changed)
 
     def run(self):
-        ''' Set up everything and display the window
-        '''
+        """ Set up everything and display the window """
         if len(self.devices) > 1:
             self.main_window.set_size_request(800, 600)
         else:
@@ -554,9 +549,9 @@ class G15Config:
         self.main_window.hide()
         g15profile.notifier.stop()
 
-    '''
+    """
     Private
-    '''
+    """
 
     def _devices_changed(self, device=None):
         self._load_devices()
@@ -579,10 +574,12 @@ class G15Config:
     def _stop_service(self, event=None):
         self.gnome15_service.Stop(reply_handler=self._general_dbus_reply, error_handler=self._general_dbus_error)
 
-    def _general_dbus_reply(self, *args):
+    @staticmethod
+    def _general_dbus_reply(*args):
         logger.info("DBUS reply %s", str(args))
 
-    def _general_dbus_error(self, *args):
+    @staticmethod
+    def _general_dbus_error(*args):
         logger.error("DBUS error %s", str(args))
 
     def _starting(self):
@@ -683,8 +680,11 @@ class G15Config:
         if not self.gnome15_service or self.state == STOPPED:
             self.stop_service_button.set_sensitive(False)
             logger.debug("Stopped")
-            self._show_message(gtk.MESSAGE_WARNING, _("The Gnome15 desktop service is not running. It is recommended " + \
-                                                      "you add <b>g15-desktop-service</b> as a <i>Startup Application</i>."))
+            self._show_message(
+                gtk.MESSAGE_WARNING,
+                _("The Gnome15 desktop service is not running. It is recommended "
+                  "you add <b>g15-desktop-service</b> as a <i>Startup Application</i>.")
+            )
         elif self.state == STARTING:
             logger.debug("Starting up")
             self.stop_service_button.set_sensitive(False)
@@ -712,12 +712,12 @@ class G15Config:
             if connected != screen_count and first_error is not None and first_error != "":
                 if len(self.screen_services) == 1:
                     self._show_message(gtk.MESSAGE_WARNING,
-                                       _("The Gnome15 desktop service is running, but failed to connect " + \
+                                       _("The Gnome15 desktop service is running, but failed to connect "
                                          "to the keyboard driver. The error message given was <b>%s</b>") % first_error,
                                        False)
                 else:
-                    mesg = "The Gnome15 desktop service is running, but only %d out of %d keyboards are connected. The first error message given was %s" % (
-                    connected, screen_count, first_error)
+                    mesg = "The Gnome15 desktop service is running, but only %d out of %d keyboards are connected. " \
+                           "The first error message given was %s" % (connected, screen_count, first_error)
                     self._show_message(gtk.MESSAGE_WARNING, mesg, False)
             else:
                 self._hide_warning()
@@ -728,7 +728,8 @@ class G15Config:
         self.infobar.hide_all()
         self.main_window.check_resize()
 
-    def _start_service(self, widget):
+    @staticmethod
+    def _start_service(widget):
         widget.set_sensitive(False)
         g15os.run_script("g15-desktop-service", ["-f"])
 
@@ -1447,22 +1448,22 @@ class G15Config:
             dialog.set_filename(self.selected_profile.icon)
         else:
             dialog.set_filename(self.selected_profile.background)
-        filter = gtk.FileFilter()
-        filter.set_name("All files")
-        filter.add_pattern("*")
+        file_filter = gtk.FileFilter()
+        file_filter.set_name("All files")
+        file_filter.add_pattern("*")
 
-        dialog.add_filter(filter)
+        dialog.add_filter(file_filter)
 
-        filter = gtk.FileFilter()
-        filter.set_name("Images")
-        filter.add_mime_type("image/png")
-        filter.add_mime_type("image/jpeg")
-        filter.add_mime_type("image/gif")
-        filter.add_pattern("*.png")
-        filter.add_pattern("*.jpg")
-        filter.add_pattern("*.jpeg")
-        filter.add_pattern("*.gif")
-        dialog.add_filter(filter)
+        file_filter = gtk.FileFilter()
+        file_filter.set_name("Images")
+        file_filter.add_mime_type("image/png")
+        file_filter.add_mime_type("image/jpeg")
+        file_filter.add_mime_type("image/gif")
+        file_filter.add_pattern("*.png")
+        file_filter.add_pattern("*.jpg")
+        file_filter.add_pattern("*.jpeg")
+        file_filter.add_pattern("*.gif")
+        dialog.add_filter(file_filter)
 
         response = dialog.run()
 
@@ -2054,9 +2055,10 @@ class G15Config:
 
     def _profile_color_changed(self, widget):
         if not self.adjusting:
-            self.selected_profile.set_mkey_color(self._get_memory_number(),
-                                                 g15convert.color_to_rgb(
-                                                     widget.get_color()) if self.enable_color_for_m_key.get_active() else None)
+            self.selected_profile.set_mkey_color(
+                self._get_memory_number(),
+                g15convert.color_to_rgb(widget.get_color()) if self.enable_color_for_m_key.get_active() else None
+            )
             self._save_profile(self.selected_profile)
 
     def _color_for_mkey_enabled(self, widget):

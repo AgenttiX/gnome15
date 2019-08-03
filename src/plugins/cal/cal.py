@@ -14,13 +14,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import calendar
+import datetime
+import logging
+import os.path
+import time
+
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("cal", modfile=__file__).ugettext
-
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
@@ -30,16 +35,9 @@ import gnome15.g15screen as g15screen
 import gnome15.g15accounts as g15accounts
 import gnome15.g15plugin as g15plugin
 import gnome15.g15globals as g15globals
-import datetime
-import time
-import os, os.path
-import gtk
-import calendar
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("cal", modfile=__file__).ugettext
 
 # Plugin data
 id = "cal"
@@ -107,16 +105,15 @@ def get_available_backends():
     Get the "account type" names that are available by listing all of the
     backend plugins that are installed 
     """
-    l = []
+    lst = []
     import gnome15.g15pluginmanager as g15pluginmanager
     for p in g15pluginmanager.imported_plugins:
         if p.id.startswith("cal-"):
-            l.append(p.id[4:])
-    return l
+            lst.append(p.id[4:])
+    return lst
 
 
 class CalendarEvent:
-
     def __init__(self):
         self.start_date = None
         self.end_date = None
@@ -130,7 +127,6 @@ class CalendarEvent:
 
 
 class CalendarBackend:
-
     def __init__(self):
         self.start_date = None
         self.end_date = None
@@ -153,7 +149,6 @@ class CalendarBackend:
 
 
 class EventMenuItem(g15theme.MenuItem):
-
     def __init__(self, plugin, event, component_id):
         g15theme.MenuItem.__init__(self, component_id)
         self.event = event
@@ -228,7 +223,6 @@ class Cell(g15theme.Component):
 
 
 class Calendar(g15theme.Component):
-
     def __init__(self, component_id="calendar"):
         g15theme.Component.__init__(self, component_id)
         self.layout_manager = g15theme.GridLayoutManager(7)
@@ -236,9 +230,9 @@ class Calendar(g15theme.Component):
 
 
 class G15CalendarPreferences(g15accounts.G15AccountPreferences):
-    '''
+    """
     Configuration UI
-    '''
+    """
 
     def __init__(self, parent, gconf_client, gconf_key):
         g15accounts.G15AccountPreferences.__init__(self, parent, gconf_client,
@@ -268,7 +262,6 @@ class G15CalendarPreferences(g15accounts.G15AccountPreferences):
 
 
 class G15Cal(g15plugin.G15Plugin):
-
     def __init__(self, gconf_key, gconf_client, screen):
         g15plugin.G15Plugin.__init__(self, gconf_client, gconf_key, screen)
         self._timer = None
@@ -341,23 +334,18 @@ class G15Cal(g15plugin.G15Plugin):
         if self._page and self._page.is_visible():
             if self._calendar.is_focused():
                 if (binding.action == g15driver.PREVIOUS_PAGE and self.screen.device.model_id == g15driver.MODEL_G19) or \
-                        (
-                                binding.action == g15driver.PREVIOUS_SELECTION and self.screen.device.model_id != g15driver.MODEL_G19):
+                        (binding.action == g15driver.PREVIOUS_SELECTION and self.screen.device.model_id != g15driver.MODEL_G19):
                     self._adjust_calendar_date(-1)
                     return True
                 elif (binding.action == g15driver.NEXT_PAGE and self.screen.device.model_id == g15driver.MODEL_G19) or \
-                        (
-                                binding.action == g15driver.NEXT_SELECTION and self.screen.device.model_id != g15driver.MODEL_G19):
+                        (binding.action == g15driver.NEXT_SELECTION and self.screen.device.model_id != g15driver.MODEL_G19):
                     self._adjust_calendar_date(1)
                     return True
-                elif (
-                        binding.action == g15driver.PREVIOUS_SELECTION and self.screen.device.model_id == g15driver.MODEL_G19) or \
-                        (
-                                binding.action == g15driver.PREVIOUS_PAGE and self.screen.device.model_id != g15driver.MODEL_G19):
+                elif (binding.action == g15driver.PREVIOUS_SELECTION and self.screen.device.model_id == g15driver.MODEL_G19) or \
+                        (binding.action == g15driver.PREVIOUS_PAGE and self.screen.device.model_id != g15driver.MODEL_G19):
                     self._adjust_calendar_date(-7)
                     return True
-                elif (
-                        binding.action == g15driver.NEXT_SELECTION and self.screen.device.model_id == g15driver.MODEL_G19) or \
+                elif (binding.action == g15driver.NEXT_SELECTION and self.screen.device.model_id == g15driver.MODEL_G19) or \
                         (binding.action == g15driver.NEXT_PAGE and self.screen.device.model_id != g15driver.MODEL_G19):
                     self._adjust_calendar_date(7)
                     return True

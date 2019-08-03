@@ -20,13 +20,16 @@
 ##  You should have received a copy of the GNU General Public License
 ##  along with Things.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
+import cairo
 
 from Things.ThingsApp import *
 from Things.Thinglets import *
 from Things.BoxOfTricks import *
 
-## ---- General
-SKYHEXBLUE = "#aaccff";
+# ---- General
+SKYHEXBLUE = "#aaccff"
 SKYBLUE = hexfloat(SKYHEXBLUE)
 
 
@@ -107,7 +110,7 @@ class Walking(LoopThing):
 
 
 class Torso(LoopThing):
-    ## The 'torso' -- loops->torsoloop layer in the SVG
+    # The 'torso' -- loops->torsoloop layer in the SVG
     def __init__(self):
         LoopThing.__init__(self)
         self.keys("#--#---#---#", Props(), Props(), Props(), Props())
@@ -124,7 +127,7 @@ class Walker(Thing):
 
 
 class Madness(Thing):
-    ### This is our 'main' Thing. It holds all the action.
+    # This is our 'main' Thing. It holds all the action.
     def __init__(self):
         Thing.__init__(self)
         self.keys("#", Props())
@@ -138,9 +141,9 @@ class Madness(Thing):
         self.add(Walker(), globalProps=Props(sz=1, y=100), layer=30)
 
 
-## BEGIN THE APP
+# BEGIN THE APP
 
-## Get a Bag of stuff
+# Get a Bag of stuff
 BOS = BagOfStuff()
 
 # Add stuff to it

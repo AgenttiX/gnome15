@@ -14,10 +14,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os.path
+
+import gio
+import gobject
+import gtk
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("mounts", modfile=__file__).ugettext
-
 import gnome15.g15plugin as g15plugin
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15scheduler as g15scheduler
@@ -26,15 +30,9 @@ import gnome15.util.g15icontools as g15icontools
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.g15screen as g15screen
-import gio
-import gtk
-import os.path
-import gobject
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("mounts", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "mounts"
@@ -156,7 +154,7 @@ class MountMenuItem(g15theme.MenuItem):
 
 
 """
-Represents a volumne as a single item in a menu
+Represents a volume as a single item in a menu
 """
 
 
@@ -190,7 +188,6 @@ Places plugin class
 
 
 class G15Places(g15plugin.G15MenuPlugin):
-
     def __init__(self, gconf_client, gconf_key, screen):
         g15plugin.G15MenuPlugin.__init__(self, gconf_client, gconf_key, screen, POSSIBLE_ICON_NAMES, id, name)
         self._signal_handles = []

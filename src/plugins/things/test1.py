@@ -1,44 +1,47 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-##	Things Copyright(C) 2009 Donn.C.Ingle
-##
-##	Contact: donn.ingle@gmail.com - I hope this email lasts.
-##
-##  This file is part of Things.
-##
-##  Things is free software: you can redistribute it and/or modify
-##  it under the terms of the GNU General Public License as published by
-##  the Free Software Foundation, either version 3 of the License, or
-##  (at your option) any later version.
-##
-##  Things is distributed in the hope that it will be useful,
-##  but WITHOUT ANY WARRANTY; without even the implied warranty of
-##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##  GNU General Public License for more details.
-##
-##  You should have received a copy of the GNU General Public License
-##  along with Things.  If not, see <http://www.gnu.org/licenses/>.
+#    Things Copyright(C) 2009 Donn.C.Ingle
+#
+#    Contact: donn.ingle@gmail.com - I hope this email lasts.
+#
+#  This file is part of Things.
+#
+#  Things is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Things is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Things.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
+import cairo
 
 from Things.ThingsApp import *
 from Things.Thinglets import *
 from Things.BoxOfTricks import *
 
-## NOTE:
-##   Head down to the end: look for the first scene (class FadeStart) and work from there.
-##   Written with Version 0.1 of the API: 2 May 2009
+# NOTE:
+#   Head down to the end: look for the first scene (class FadeStart) and work from there.
+#   Written with Version 0.1 of the API: 2 May 2009
 
 
-## ---- General
+# ---- General
 CAIROHEXBLUE = "#162284";
 CAIROBLUE = hexfloat(CAIROHEXBLUE)
 
 
 class Backdrop(Thing):
-    ## This Thing holds three frames with three draw methods; one for each.
-    ## We use the frame number to decide which to employ.
-    ## This thing serves as a background drawer for each scene.
+    # This Thing holds three frames with three draw methods; one for each.
+    # We use the frame number to decide which to employ.
+    # This thing serves as a background drawer for each scene.
     def __init__(self):
         Thing.__init__(self)
         self.keys("#==", Props())
@@ -83,7 +86,7 @@ class ScarabShape(DrawThing):
 SCARABsh = ScarabShape()
 
 
-## ----------------------------------- SCENE 3
+# ----------------------------------- SCENE 3
 
 class Exit(Thing):
     def __init__(self, app):
@@ -104,11 +107,11 @@ class Exit(Thing):
         self.add(EndScarab())
 
 # def draw(self,ctx,fr):
-#	ctx.set_source_rgb(0,0,0)
-#	ctx.paint()
+#    ctx.set_source_rgb(0,0,0)
+#    ctx.paint()
 
 
-## ----------------------------------- SCENE 2
+# ----------------------------------- SCENE 2
 
 class ClipWord(ClipThing):
     def __init__(self):
@@ -187,13 +190,13 @@ class IntroText(Thing):
         self.keys("#----------------------------------------------------------------#", Props(a=0), Props(a=1))
         self.stops(".................................................................^")
 
-        ## Button appears a little later in the animation:
+        # Button appears a little later in the animation:
         self.add(Next(), parentFrame=65, globalProps=Props(x=200, y=240), layer=20)
 
         fname = "Sans 10"
 
         txt = """Thanks to <b>Cairo</b>, <b>Python</b> and <b>many</b> others, there is now an easy way to produce vector animations in Python code. This library is called "Things" and it's what you are seeing right now.
-		
+        
 It needs work. It's slow and inefficient. But, oddly, it runs! If it could be <i>converted into a C library</i> "Things" would really start to cook! A GUI timeline &amp; on-canvas designer would then be possible.
 
 "Things" works alongside <b>Inkscape</b>. You can pull items out by id and employ them in the API. You can also add images and font files as you need them.
@@ -220,15 +223,15 @@ class BlueBox(Thing):
         self.h = 1
 
     def dostuff(self):
-        ## Change a flag so draw can do stuff.
+        # Change a flag so draw can do stuff.
         self.h = 2
 
     def tell(self):
-        ## Tell logo to pop-up.
+        # Tell logo to pop-up.
         self.parentThing.CAIROCLIP.CAIROWORD.play()
 
     def draw(self, ctx, fr):
-        ## Rather than tween this box down, I draw it bigger every time, to avoid distortion.
+        # Rather than tween this box down, I draw it bigger every time, to avoid distortion.
         if self.h > 1:
             fr = self.h
             self.h += 1
@@ -248,37 +251,37 @@ class BlueBox(Thing):
 class RisingSun(Thing):
     def __init__(self):
         Thing.__init__(self)
-        ## Starts on a blank + stop frame : i.e. it is not visible at first.
-        ## Somewhere there will be a command to tell this to play from frame 2.
+        # Starts on a blank + stop frame : i.e. it is not visible at first.
+        # Somewhere there will be a command to tell this to play from frame 2.
         self.keys(".#----#--#--------#", Props(a=0, sz=2), Props(sz=0.5), Props(sz=2), Props())
         self.stops("^.................^")
         self.funcs(".................^", self.dostuff)
 
-        ## Here we add a pre-prepared Thing. It will draw itself.
+        # Here we add a pre-prepared Thing. It will draw itself.
         self.add(SCARABsh)
 
     def dostuff(self):
-        ## A func to tell some other thing to do something.
+        # A func to tell some other thing to do something.
         self.parentThing.BLUEBOX.goPlay("grow")
 
 
 class IntroduceLogo(Thing):
     """
-	This is the main Thing in scene 2. It was elected thus when we added it to the scene2 var.
-	"""
+    This is the main Thing in scene 2. It was elected thus when we added it to the scene2 var.
+    """
 
     def __init__(self, app):
         Thing.__init__(self)
         self.keys("#==============.", Props())
         self.stops(".........^.....^")
-        ## I want to spend some time simply
-        ## looping so that sub-animations get a chance to
-        ## finish. Hence this ^.^ cute hello-kitty stuff:
+        # I want to spend some time simply
+        # looping so that sub-animations get a chance to
+        # finish. Hence this ^.^ cute hello-kitty stuff:
         self.labels(".^.^......^", "pause", "go", "hide")
         self.funcs("^.^...........^", (BACKDROP.goStop, 2), self.Delay, app.playNextScene)
 
-        ## Add the elements of my animation:
-        ##  Some are given instance in self because I will refer to them from elsewhere.
+        # Add the elements of my animation:
+        #  Some are given instance in self because I will refer to them from elsewhere.
         self.BLUEBOX = BlueBox()
         self.add(self.BLUEBOX, layer=12)
 
@@ -288,14 +291,14 @@ class IntroduceLogo(Thing):
         self.SUN = RisingSun()
         self.add(self.SUN, layer=0, globalProps=Props(x=5, y=-70))
 
-        ## This one starts on frame 6, just after the delay.
+        # This one starts on frame 6, just after the delay.
         self.add(IntroText(), layer=15, parentFrame=6)  # It's instanced on-the-fly.
 
-        ## Used in Delay func.
+        # Used in Delay func.
         self.countdown = 60
 
     def Delay(self):
-        ## So, we are on frame 3 and this func is called.
+        # So, we are on frame 3 and this func is called.
         self.countdown -= 1
         if self.countdown == 0:
             self.goPlay("go")  # all done, continue animation.
@@ -303,14 +306,14 @@ class IntroduceLogo(Thing):
             self.goPlay("pause")  # rewind and loop again.
 
 
-## ----------------------------------- SCENE 1
+# ----------------------------------- SCENE 1
 class BuzzWord(Thing):
     def __init__(self, pFrom, buzz):
         Thing.__init__(self)
         pFrom2 = Props(x=pFrom.y / 2, y=pFrom.x / 2, sz=5)
         self.keys("#----------------------#----------------------------------------------------------#", pFrom, Props(),
                   pFrom2)
-        ## Run a func in myself on the last frame.
+        # Run a func in myself on the last frame.
         self.funcs("..................................................................................^", self.atend)
 
         self.loops = False
@@ -325,15 +328,15 @@ class BuzzWord(Thing):
         self.tbox.draw(ctx)
 
     def atend(self):
-        ## I am finished, so tell my parent.
+        # I am finished, so tell my parent.
         self.parentThing.atend(self.buzz)  # pass my buzz phrase.
 
 
 class BuzzWords(Thing):
     def __init__(self):
         Thing.__init__(self)
-        ## We provide a bunch of frames because we want to start manu instances
-        ## of a Thing -- and space them out every so-many frames.
+        # We provide a bunch of frames because we want to start manu instances
+        # of a Thing -- and space them out every so-many frames.
         self.keys("#=============================", Props())
         self.loops = False
 
@@ -344,34 +347,34 @@ class BuzzWords(Thing):
             self.add(BW, parentFrame=bw * 3)  # Here we start each one on different frames; this staggers the animation.
 
     def atend(self, buzz):
-        ## Am I done with the animations?
-        ## only the last one in the list is what we want.
+        # Am I done with the animations?
+        # only the last one in the list is what we want.
         if buzz == "GPL":
             self.parentThing.play()  # We tell the parentThing (FadeStart) to carry on playing now.
 
 
 class FadeStart(Thing):
     """
-	Start looking here to understand the whole animation.
-	"""
+    Start looking here to understand the whole animation.
+    """
 
     def __init__(self, app):
         Thing.__init__(self)
-        ## We have a stop on frame 2. The BuzzWords() Thing is playing all the time, but this
-        ## timeline does not go past frame 2; until we tell it to...
-        self.keys("##----------#.", Props(), Props(), Props(a=0, sz=0.1))
+        # We have a stop on frame 2. The BuzzWords() Thing is playing all the time, but this
+        # timeline does not go past frame 2; until we tell it to...
+        self.keys("#----------#.", Props(), Props(), Props(a=0, sz=0.1))
         self.stops(".^...........^")
-        ## When this gets to the end, it will run a method of app:
+        # When this gets to the end, it will run a method of app:
         self.funcs("............^", app.playNextScene)  # Off we go to scene2!
 
         self.add(BuzzWords())
 
 
-## Get a Bag of stuff
+# Get a Bag of stuff
 BOS = BagOfStuff()
 
 # Add stuff to it
 BOS.add(os.path.join(os.path.dirname(__file__), "cg.stuff/cairo.svg"), "CG")
 
-## Add Things to app
+# Add Things to app
 BACKDROP = Backdrop()

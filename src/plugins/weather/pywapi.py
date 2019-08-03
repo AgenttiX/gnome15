@@ -25,7 +25,9 @@
 Fetches weather reports from Google Weather, Yahoo Wheather and NOAA
 """
 
-import urllib2, re
+import re
+import urllib2
+
 from xml.dom import minidom
 from urllib import quote
 
@@ -44,8 +46,9 @@ def get_weather_from_google(location_id, hl=''):
     Fetches weather report from Google
 
     Parameters 
-      location_id: a zip code (10001); city name, state (weather=woodland,PA); city name, country (weather=london, england);
-      latitude/longitude(weather=,,,30670000,104019996) or possibly other.
+      location_id: a zip code (10001); city name, state (weather=woodland,PA);
+        city name, country (weather=london, england);
+        latitude/longitude(weather=,,,30670000,104019996) or possibly other.
       hl: the language parameter (language code). Default value is empty string, in this case Google will use English.
 
     Returns:
@@ -70,10 +73,11 @@ def get_weather_from_google(location_id, hl=''):
 
     data_structure = {
         'forecast_information': (
-        'city', 'postal_code', 'latitude_e6', 'longitude_e6', 'forecast_date', 'current_date_time', 'unit_system'),
+            'city', 'postal_code', 'latitude_e6', 'longitude_e6', 'forecast_date', 'current_date_time', 'unit_system'),
         'current_conditions': ('condition', 'temp_f', 'temp_c', 'humidity', 'wind_condition', 'icon')
     }
-    for (tag, list_of_tags2) in data_structure.iteritems():
+    # iteritems() has been replaced with items() for Python 3 compatibility
+    for (tag, list_of_tags2) in data_structure.items():
         tmp_conditions = {}
         for tag2 in list_of_tags2:
             try:
@@ -105,7 +109,8 @@ def get_countries_from_google(hl=''):
     Parameters
       hl: the language parameter (language code). Default value is empty string, in this case Google will use English.
     Returns:
-      countries: a list of elements(all countries that exists in XML feed). Each element is a dictionary with 'name' and 'iso_code' keys. 
+      countries: a list of elements(all countries that exists in XML feed).
+        Each element is a dictionary with 'name' and 'iso_code' keys.
       For example: [{'iso_code': 'US', 'name': 'USA'}, {'iso_code': 'FR', 'name': 'France'}]
     """
     url = GOOGLE_COUNTRIES_URL % hl
@@ -144,7 +149,9 @@ def get_cities_from_google(country_code, hl=''):
       country_code: code of the necessary country. For example 'de' or 'fr'.
       hl: the language parameter (language code). Default value is empty string, in this case Google will use English.
     Returns:
-      cities: a list of elements(all cities that exists in XML feed). Each element is a dictionary with 'name', 'latitude_e6' and 'longitude_e6' keys. For example: [{'longitude_e6': '1750000', 'name': 'Bourges', 'latitude_e6': '47979999'}]
+      cities: a list of elements(all cities that exists in XML feed).
+        Each element is a dictionary with 'name', 'latitude_e6' and 'longitude_e6' keys.
+        For example: [{'longitude_e6': '1750000', 'name': 'Bourges', 'latitude_e6': '47979999'}]
     """
     url = GOOGLE_CITIES_URL % (country_code.lower(), hl)
 
@@ -219,7 +226,8 @@ def get_weather_from_yahoo(location_id, units='metric'):
         'condition': ('text', 'code', 'temp', 'date')
     }
 
-    for (tag, attrs) in ns_data_structure.iteritems():
+    # iteritems() has been replaced with items() for Python 3 compatibility
+    for (tag, attrs) in ns_data_structure.items():
         weather_data[tag] = xml_get_ns_yahoo_tag(dom, YAHOO_WEATHER_NS, tag, attrs)
 
     weather_data['geo'] = {}
@@ -254,7 +262,8 @@ def get_weather_from_noaa(station_id):
     4. The station ID is in the URL for the weather page for that station.
     For example if the weather page is http://weather.noaa.gov/weather/current/KPEO.html -- the station ID is KPEO.
 
-    Other way to get the station ID: use this library: http://code.google.com/p/python-weather/ and 'Weather.location2station' function.
+    Other way to get the station ID: use this library:
+    http://code.google.com/p/python-weather/ and 'Weather.location2station' function.
 
     Returns:
     weather_data: a dictionary of weather data that exists in XML feed. 

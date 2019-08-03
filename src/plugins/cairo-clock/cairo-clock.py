@@ -14,12 +14,22 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import locale
+import os
+# import sys
+# from threading import Timer
+# import time
+
+import cairo
+import datetime
+import gtk
+import pango
+import rsvg
+import xdg.BaseDirectory
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("cairo-clock", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
-import gnome15.g15theme as g15theme
+# import gnome15.g15theme as g15theme
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15cairo as g15cairo
@@ -28,17 +38,8 @@ import gnome15.g15driver as g15driver
 import gnome15.g15globals as g15globals
 import gnome15.g15text as g15text
 import gnome15.g15plugin as g15plugin
-import datetime
-from threading import Timer
-import time
-import gtk
-import os
-import sys
-import cairo
-import rsvg
-import pango
-import locale
-import xdg.BaseDirectory
+
+_ = g15locale.get_translation("cairo-clock", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "cairo-clock"
@@ -133,7 +134,7 @@ class G15CairoClockPreferences:
         for d in theme_dirs:
             if os.path.exists(d):
                 for fname in os.listdir(d):
-                    if os.path.isdir(os.path.join(d, fname)) and not fname in themes and (
+                    if os.path.isdir(os.path.join(d, fname)) and fname not in themes and (
                             driver.get_bpp() == 16 or fname == "default"):
                         theme_model.append([fname])
                         themes[fname] = True
@@ -145,7 +146,6 @@ class G15CairoClockPreferences:
 
 
 class G15CairoClock(g15plugin.G15RefreshingPlugin):
-
     def __init__(self, gconf_key, gconf_client, screen):
         g15plugin.G15RefreshingPlugin.__init__(self, gconf_client, gconf_key, screen,
                                                ["cairo-clock", "clock", "gnome-panel-clock", "time", "xfce4-clock",
@@ -234,7 +234,7 @@ class G15CairoClock(g15plugin.G15RefreshingPlugin):
         self.above_hands = self._load_surface_list(["clock-face-shadow", "clock-glass", "clock-frame"])
 
     def _load_surface_list(self, names):
-        list = []
+        lst = []
         for i in names:
             path = self.clock_theme_dir + "/" + i + ".svg"
             if os.path.exists(path):
@@ -255,7 +255,7 @@ class G15CairoClock(g15plugin.G15RefreshingPlugin):
                     context.translate(svg_size[0], svg_size[1])
                     svg.render_cairo(context)
                     context.translate(-svg_size[0], -svg_size[1])
-                    list.append(((svg_size[0] * scale, svg_size[1] * scale), surface))
+                    lst.append(((svg_size[0] * scale, svg_size[1] * scale), surface))
                 finally:
                     svg.close()
 
@@ -269,8 +269,8 @@ class G15CairoClock(g15plugin.G15RefreshingPlugin):
                 context.translate(img_surface.get_width(), img_surface.get_height())
                 context.set_source_surface(img_surface)
                 context.paint()
-                list.append(((img_surface.get_width(), img_surface.get_height()), surface))
-        return list
+                lst.append(((img_surface.get_width(), img_surface.get_height()), surface))
+        return lst
 
     def _paint_thumbnail(self, canvas, allocated_size, horizontal):
         scale = allocated_size / self.height
@@ -289,7 +289,7 @@ class G15CairoClock(g15plugin.G15RefreshingPlugin):
                 font_size = 8
                 factor = 2
                 font_name = g15globals.fixed_size_font_name
-                x = 1
+                # x = 1
                 gap = 1
             else:
                 factor = 1 if horizontal else 2
@@ -300,7 +300,7 @@ class G15CairoClock(g15plugin.G15RefreshingPlugin):
                 else:
                     text = self._get_time_text()
                     font_size = allocated_size / 2
-                x = 4
+                # x = 4
                 gap = 8
 
             self.panel_text.set_attributes(text, align=pango.ALIGN_CENTER, font_desc=font_name,
@@ -371,9 +371,9 @@ class G15CairoClock(g15plugin.G15RefreshingPlugin):
     def _do_paint_clock(self, canvas, width, height, draw_date=True, draw_time=True):
 
         now = datetime.datetime.now()
-        properties = {}
+        # properties = {}
 
-        time = self._get_time_text()
+        # time = self._get_time_text()
 
         clock_width = min(width, height)
         clock_height = min(width, height)

@@ -63,8 +63,10 @@ def get_command_output(cmd):
     pipe = os.popen('{ ' + cmd + '; } 2>/dev/null', 'r')
     text = pipe.read()
     sts = pipe.close()
-    if sts is None: sts = 0
-    if text[-1:] == '\n': text = text[:-1]
+    if sts is None:
+        sts = 0
+    if text[-1:] == '\n':
+        text = text[:-1]
     return sts, text
 
 
@@ -98,8 +100,8 @@ def full_path_of_program(program_name):
     Full path name of the program_name, None if program_name was not
     found in PATH.
     """
-    for dir in os.environ['PATH'].split(':'):
-        full_path = os.path.join(dir, program_name)
+    for directory in os.environ['PATH'].split(':'):
+        full_path = os.path.join(directory, program_name)
         if os.path.exists(full_path):
             return full_path
     return None

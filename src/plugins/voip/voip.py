@@ -21,11 +21,16 @@
 # class is very loosely based on this, with many modifications. These are licensed under 
 # LGPL. See http://telepathy.freedesktop.org/wiki/Contact%20selector
 
+import base64
+import logging
+from math import pi
+import os
+import time
+
+import cairo
+import gtk
 
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("voip", modfile=__file__).ugettext
-
 import gnome15.g15globals as g15globals
 import gnome15.util.g15convert as g15convert
 import gnome15.util.g15scheduler as g15scheduler
@@ -36,18 +41,10 @@ import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
 import gnome15.g15plugin as g15plugin
 import gnome15.g15screen as g15screen
-import os
-import time
 import gnome15.colorpicker as colorpicker
-from math import pi
-import base64
-import cairo
-import gtk
-
-# Logging
-import logging
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("voip", modfile=__file__).ugettext
 
 # Actions
 MUTE_INPUT = "voip-mute-input"
@@ -108,6 +105,13 @@ MODES = {
 }
 
 
+def __cmp(a, b):
+    """For Python 3 compatibility
+    https://stackoverflow.com/questions/22490366/how-to-use-cmp-in-python-3
+    """
+    return (a > b) - (a < b)
+
+
 def show_preferences(parent, driver, gconf_client, gconf_key):
     widget_tree = gtk.Builder()
     widget_tree.add_from_file(os.path.join(os.path.dirname(__file__), "voip.ui"))
@@ -147,12 +151,12 @@ def get_available_backends():
     Get the "backend type" names that are available by listing all of the voip
     backend plugins that are installed 
     """
-    l = []
+    lst = []
     import gnome15.g15pluginmanager as g15pluginmanager
     for p in g15pluginmanager.imported_plugins:
         if p.id.startswith("voip-"):
-            l.append(p.id[5:])
-    return l
+            lst.append(p.id[5:])
+    return lst
 
 
 def get_backlight_key(gconf_key, buddy):
@@ -182,15 +186,14 @@ def compare_buddies(a, b):
     elif b is None and a is None:
         val = 0
     else:
-        val = cmp(a.talking, b.talking)
+        val = __cmp(a.talking, b.talking)
         if val == 0:
-            val = cmp(a.away, b.away)
+            val = __cmp(a.away, b.away)
 
     return val
 
 
 class VoipBackend:
-
     def __init__(self):
         pass
 
@@ -312,9 +315,9 @@ class BuddyMenuItem(g15theme.MenuItem):
         menu = self.parent
         if not menu:
             return False
-        is_showing_status = (menu.mode == MODE_TALKING and self.talking) or \
-                            (menu.mode == MODE_ONLINE and not self.away) or \
-                            menu.mode == MODE_ALL
+        is_showing_status = (menu.mode == MODE_TALKING and self.talking) \
+            or (menu.mode == MODE_ONLINE and not self.away) \
+            or menu.mode == MODE_ALL
         is_showing_channel = self.channel == self._plugin.backend.get_current_channel()
         return is_showing_status and is_showing_channel
 
@@ -347,7 +350,6 @@ class BuddyMenuItem(g15theme.MenuItem):
 
 
 class BuddyMenu(g15theme.Menu):
-
     def __init__(self):
         g15theme.Menu.__init__(self, "menu")
         self.mode = MODE_ONLINE
@@ -355,7 +357,6 @@ class BuddyMenu(g15theme.Menu):
 
 
 class G15Voip(g15plugin.G15MenuPlugin):
-
     def __init__(self, gconf_client, gconf_key, screen):
         g15plugin.G15MenuPlugin.__init__(self, gconf_client, gconf_key, screen, POSSIBLE_ICON_NAMES, id, name)
         self.hidden = False
@@ -885,7 +886,6 @@ class SelectChannelMenu(g15theme.G15Page):
 
 
 class BuddyBacklightMenu(g15theme.G15Page):
-
     def __init__(self, gconf_client, gconf_key, screen, backend, buddy, ctrl, plugin):
         g15theme.G15Page.__init__(self, _("Backlight"), screen, priority=g15screen.PRI_HIGH,
                                   theme=g15theme.G15Theme(os.path.join(g15globals.themes_dir, "default"),

@@ -15,14 +15,15 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import gc
-import weakref
-import objgraph
+# import gc
+# import time
+# import weakref
 
-#gc.set_debug(gc.DEBUG_LEAK)
+# import objgraph
+
+# gc.set_debug(gc.DEBUG_LEAK)
 
 
-import time            
 if __name__ == "__main__":
     print("Creating snapshot1")
     snapshot1 = take_snapshot()

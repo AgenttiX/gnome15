@@ -19,11 +19,11 @@
 SVG utilities
 """
 
-import cairo
-import g15pythonlang
-
-# Logging
 import logging
+
+import cairo
+import g15convert
+import g15pythonlang
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ def rotate_element(element, degrees):
 
 def get_transforms(element, position_only=False):
     transform_val = element.get("transform")
-    list = []
+    lst = []
     if transform_val is not None:
         start = 0
         while True:
@@ -57,30 +57,30 @@ def get_transforms(element, position_only=False):
                 break
             args = transform_val[start_args + 1:end_args].split(",")
             if name == "translate":
-                list.append(cairo.Matrix(1.0, 0.0, 0.0, 1.0, float(args[0]), float(args[1])))
+                lst.append(cairo.Matrix(1.0, 0.0, 0.0, 1.0, float(args[0]), float(args[1])))
             elif name == "matrix":
                 if position_only:
-                    list.append(
+                    lst.append(
                         cairo.Matrix(float(args[0]), float(args[1]), float(args[2]), float(args[3]), float(args[4]),
                                      float(args[5])))
                 else:
-                    list.append(cairo.Matrix(1, 0, 0, 1, float(args[4]), float(args[5])))
+                    lst.append(cairo.Matrix(1, 0, 0, 1, float(args[4]), float(args[5])))
             elif name == "scale":
-                list.append(cairo.Matrix(float(args[0]), 0.0, 0.0, float(args[1]), 0.0, 0.0))
+                lst.append(cairo.Matrix(float(args[0]), 0.0, 0.0, float(args[1]), 0.0, 0.0))
             else:
                 logger.warning("Unsupported transform %s", name)
             start = end_args + 1
 
-    return list
+    return lst
 
 
 def get_location(element):
-    list = []
+    lst = []
     while element is not None:
         x = element.get("x")
         y = element.get("y")
         if x is not None and y is not None:
-            list.append((float(x), float(y)))
+            lst.append((float(x), float(y)))
         transform_val = element.get("transform")
         if transform_val is not None:
             start = 0
@@ -95,24 +95,24 @@ def get_location(element):
                     break
                 args = g15pythonlang.split_args(transform_val[start_args + 1:end_args])
                 if name == "translate":
-                    list.append((float(args[0]), float(args[1])))
+                    lst.append((float(args[0]), float(args[1])))
                 elif name == "matrix":
-                    list.append((float(args[4]), float(args[5])))
+                    lst.append((float(args[4]), float(args[5])))
                 else:
                     logger.warning("WARNING: Unsupported transform %s", name)
                 start = end_args + 1
         element = element.getparent()
-    list.reverse()
+    lst.reverse()
     x = 0
     y = 0
-    for i in list:
+    for i in lst:
         x += i[0]
         y += i[1]
     return x, y
 
 
 def get_actual_bounds(element, relative_to=None):
-    id = element.get("id")
+    # id = element.get("id")
 
     bounds = get_bounds(element)
     transforms = []

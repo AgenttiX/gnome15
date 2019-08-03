@@ -14,11 +14,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+
+import cairo
+import gconf
+import gtk
+from lxml import etree
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("background", modfile=__file__).ugettext
-
-import gnome15.util.g15convert as g15convert
+# import gnome15.util.g15convert as g15convert
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15gconf as g15gconf
 import gnome15.util.g15cairo as g15cairo
@@ -26,14 +31,9 @@ import gnome15.g15driver as g15driver
 import gnome15.g15screen as g15screen
 import gnome15.g15profile as g15profile
 import gnome15.g15desktop as g15desktop
-import cairo
-import gtk
-import os
-import logging
-import gconf
-from lxml import etree
 
 logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("background", modfile=__file__).ugettext
 
 # Plugin details - All of these must be provided
 id = "background"
@@ -55,7 +55,6 @@ def show_preferences(parent, driver, gconf_client, gconf_key):
 
 
 class G15BackgroundPreferences:
-
     def __init__(self, parent, driver, gconf_client, gconf_key):
 
         widget_tree = gtk.Builder()
@@ -127,7 +126,6 @@ class G15BackgroundPreferences:
 
 
 class G15BackgroundPainter(g15screen.Painter):
-
     def __init__(self, screen):
         g15screen.Painter.__init__(self, g15screen.BACKGROUND_PAINTER, -9999)
         self.background_image = None
@@ -148,7 +146,6 @@ class G15BackgroundPainter(g15screen.Painter):
 
 
 class G15Background:
-
     def __init__(self, gconf_key, gconf_client, screen):
         self.screen = screen
         self.gconf_client = gconf_client
@@ -201,7 +198,7 @@ class G15Background:
         g15profile.profile_listeners.remove(self._profiles_changed)
         self.screen.painters.remove(self.painter)
         for h in self.notify_handlers:
-            self.gconf_client.notify_remove(h);
+            self.gconf_client.notify_remove(h)
         self.screen.redraw()
         if self.gnome_dconf_handle is not None:
             self.gnome_dconf_settings.disconnect(self.gnome_dconf_handle)
@@ -252,7 +249,8 @@ class G15Background:
                     self.bg_img = self.gconf_client.get_string("/desktop/gnome/background/picture_filename")
             else:
                 logger.warning(
-                    "User request wallpaper from the desktop, but the desktop environment is unknown. Please report this bug to the Gnome15 project")
+                    "User request wallpaper from the desktop, but the desktop environment is unknown. "
+                    "Please report this bug to the Gnome15 project")
 
         if self.bg_img is None:
             # Use the file

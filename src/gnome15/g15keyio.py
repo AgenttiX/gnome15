@@ -19,33 +19,31 @@ Classes and functions for recording X key presses using either raw X events
 or XTEST as well as injecting such keys
 """
 
+import logging
+from threading import Thread
+import time
+
 import gnome15.g15locale as g15locale
 import gnome15.g15uinput as g15uinput
-
-_ = g15locale.get_translation("macro-recorder", modfile=__file__).ugettext
-
-import time
-import logging
-
-logger = logging.getLogger(__name__)
 
 from Xlib import X, XK, display
 from Xlib.ext import record
 from Xlib.protocol import rq
 
-from threading import Thread
+logger = logging.getLogger(__name__)
+_ = g15locale.get_translation("macro-recorder", modfile=__file__).ugettext
 
 local_dpy = display.Display()
 record_dpy = display.Display()
 
 
 def get_keysyms():
-    l = []
+    lst = []
     for name in dir(XK):
         logger.debug("   %s", name)
         if name[:3] == "XK_":
-            l.append(name[3:])
-    return l
+            lst.append(name[3:])
+    return lst
 
 
 class RecordThread(Thread):
@@ -80,7 +78,6 @@ class RecordThread(Thread):
 
 
 class G15KeyRecorder:
-
     def __init__(self, driver):
         self._driver = driver
         self._record_key = None

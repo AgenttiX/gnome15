@@ -14,10 +14,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+# from threading import Timer
+# from threading import Thread
+from threading import RLock
+import time
+import os
+# import Queue
+import subprocess
+import tempfile
+
+import dbus
+import dbus.service
+import dbus.exceptions
+from dbus.exceptions import NameExistsException
+# import gconf
+import gobject
+import gtk
+import gtk.gdk
+import lxml.html
+# from PIL import Image
+
 import gnome15.g15locale as g15locale
-
-_ = g15locale.get_translation("notify-lcd", modfile=__file__).ugettext
-
 import gnome15.g15screen as g15screen
 import gnome15.util.g15scheduler as g15scheduler
 import gnome15.util.g15uigconf as g15uigconf
@@ -27,30 +45,9 @@ import gnome15.util.g15markup as g15markup
 import gnome15.g15globals as g15globals
 import gnome15.g15theme as g15theme
 import gnome15.g15driver as g15driver
-import gnome15.g15desktop as g15desktop
-import gconf
-import time
-import dbus
-import dbus.service
-import dbus.exceptions
-import os
-import gtk
-import gtk.gdk
-from PIL import Image
-import subprocess
-import tempfile
-import lxml.html
-import Queue
-import gobject
+# import gnome15.g15desktop as g15desktop
 
-from threading import Timer
-from threading import Thread
-from threading import RLock
-from dbus.exceptions import NameExistsException
-
-# Logging
-import logging
-
+_ = g15locale.get_translation("notify-lcd", modfile=__file__).ugettext
 logger = logging.getLogger(__name__)
 
 # Plugin details - All of these must be provided
@@ -142,7 +139,6 @@ Queued notification message
 
 
 class G15Message:
-
     def __init__(self, id, icon, summary, body, timeout, actions, hints):
         self.id = id
         self.set_details(icon, summary, body, timeout, actions, hints)
@@ -213,7 +209,6 @@ DBus service implementing the freedesktop notification specification
 
 
 class G15NotifyService(dbus.service.Object):
-
     def __init__(self, gconf_client, gconf_key, screen, bus_name, plugin):
         dbus.service.Object.__init__(self, bus_name, BUS_NAME)
         self._gconf_client = gconf_client
@@ -263,7 +258,6 @@ Gnome15 notification plugin
 
 
 class G15NotifyLCD:
-
     def __init__(self, gconf_client, gconf_key, screen):
         self._screen = screen
         self._gconf_key = gconf_key

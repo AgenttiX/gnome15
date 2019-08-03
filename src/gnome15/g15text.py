@@ -14,11 +14,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
+import cairo
 import pango
 import pangocairo
-import cairo
-import gobject
-import logging
+# import gobject
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,6 @@ def new_text(screen=None):
 
 
 class G15Text(object):
-
     def __init__(self, antialias):
         self.antialias = antialias
 
@@ -72,7 +72,6 @@ class G15Text(object):
 
 
 class G15PangoText(G15Text):
-
     def __init__(self, antialias):
         G15Text.__init__(self, antialias)
         pangocairo.context_set_font_options(pango_context, self._create_font_options())

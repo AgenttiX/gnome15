@@ -14,18 +14,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gnome15.g15driver as g15driver
-import gnome15.g15screen as g15screen
-import gnome15.util.g15convert as g15convert
-import gnome15.util.g15scheduler as g15scheduler
 import logging
-
-logger = logging.getLogger(__name__)
 
 from Things.ThingsApp import *
 from Things.Thinglets import *
 from Things.BoxOfTricks import *
 from Things.OutputDevice import *
+
+import gnome15.g15driver as g15driver
+import gnome15.g15screen as g15screen
+# import gnome15.util.g15convert as g15convert
+import gnome15.util.g15scheduler as g15scheduler
+
+logger = logging.getLogger(__name__)
 
 # Plugin details - All of these must be provided
 id = "things"
@@ -81,7 +82,6 @@ class G15ThingOutputDevice(OutputDevice):
 
 
 class G15ThingPainter(g15screen.Painter):
-
     def __init__(self, screen):
         g15screen.Painter.__init__(self, g15screen.BACKGROUND_PAINTER, -9999)
         self.output_device = G15ThingOutputDevice(screen.available_size[0], screen.available_size[1], screen)
@@ -144,7 +144,6 @@ class G15ThingPainter(g15screen.Painter):
 
 
 class G15Things:
-
     def __init__(self, gconf_key, gconf_client, screen):
         self.screen = screen
         self.gconf_client = gconf_client
