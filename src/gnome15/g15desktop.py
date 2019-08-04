@@ -1285,18 +1285,15 @@ class G15DesktopComponent:
         logger.debug("Connected")
 
         # Load the initial screens
-        self.lock.acquire()
-        try:
+        with self.lock:
             for screen_path in self.service.GetScreens():
                 logger.debug("Adding %s", screen_path)
                 self._add_screen(screen_path)
                 remote_screen = self.session_bus.get_object('org.gnome15.Gnome15', screen_path)
                 for page_path in remote_screen.GetPages():
                     page = self.session_bus.get_object('org.gnome15.Gnome15', page_path)
-                    if page.GetPriority() >= g15screen.PRI_LOW and page.GetPriority() < g15screen.PRI_HIGH:
+                    if g15screen.PRI_LOW <= page.GetPriority() < g15screen.PRI_HIGH:
                         self._add_page(screen_path, page_path, page)
-        finally:
-            self.lock.release()
 
         # Listen for events
         self.session_bus.add_signal_receiver(self._device_added, dbus_interface="org.gnome15.Service",
