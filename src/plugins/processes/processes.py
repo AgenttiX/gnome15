@@ -160,7 +160,7 @@ class G15Processes(g15plugin.G15MenuPlugin):
                 return True
 
     def create_menu(self):
-        menu = g15plugin.G15MenuPlugin.create_menu(self)
+        menu = g15plugin.G15MenuPlugin.create_menu()
         menu.on_move = self._reschedule
         return menu
 
