@@ -42,7 +42,12 @@ else:
 """
 Look for icons locally as well if running from source
 """
+
+# Attempting to load the icon theme may produce the following error
+# GtkWarning: Unable to locate theme engine in module_path: "adwaita"
+# This can be fixed by installing the package "gnome-themes-extra"
 gtk_icon_theme = gtk.icon_theme_get_default()
+
 if g15globals.dev:
     gtk_icon_theme.prepend_search_path(g15globals.icons_dir)
 
