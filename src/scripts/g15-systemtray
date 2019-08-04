@@ -22,14 +22,19 @@ desktop service (g15-desktop-service). It will display a list of currently activ
 screens on activation, and allow the configuration UI to be launched (g15-config)
 """
 
+import os
 import sys
+# from threading import RLock
+
+# import dbus
+from dbus.mainloop.glib import DBusGMainLoop
+from dbus.mainloop.glib import threads_init
+# import gconf
+import gobject
+import gtk
 import pygtk
 
 pygtk.require('2.0')
-import gtk
-import os
-import gconf
-from threading import RLock
 
 # Allow running from local path
 path = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "..")
@@ -38,30 +43,22 @@ if os.path.exists(path):
 
 # Logging
 import gnome15.g15logging as g15logging
-
 logger = g15logging.get_root_logger()
 
 # This block MUST be before the imports of the gnome15 modules
-import dbus
-import gobject
-
 gobject.threads_init()
-import dbus
-from dbus.mainloop.glib import DBusGMainLoop
-from dbus.mainloop.glib import threads_init
 
 threads_init()
 DBusGMainLoop(set_as_default=True)
 
-import gnome15.g15globals as g15globals
-import gnome15.g15service as g15service
-import gnome15.g15screen as g15screen
+# import gnome15.g15globals as g15globals
+# import gnome15.g15service as g15service
+# import gnome15.g15screen as g15screen
 import gnome15.util.g15icontools as g15icontools
 import gnome15.g15desktop as g15desktop
 
 
 class G15SystemTray(g15desktop.G15GtkMenuPanelComponent):
-
     def __init__(self):
         self.prefs_menu = gtk.Menu()
         g15desktop.G15GtkMenuPanelComponent.__init__(self)
@@ -82,7 +79,7 @@ class G15SystemTray(g15desktop.G15GtkMenuPanelComponent):
     def attention(self, message=None):
         self.status_icon.set_visible(True)
         self.status_icon.set_from_pixbuf(self.attention_icon)
-        self.status_icon.set_tooltip(message if message != None else self.default_message)
+        self.status_icon.set_tooltip(message if message is not None else self.default_message)
 
     def _on_popup_menu(self, status, button, time):
         self.prefs_menu.popup(None, None, None, button, time)

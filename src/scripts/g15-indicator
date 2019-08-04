@@ -23,6 +23,8 @@ screens on activation, and allow the configuration UI to be launched (g15-config
 """
 
 import sys
+from threading import RLock
+
 import pygtk
 
 pygtk.require('2.0')
@@ -30,7 +32,6 @@ import gtk
 import os
 import appindicator
 import gconf
-from threading import RLock
 
 # Allow running from local path
 path = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "..")

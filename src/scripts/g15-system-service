@@ -22,6 +22,7 @@ used by the kernel driver support to set the brightness of keyboard lights (the 
 files of which require root access, as they are in /sys). 
 """
 
+from __future__ import print_function
 import sys
 import os
 import glib
@@ -33,12 +34,9 @@ if os.path.exists(path):
 
 # Logging
 import gnome15.g15logging as g15logging
-
 logger = g15logging.get_root_logger()
 
-#
 import gobject
-
 gobject.threads_init()
 
 # DBUS - Use to check current desktop service status or stop it
@@ -71,7 +69,7 @@ def start_service(bus, no_trap=False, ):
         service.start_loop()
     except dbus.exceptions.NameExistsException as e:
         logger.debug("Gnome15 service already running", exc_info=e)
-        print "Gnome15 desktop service is already running"
+        print("Gnome15 desktop service is already running")
         sys.exit(1)
 
 
@@ -96,7 +94,7 @@ if __name__ == "__main__":
         bus = dbus.SessionBus() if options.use_session_bus else dbus.SystemBus()
         if not check_service_status(bus):
             if args[0] == "stop":
-                print "Gnome15 system service is not running"
+                print("Gnome15 system service is not running")
         else:
             service_object = bus.get_object('org.gnome15.SystemService', '/org/gnome15/SystemService')
             system_service = dbus.Interface(service_object, 'org.gnome15.SystemService')
@@ -105,7 +103,7 @@ if __name__ == "__main__":
     if len(args) == 0 or (len(args) == 1 and (args[0] == "start" or args[0] == "restart")):
         bus = dbus.SessionBus() if options.use_session_bus else dbus.SystemBus()
         if check_service_status(bus):
-            print "Gnome15 desktop service already running"
+            print("Gnome15 desktop service already running")
         else:
             if options.foreground or (not options.foreground and os.fork() == 0):
                 start_service(bus, options.no_trap)
