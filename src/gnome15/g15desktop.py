@@ -1277,6 +1277,9 @@ class G15DesktopComponent:
     def _connect(self):
         logger.debug("Connecting")
         self._reset_attention()
+        # Fixme: This may produce the following error
+        # DBusException: org.freedesktop.DBus.Error.ServiceUnknown:
+        #   The name org.gnome15.Gnome15 was not provided by any .service files
         self.service = self.session_bus.get_object('org.gnome15.Gnome15', '/org/gnome15/Service')
         self.connected = True
         logger.debug("Connected")
