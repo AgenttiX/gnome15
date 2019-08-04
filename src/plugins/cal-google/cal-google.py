@@ -32,7 +32,10 @@ import gnome15.g15accounts as g15accounts
 import gnome15.g15globals as g15globals
 import iso8601
 
-import cal
+try:
+    import cal
+except ImportError:
+    from plugins import cal
 
 logger = logging.getLogger(__name__)
 _ = g15locale.get_translation("cal-evolution", modfile=__file__).ugettext

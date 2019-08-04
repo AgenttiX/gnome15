@@ -29,7 +29,11 @@ import gnome15.g15locale as g15locale
 import gnome15.util.g15uigconf as g15uigconf
 import gnome15.util.g15pythonlang as g15pythonlang
 import gnome15.util.g15gconf as g15gconf
-import weather
+
+try:
+    import weather
+except ImportError:
+    from plugins import weather
 
 logger = logging.getLogger(__name__)
 _ = g15locale.get_translation("weather-noaa", modfile=__file__).ugettext

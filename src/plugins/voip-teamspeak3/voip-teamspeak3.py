@@ -29,11 +29,15 @@ import socket
 # from threading import Semaphore
 
 import ts3
-import voip
 
 import gnome15.g15locale as g15locale
 import gnome15.g15driver as g15driver
 import gnome15.util.g15icontools as g15icontools
+
+try:
+    import voip
+except ImportError:
+    from plugins import voip
 
 _ = g15locale.get_translation("voip-teamspeak3", modfile=__file__).ugettext
 logger = logging.getLogger(__name__)

@@ -26,7 +26,10 @@ import logging
 # from threading import Semaphore
 
 # import ts3
-import voip
+try:
+    import voip
+except ImportError:
+    from plugins import voip
 
 import gnome15.g15locale as g15locale
 import gnome15.g15driver as g15driver
