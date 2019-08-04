@@ -68,7 +68,6 @@ def show_preferences(device, parent, gconf_client):
 
 
 class G930DriverPreferences:
-
     def __init__(self, device, parent, gconf_client):
         self.device = device
 
@@ -182,7 +181,6 @@ class MultiMediaDevice(AbstractInputDevice):
 
 
 class Driver(g15driver.AbstractDriver):
-
     def __init__(self, device, on_close=None):
         g15driver.AbstractDriver.__init__(self, "g510")
         self.notify_handles = []

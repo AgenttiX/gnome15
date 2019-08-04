@@ -14,16 +14,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gobject
-import subprocess
-import signal
-import sys
-import dbus.service
-import threading
-import re
-
-# Logging
 import logging
+import re
+import signal
+import subprocess
+import sys
+import threading
+
+import dbus.service
+import gobject
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +61,6 @@ class RunThread(threading.Thread):
 
 
 class G15GameWrapperServiceController(dbus.service.Object):
-
     def __init__(self, args, bus, no_trap=False):
         bus_name = dbus.service.BusName(BUS_NAME, bus=bus, replace_existing=False, allow_replacement=False,
                                         do_not_queue=True)
