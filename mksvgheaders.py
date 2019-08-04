@@ -20,10 +20,11 @@
 #        | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
 #        +-----------------------------------------------------------------------------+
 
+from __future__ import print_function
+import logging
+
 from lxml import etree
 
-# Logging
-import logging
 logging.basicConfig(format='%(levelname)s:%(asctime)s:%(threadName)s:%(name)s:%(message)s', datefmt='%H:%M:%S')
 logger = logging.getLogger()
 
@@ -41,24 +42,25 @@ nsmap = {
     'xlink': 'http://www.w3.org/1999/xlink',
     'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
     'inkscape': 'http://www.inkscape.org/namespaces/inkscape',
-    }
-        
+}
+
 if __name__ == "__main__":
     import optparse
+
     parser = optparse.OptionParser()
     parser.add_option("-l", "--log", dest="log_level", metavar="INFO,DEBUG,WARNING,ERROR,CRITICAL",
-        default="warning" , help="Log level")
+                      default="warning", help="Log level")
     (options, args) = parser.parse_args()
-    
+
     level = logging.NOTSET
-    if options.log_level != None:      
+    if options.log_level is not None:
         level = LEVELS.get(options.log_level.lower(), logging.NOTSET)
-        logger.setLevel(level = level)
-        
-    for f in args:        
+        logger.setLevel(level=level)
+
+    for f in args:
         document = etree.parse(f)
         root = document.getroot()
-        for text in root.xpath('//text()',namespaces=nsmap):
+        for text in root.xpath('//text()', namespaces=nsmap):
             text = str(text).strip()
             if len(text) > 0 and text.startswith("_("):
-                print "char *s = N_(\"%s\");" % text[2:-1]
+                print("char *s = N_(\"%s\");" % text[2:-1])
