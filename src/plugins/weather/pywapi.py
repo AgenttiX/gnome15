@@ -26,10 +26,15 @@ Fetches weather reports from Google Weather, Yahoo Wheather and NOAA
 """
 
 import re
-import urllib2
+import sys
 
 from xml.dom import minidom
 from urllib import quote
+
+if sys.version_info < (3, 0):
+    import urllib2
+else:
+    import urllib.request as urllib2
 
 GOOGLE_WEATHER_URL = 'http://www.google.com/ig/api?weather=%s&hl=%s'
 GOOGLE_COUNTRIES_URL = 'http://www.google.com/ig/countries?output=xml&hl=%s'

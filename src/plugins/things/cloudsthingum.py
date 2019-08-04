@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-##	Things Copyright(C) 2009 Donn.C.Ingle
-##
-##	Contact: donn.ingle@gmail.com - I hope this email lasts.
-##
-##  This file is part of Things.
-##
-##  Things is free software: you can redistribute it and/or modify
-##  it under the terms of the GNU General Public License as published by
-##  the Free Software Foundation, either version 3 of the License, or
-##  (at your option) any later version.
-##
-##  Things is distributed in the hope that it will be useful,
-##  but WITHOUT ANY WARRANTY; without even the implied warranty of
-##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##  GNU General Public License for more details.
-##
-##  You should have received a copy of the GNU General Public License
-##  along with Things.  If not, see <http://www.gnu.org/licenses/>.
+#  Things Copyright(C) 2009 Donn.C.Ingle
+#
+#  Contact: donn.ingle@gmail.com - I hope this email lasts.
+#
+#  This file is part of Things.
+#
+#  Things is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Things is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Things.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 
@@ -91,16 +91,16 @@ class HugeCloud(Thing):
 class SpinCity(Thing):
     def __init__(self):
         Thing.__init__(self)
-        ## Let's use the Python multiply string trick to get lots of tween frames:
+        # Let's use the Python multiply string trick to get lots of tween frames:
         self.keys("#" + "-" * 250 + "#", Props(), Props(rot=-pi2))
 
     def draw(self, ctx, fr):
         BOS['clouds:city'].draw(ctx)
 
 
-## Here we use two LoopThings.
+# Here we use two LoopThings.
 class Walking(LoopThing):
-    ## The legs - on the loops->walkloop layer in the Inkscape SVG file.
+    # The legs - on the loops->walkloop layer in the Inkscape SVG file.
     def __init__(self):
         LoopThing.__init__(self)
         self.keys("#--#---#---#---#---#----#---#---#---#---#===", Props(), Props(), Props(), Props(), Props(), Props(),

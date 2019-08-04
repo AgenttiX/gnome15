@@ -156,7 +156,7 @@ class G15Volume:
         self._activated = True
         self._read_config()
         self._start_monitoring()
-        self._notify_handler = self._gconf_client.notify_add(self._gconf_key, self._config_changed);
+        self._notify_handler = self._gconf_client.notify_add(self._gconf_key, self._config_changed)
 
     def deactivate(self):
         self._screen.key_handler.action_listeners.remove(self)
@@ -254,7 +254,7 @@ class G15Volume:
         self.mixer_name = g15gconf.get_string_or_default(self._gconf_client,
                                                          self._gconf_key + "/mixer",
                                                          str(alsaaudio.mixers(self.soundcard_index)[0]))
-        if not self.mixer_name in alsaaudio.mixers(self.soundcard_index):
+        if self.mixer_name not in alsaaudio.mixers(self.soundcard_index):
             self.mixer_name = str(alsaaudio.mixers(self.soundcard_index)[0])
             self._gconf_client.set_string(self._gconf_key + "/mixer", self.mixer_name)
 
