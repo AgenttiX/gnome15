@@ -77,15 +77,17 @@ def mkdir_p(path):
     Keyword arguments:
     path: the full path to the directory to create.
     """
-    try:
-        os.makedirs(path)
-    except OSError as exc:  # Python >2.5
-        logger.debug("Error when trying to create path %s", path, exc_info=exc)
-        import errno
-        if exc.errno == errno.EEXIST:
-            pass
-        else:
-            raise
+    if not os.path.isdir(path):
+        try:
+            os.makedirs(path)
+        except OSError as exc:  # Python >2.5
+            logger.debug("Error when trying to create path %s", path, exc_info=exc)
+            # import errno
+            # if exc.errno == errno.EEXIST:
+            #     pass
+            # else:
+            #     raise
+            raise exc
 
 
 def full_path_of_program(program_name):
