@@ -20,7 +20,7 @@ import logging
 import os.path
 import time
 
-import gtk
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15theme as g15theme

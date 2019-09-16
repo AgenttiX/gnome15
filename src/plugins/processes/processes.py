@@ -19,7 +19,7 @@ import os
 import time
 
 import dbus
-import gobject
+from gi.repository import GObject as gobject
 
 import gnome15.g15locale as g15locale
 import gnome15.util.g15scheduler as g15scheduler
@@ -33,7 +33,8 @@ logger = logging.getLogger(__name__)
 _ = g15locale.get_translation("processes", modfile=__file__).ugettext
 
 try:
-    import gtop
+    # import gtop
+    from gi.repository import Gtop as gtop
 except Exception as __e:
     logger.debug("Could not import gtop module. Will use g15top instead", exc_info=__e)
     # API compatible work around for Ubuntu 12.10
@@ -233,10 +234,11 @@ class G15Processes(g15plugin.G15MenuPlugin):
         self._reload_menu()
 
     def _kill_window(self, window_path):
-        import wnck
-        import gtk
+        from gi.repository import Wnck as wnck
+        # import gtk
+        from gi.repository import Gtk
         window_names = self._get_window_names(window_path)
-        screen = wnck.screen_get_default()
+        screen = wnck.Screen.get_default()
         while gtk.events_pending():
             gtk.main_iteration()
         windows = screen.get_windows()
@@ -320,8 +322,8 @@ class G15Processes(g15plugin.G15MenuPlugin):
                         logger.debug("Could not get info from BAMF", exc_info=e)
                         pass
             else:
-                import wnck
-                screen = wnck.screen_get_default()
+                from gi.repository import Wnck as wnck
+                screen = wnck.Screen.get_default()
                 for window in screen.get_windows():
                     pid = window.get_pid()
                     if pid > 0:

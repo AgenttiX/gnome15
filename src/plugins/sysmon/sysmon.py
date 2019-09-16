@@ -18,7 +18,7 @@ import os
 import socket
 # import sys
 
-import gtk
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 # import gnome15.util.g15convert as g15convert
@@ -35,7 +35,9 @@ logger = logging.getLogger(__name__)
 _ = g15locale.get_translation("sysmon", modfile=__file__).ugettext
 
 try:
-    import gtop
+    # import gtop
+    # Requires the package gir1.2-gtop-2.0 to be installed
+    from gi.repository import Gtop as gtop
 except Exception as e:
     logger.debug("Could not import gtop. Falling back to g15top", exc_info=e)
     # API compatible work around for Ubuntu 12.10

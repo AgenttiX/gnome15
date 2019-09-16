@@ -24,7 +24,7 @@ import datetime
 import logging
 import os
 
-import gtk
+from gi.repository import Gtk as gtk
 # import pango
 
 import gnome15.g15locale as g15locale

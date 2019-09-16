@@ -22,9 +22,9 @@ import os
 
 import cairo
 import datetime
-import gtk
-import pango
-import rsvg
+from gi.repository import Gtk as gtk
+from gi.repository import Pango as pango
+from gi.repository import Rsvg as rsvg
 import xdg.BaseDirectory
 
 import gnome15.g15locale as g15locale

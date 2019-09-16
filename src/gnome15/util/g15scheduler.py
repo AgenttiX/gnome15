@@ -17,10 +17,10 @@
 
 import logging
 
-import gobject
-import g15pythonlang
+from gi.repository import GObject as gobject
 
 import jobqueue
+import g15pythonlang
 
 logger = logging.getLogger(__name__)
 

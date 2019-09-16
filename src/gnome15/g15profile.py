@@ -31,7 +31,7 @@ import sys
 import time
 import zipfile
 
-import gconf
+from gi.repository import GConf as gconf
 import pyinotify
 
 import util.g15convert as g15convert
@@ -55,8 +55,8 @@ else:
 
 logger = logging.getLogger(__name__)
 active_profile = None
-conf_client = gconf.client_get_default()
 
+conf_client = gconf.Client.get_default()
 """
 Watch for changes in macro configuration directory.
 Observers can add a callback function to profile_listeners

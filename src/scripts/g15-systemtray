@@ -29,12 +29,15 @@ import sys
 # import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from dbus.mainloop.glib import threads_init
-# import gconf
-import gobject
-import gtk
-import pygtk
 
-pygtk.require('2.0')
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
+# from gi.repository import Gdk as gdk
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
+from gi.repository import GdkPixbuf
+
 
 # Allow running from local path
 path = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "..")
@@ -66,7 +69,6 @@ class G15SystemTray(g15desktop.G15GtkMenuPanelComponent):
 
     def create_component(self):
         self.status_icon = gtk.StatusIcon()
-
         self.status_icon.connect('popup-menu', self._on_popup_menu)
         self.status_icon.connect('activate', self._on_activate)
         self.status_icon.connect('scroll_event', self.scroll_event)
@@ -74,16 +76,18 @@ class G15SystemTray(g15desktop.G15GtkMenuPanelComponent):
     def clear_attention(self):
         self.remove_attention_menu_item()
         self.status_icon.set_from_pixbuf(self.normal_icon)
-        self.status_icon.set_tooltip("")
+        # self.status_icon.set_tooltip("")
+        self.status_icon.set_tooltip_text("")
         self.status_icon.set_visible(not self.conf_client.get_bool("/apps/gnome15/indicate_only_on_error"))
 
     def attention(self, message=None):
         self.status_icon.set_visible(True)
         self.status_icon.set_from_pixbuf(self.attention_icon)
-        self.status_icon.set_tooltip(message if message is not None else self.default_message)
+        self.status_icon.set_tooltip_text(message if message is not None else self.default_message)
 
     def _on_popup_menu(self, status, button, time):
-        self.prefs_menu.popup(None, None, None, button, time)
+        # self.prefs_menu.popup(None, None, None, button, time)
+        self.prefs_menu.popup(None, None, None, None, button, time)
 
     def _on_activate(self, status):
         if len(self.menu.get_children()) > 0:
@@ -111,12 +115,26 @@ class G15SystemTray(g15desktop.G15GtkMenuPanelComponent):
         self.prefs_menu.show_all()
 
     def icons_changed(self):
-        self.normal_icon = gtk.gdk.pixbuf_new_from_file_at_size(
+        # self.normal_icon = gtk.gdk.pixbuf_new_from_file_at_size(
+        #     g15icontools.get_icon_path(["logitech-g-keyboard-applet", "logitech-g-keyboard-panel"]),
+        #     self.status_icon.get_size(), self.status_icon.get_size())
+        # self.attention_icon = gtk.gdk.pixbuf_new_from_file_at_size(
+        #     g15icontools.get_icon_path(["logitech-g-keyboard-error-panel", "logitech-g-keyboard-error-applet"]),
+        #     self.status_icon.get_size(), self.status_icon.get_size())
+
+        size = self.status_icon.get_size()
+        # Without this the Pixbuf constructor would throw the error
+        # GdkPixbuf-CRITICAL **: 05:38:48.402:
+        #   gdk_pixbuf_new_from_file_at_scale: assertion 'width > 0 || width == -1' failed
+        if size == 0:
+            size = -1
+
+        self.normal_icon = GdkPixbuf.Pixbuf.new_from_file_at_size(
             g15icontools.get_icon_path(["logitech-g-keyboard-applet", "logitech-g-keyboard-panel"]),
-            self.status_icon.get_size(), self.status_icon.get_size())
-        self.attention_icon = gtk.gdk.pixbuf_new_from_file_at_size(
+            size, size)
+        self.attention_icon = GdkPixbuf.Pixbuf.new_from_file_at_size(
             g15icontools.get_icon_path(["logitech-g-keyboard-error-panel", "logitech-g-keyboard-error-applet"]),
-            self.status_icon.get_size(), self.status_icon.get_size())
+            size, size)
 
 
 # run it in a gtk window

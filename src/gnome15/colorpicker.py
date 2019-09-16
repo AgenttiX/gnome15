@@ -17,9 +17,9 @@
 import os
 
 import cairo
-import gtk
-from gtk import gdk
-import gobject
+from gi.repository import Gdk as gdk
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 
 import g15globals
 import util.g15convert as g15convert
@@ -111,7 +111,7 @@ class ColorPreview(gtk.DrawingArea):
         c_widget.connect("button-release-event", _button_release)
         c_widget.connect("motion-notify-event", _mouse_motion)
         c_widget.add_events(
-            gdk.BUTTON1_MOTION_MASK | gdk.BUTTON_PRESS_MASK | gdk.BUTTON_RELEASE_MASK | gtk.gdk.POINTER_MOTION_MASK | gtk.gdk.POINTER_MOTION_HINT_MASK)
+            gdk.BUTTON1_MOTION_MASK | gdk.BUTTON_PRESS_MASK | gdk.BUTTON_RELEASE_MASK | gdk.POINTER_MOTION_MASK | gdk.POINTER_MOTION_HINT_MASK)
 
         main_window.set_transient_for(self.get_toplevel())
         main_window.run()
@@ -159,9 +159,8 @@ class ColorPreview(gtk.DrawingArea):
 
 
 class ColorBar(gtk.DrawingArea):
-
     def __init__(self, picker):
-        self.__gobject_init__()
+        # self.__gobject_init__()
         super(ColorBar, self).__init__()
         self.picker = picker
         self.set_size_request(len(self.picker.colors) * CELL_WIDTH, CELL_HEIGHT)
@@ -171,7 +170,7 @@ class ColorBar(gtk.DrawingArea):
         self.connect("motion-notify-event", self._mouse_motion)
         self.down = False
         self.add_events(
-            gdk.BUTTON1_MOTION_MASK | gdk.BUTTON_PRESS_MASK | gdk.BUTTON_RELEASE_MASK | gtk.gdk.POINTER_MOTION_MASK | gtk.gdk.POINTER_MOTION_HINT_MASK)
+            gdk.BUTTON1_MOTION_MASK | gdk.BUTTON_PRESS_MASK | gdk.BUTTON_RELEASE_MASK | gdk.POINTER_MOTION_MASK | gdk.POINTER_MOTION_HINT_MASK)
         self.picker_image_surface = None
 
     def _mouse_motion(self, widget, event):
@@ -241,9 +240,8 @@ class ColorBar(gtk.DrawingArea):
 
 
 class ColorPicker(gtk.HBox):
-
     def __init__(self, colors=None, redblue=False):
-        self.__gobject_init__()
+        # self.__gobject_init__()
         gtk.HBox.__init__(self, spacing=8)
         self.colors = colors if colors is not None else (COLORS_REDBLUE if redblue else COLORS_FULL)
         self.redblue = redblue

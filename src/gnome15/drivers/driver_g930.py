@@ -22,8 +22,8 @@ import select
 from threading import Thread
 
 import cairo
-import gconf
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import Gtk as gtk
 from pyinputevent.pyinputevent import SimpleDevice
 import pyinputevent.scancodes as S
 import usb
@@ -188,7 +188,7 @@ class Driver(g15driver.AbstractDriver):
         self.key_thread = None
         self.device = device
         self.connected = False
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
         self._init_device()
         self.notify_handles.append(
             self.conf_client.notify_add("/apps/gnome15/%s/grab_multimedia" % self.device.uid, self._config_changed,

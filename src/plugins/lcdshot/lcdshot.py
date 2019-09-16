@@ -22,8 +22,8 @@ import shutil
 import subprocess
 from threading import Thread
 
-import gobject
-import gtk
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15driver as g15driver

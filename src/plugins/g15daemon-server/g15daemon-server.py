@@ -23,9 +23,7 @@ import struct
 # import sys
 from threading import Thread
 
-# import cairo
-# import gobject
-import gtk
+from gi.repository import Gtk as gtk
 from PIL import Image
 # from PIL import ImageMath
 # from PIL import ImageOps

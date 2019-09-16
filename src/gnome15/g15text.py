@@ -17,14 +17,16 @@
 import logging
 
 import cairo
-import pango
-import pangocairo
-# import gobject
+import gi
+from gi.repository import Pango as pango
+gi.require_version("PangoCairo", "1.0")
+from gi.repository import PangoCairo as pangocairo
 
 logger = logging.getLogger(__name__)
 
 # Shared pango context
-pango_context = pangocairo.cairo_font_map_get_default().create_context()
+# pango_context = pangocairo.cairo_font_map_get_default().create_context()
+pango_context = pangocairo.FontMap.get_default().create_context()
 
 """
 Handles drawing and measuring of text on a screen. 
@@ -77,20 +79,20 @@ class G15PangoText(G15Text):
         pangocairo.context_set_font_options(pango_context, self._create_font_options())
         self.__pango_cairo_context = None
         self.__layout = None
-        self.valign = pango.ALIGN_CENTER
+        self.valign = pango.Alignment.CENTER
         self.__layout = pango.Layout(pango_context)
 
     def set_canvas(self, canvas):
         G15Text.set_canvas(self, canvas)
-        self.__pango_cairo_context = pangocairo.CairoContext(self.canvas)
+        self.__pango_cairo_context = pangocairo.create_context(self.canvas)
 
-    def set_attributes(self, text, bounds=None, wrap=None, align=pango.ALIGN_LEFT, width=None, spacing=None, \
+    def set_attributes(self, text, bounds=None, wrap=None, align=pango.Alignment.LEFT, width=None, spacing=None,
                        font_desc=None, font_absolute_size=None, attributes=None,
                        weight=None, style=None, font_pt_size=None,
                        valign=None, pxwidth=None):
 
-        logger.debug("Text: %s, bounds = %s, wrap = %s, align = %s, width = %s, " \
-                     "attributes = %s, spacing = %s, font_desc = %s, weight = %s, " \
+        logger.debug("Text: %s, bounds = %s, wrap = %s, align = %s, width = %s, "
+                     "attributes = %s, spacing = %s, font_desc = %s, weight = %s, "
                      "style = %s, font_pt_size = %s",
                      str(text),
                      str(bounds),
@@ -153,9 +155,9 @@ class G15PangoText(G15Text):
                                                  self.bounds[3] + 2)
             self.__pango_cairo_context.clip()
 
-            if self.valign == pango.ALIGN_RIGHT:
+            if self.valign == pango.Alignment.RIGHT:
                 y += self.bounds[3] - (self.metrics.get_ascent() / 1000.0)
-            elif self.valign == pango.ALIGN_CENTER:
+            elif self.valign == pango.Alignment.CENTER:
                 y += (self.bounds[3] - (self.metrics.get_ascent() / 1000.0)) / 2
 
         if x is not None and y is not None:

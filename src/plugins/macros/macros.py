@@ -18,7 +18,7 @@ import logging
 import os
 # import time
 
-import gtk
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15profile as g15profile

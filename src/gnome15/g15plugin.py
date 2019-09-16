@@ -17,7 +17,7 @@
 import sys
 
 import dbus
-import gobject
+from gi.repository import GObject as gobject
 
 import util.g15scheduler as g15scheduler
 import util.g15cairo as g15cairo

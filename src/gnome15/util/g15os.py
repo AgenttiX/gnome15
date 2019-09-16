@@ -20,11 +20,10 @@ Gnome15 utilities to work with the system (running commands, manipulating the
 filesystem, getting OS information...)
 """
 
-from gnome15 import g15globals
+import logging
 import os
 
-# Logging
-import logging
+from gnome15 import g15globals
 
 logger = logging.getLogger(__name__)
 

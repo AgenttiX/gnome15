@@ -26,8 +26,8 @@ import sys
 from threading import RLock
 
 import cairo
-import gconf
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import Gtk as gtk
 from PIL import ImageMath
 from PIL import Image
 
@@ -46,9 +46,9 @@ logger = logging.getLogger(__name__)
 load_error = None
 try:
     import pylibg15
-except Exception as a:
-    logger.debug("Could not import pylibg15 module", exc_info=a)
-    load_error = a
+except Exception as __e:
+    logger.debug("Could not import pylibg15 module", exc_info=__e)
+    load_error = __e
 
 # Import from local version of pylibg19 if available
 if g15globals.dev:
@@ -113,11 +113,11 @@ EXT_KEY_MAP = {
 }
 
 REVERSE_KEY_MAP = {}
-for k in KEY_MAP.keys():
-    REVERSE_KEY_MAP[KEY_MAP[k]] = k
+for __k in KEY_MAP.keys():
+    REVERSE_KEY_MAP[KEY_MAP[__k]] = __k
 EXT_REVERSE_KEY_MAP = {}
-for k in EXT_KEY_MAP.keys():
-    EXT_REVERSE_KEY_MAP[EXT_KEY_MAP[k]] = k
+for __k in EXT_KEY_MAP.keys():
+    EXT_REVERSE_KEY_MAP[EXT_KEY_MAP[__k]] = __k
 
 mkeys_control = g15driver.Control("mkeys", _("Memory Bank Keys"), 1, 0, 15, hint=g15driver.HINT_MKEYS)
 color_backlight_control = g15driver.Control("backlight_colour", _("Keyboard Backlight Colour"), (0, 255, 0),
@@ -244,7 +244,7 @@ class Driver(g15driver.AbstractDriver):
         self.move_x = 0
         self.move_y = 0
         self.connected = False
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
         self.last_keys = None
         self.last_ext_keys = None
 

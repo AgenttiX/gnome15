@@ -19,7 +19,7 @@ import os.path
 from threading import Timer
 
 import dbus
-import gtk
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15screen as g15screen

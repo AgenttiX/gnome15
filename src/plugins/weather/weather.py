@@ -20,8 +20,8 @@ import os
 # import sys
 # import time
 
-import gtk
-import pango
+from gi.repository import Gtk as gtk
+from gi.repository import Pango as pango
 
 import gnome15.g15locale as g15locale
 import gnome15.g15screen as g15screen

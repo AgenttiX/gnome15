@@ -17,7 +17,8 @@
 import os
 
 import cairo
-import rsvg
+# import rsvg
+from gi.repository import Rsvg as rsvg
 
 # import gnome15.util.g15convert as g15convert
 import gnome15.util.g15cairo as g15cairo

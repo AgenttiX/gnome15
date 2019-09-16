@@ -49,8 +49,8 @@ from threading import RLock
 import time
 
 import cairo
-import pango
-import rsvg
+from gi.repository import Pango as pango
+from gi.repository import Rsvg as rsvg
 import xml.sax.saxutils as saxutils
 
 import g15driver

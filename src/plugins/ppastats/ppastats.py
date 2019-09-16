@@ -21,9 +21,8 @@ import os
 # import subprocess
 # import time
 
-# import feedparser
-import gconf
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import Gtk as gtk
 from launchpadlib.launchpad import Launchpad
 
 # import gnome15.util.g15convert as g15convert

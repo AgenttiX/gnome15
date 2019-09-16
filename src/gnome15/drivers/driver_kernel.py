@@ -39,9 +39,9 @@ import fb
 
 import cairo
 import dbus
-import gconf
-import gobject
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 from PIL import Image
 from PIL import ImageMath
 import usb
@@ -1028,7 +1028,7 @@ class Driver(g15driver.AbstractDriver):
         self.device = device
         self.device_info = None
         self.system_service = None
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
 
         try:
             self._init_device()

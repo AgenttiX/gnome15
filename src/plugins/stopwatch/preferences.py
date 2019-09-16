@@ -16,7 +16,7 @@
 
 import os
 
-import gtk
+from gi.repository import Gtk as gtk
 
 import gnome15.util.g15uigconf as g15uigconf
 

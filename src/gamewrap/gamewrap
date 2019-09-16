@@ -38,7 +38,7 @@ LEVELS = {
     'critical': logging.CRITICAL
 }
 
-import gobject
+from gi.repository import GObject as gobject
 
 gobject.threads_init()
 

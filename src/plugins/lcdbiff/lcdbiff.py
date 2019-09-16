@@ -19,7 +19,7 @@ import os.path
 import pwd
 import re
 
-import gtk
+from gi.repository import Gtk as gtk
 from imaplib import IMAP4
 from imaplib import IMAP4_SSL
 from poplib import POP3_SSL

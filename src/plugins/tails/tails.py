@@ -20,8 +20,8 @@ import subprocess
 from threading import Thread
 import time
 
-import gconf
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import Gtk as gtk
 import xdg.Mime as mime
 
 import gnome15.g15locale as g15locale

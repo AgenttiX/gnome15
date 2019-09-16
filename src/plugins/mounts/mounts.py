@@ -17,9 +17,9 @@
 import logging
 import os.path
 
-import gio
-import gobject
-import gtk
+from gi.repository import Gio as gio
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15plugin as g15plugin

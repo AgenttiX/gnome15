@@ -28,10 +28,9 @@ import dbus
 import dbus.service
 import dbus.exceptions
 from dbus.exceptions import NameExistsException
-# import gconf
-import gobject
-import gtk
-import gtk.gdk
+from gi.repository import Gdk as gdk
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 import lxml.html
 # from PIL import Image
 
@@ -184,7 +183,7 @@ class G15Message:
                 buf += chr(b)
 
             try:
-                pixbuf = gtk.gdk.pixbuf_new_from_data(buf, gtk.gdk.COLORSPACE_RGB, has_alpha, bits_per_sample,
+                pixbuf = gdk.pixbuf_new_from_data(buf, gdk.COLORSPACE_RGB, has_alpha, bits_per_sample,
                                                       img_width, img_height, img_stride)
                 fh, self.embedded_image = tempfile.mkstemp(suffix=".png", prefix="notify-lcd")
                 file = os.fdopen(fh)

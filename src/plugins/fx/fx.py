@@ -19,7 +19,7 @@ import random
 import time
 
 import cairo
-import gtk
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15screen as g15screen

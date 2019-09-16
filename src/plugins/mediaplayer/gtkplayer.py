@@ -17,8 +17,8 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-import gst
-import gtk
+from gi.repository import Gst as gst
+from gi.repository import Gtk as gtk
 
 
 class Main:

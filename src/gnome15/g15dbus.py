@@ -18,7 +18,7 @@ import logging
 import sys
 
 import dbus.service
-import gobject
+from gi.repository import GObject as gobject
 
 import g15globals
 import g15theme

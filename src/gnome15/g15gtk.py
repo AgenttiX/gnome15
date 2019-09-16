@@ -17,17 +17,20 @@
 """
 A top level GTK windows that draws on the LCD
 """
-import gtk
-import gobject
+
+import ctypes
+from threading import Lock
+from threading import Semaphore
+
+import cairo
+from gi.repository import Gtk as gtk
+from gi.repository import GObject as gobject
+
 import g15driver
 import util.g15cairo as g15cairo
 import util.g15pythonlang as g15pythonlang
-from threading import Lock
-from threading import Semaphore
 import g15theme
 import g15screen
-import cairo
-import ctypes
 
 _initialized = False
 
@@ -280,7 +283,7 @@ class G15Window(gtk.OffscreenWindow):
     def _do_capture(self):
         self.content.window.invalidate_rect((0, 0, self.area_width, self.area_height), True)
         self.content.window.process_updates(True)
-        pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, self.area_width, self.area_height)
+        pixbuf = gdk.Pixbuf(gdk.COLORSPACE_RGB, False, 8, self.area_width, self.area_height)
         pixbuf.get_from_drawable(self.content.window, self.content.get_colormap(), 0, 0, 0, 0, self.area_width,
                                  self.area_height)
         self.surface = g15cairo.pixbuf_to_surface(pixbuf)

@@ -361,7 +361,7 @@ def get_device_info(model_id):
 
 def is_enabled(conf_client, device):
     val = conf_client.get("/apps/gnome15/%s/enabled" % device.uid)
-    return (val == None and device.model_id != "virtual") or (val is not None and val.get_bool())
+    return (val is None and device.model_id != "virtual") or (val is not None and val.get_bool())
 
 
 def set_enabled(conf_client, device, enabled):
@@ -495,7 +495,7 @@ device_removed_listeners = []
 
 def __device_added(observer, device):
     uevent_attr = device.attributes.get('uevent', None)
-    if uevent_attr != None:
+    if uevent_attr is not None:
         uevent = g15pythonlang.parse_as_properties(uevent_attr)
         if "PRODUCT" in uevent:
             if device.attributes.get("subsystem", None) == "usb":
@@ -535,14 +535,22 @@ def __device_removed(observer, device):
             break
 
 
+def __monitor_callback(device):
+    """A callback with the new signature expected by pyudev.MonitorObserver"""
+    __device_added(None, device)
+    __device_removed(None, device)
+
+
 try:
-    import pyudev.glib
+    # import pyudev.glib
+    import pyudev
 
     __context = pyudev.Context()
     __monitor = pyudev.Monitor.from_netlink(__context)
-    __observer = pyudev.glib.GUDevMonitorObserver(__monitor)
-    __observer.connect('device-added', __device_added)
-    __observer.connect('device-removed', __device_removed)
+    # __observer = pyudev.glib.GUDevMonitorObserver(__monitor)
+    # __observer.connect('device-added', __device_added)
+    # __observer.connect('device-removed', __device_removed)
+    __observer = pyudev.MonitorObserver(__monitor, callback=__monitor_callback)
     find_all_devices()
     have_udev = True
     __monitor.start()

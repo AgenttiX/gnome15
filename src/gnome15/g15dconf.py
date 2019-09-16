@@ -27,7 +27,7 @@ import logging
 import os
 
 import dbus
-import gobject
+from gi.repository import GObject as gobject
 
 logger = logging.getLogger(__name__)
 

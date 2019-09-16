@@ -25,7 +25,7 @@ import gdata.calendar.data
 import gdata.calendar.client
 import gdata.acl.data
 import gdata.service
-import gtk
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15accounts as g15accounts

@@ -19,8 +19,7 @@ import os
 # import time
 
 import dbus
-# import gobject
-import gtk
+from gi.repository import Gtk as gtk
 # from lxml import etree
 # from PIL import Image
 

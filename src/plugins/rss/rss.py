@@ -20,8 +20,8 @@ import os
 import time
 
 import feedparser
-import gconf
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 # import gnome15.util.g15convert as g15convert

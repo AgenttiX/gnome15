@@ -26,7 +26,9 @@ import sys
 import urllib
 
 import cairo
-import gtk.gdk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk as gtk
 from PIL import Image
 
 from gnome15 import g15globals
@@ -46,7 +48,8 @@ Look for icons locally as well if running from source
 # Attempting to load the icon theme may produce the following error
 # GtkWarning: Unable to locate theme engine in module_path: "adwaita"
 # This can be fixed by installing the package "gnome-themes-extra"
-gtk_icon_theme = gtk.icon_theme_get_default()
+# gtk_icon_theme = gtk.icon_theme_get_default()
+gtk_icon_theme = gtk.IconTheme.get_default()
 
 if g15globals.dev:
     gtk_icon_theme.prepend_search_path(g15globals.icons_dir)
@@ -136,11 +139,11 @@ def get_icon(gconf_client, icon, size=None):
     real_icon_file = get_icon_path(icon, size)
     if real_icon_file is not None:
         if real_icon_file.endswith(".svg"):
-            pixbuf = gtk.gdk.pixbuf_new_from_file(real_icon_file)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file(real_icon_file)
             scale = g15cairo.get_scale(size, (pixbuf.get_width(), pixbuf.get_height()))
             if scale != 1.0:
                 pixbuf = pixbuf.scale_simple(pixbuf.get_width() * scale, pixbuf.get_height() * scale,
-                                             gtk.gdk.INTERP_BILINEAR)
+                                             gdk.INTERP_BILINEAR)
             img = Image.fromstring("RGBA", (pixbuf.get_width(), pixbuf.get_height()), pixbuf.get_pixels())
         else:
             img = Image.open(real_icon_file)

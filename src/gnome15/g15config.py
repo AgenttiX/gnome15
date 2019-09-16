@@ -24,15 +24,17 @@ import sys
 import zipfile
 
 import dbus.service
-import gobject
-import gtk
-import pango
-import pygtk
+import gi
+from gi.repository import GConf as gconf
+from gi.repository import Gdk as gdk
+from gi.repository import GdkPixbuf
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
+from gi.repository import Pango as pango
 
 import gnome15.g15locale as g15locale
 import g15globals
 import g15profile
-import gconf
 import g15pluginmanager
 import g15driver
 import g15desktop
@@ -50,7 +52,6 @@ import colorpicker
 import g15upgrade
 
 logger = logging.getLogger(__name__)
-pygtk.require('2.0')
 _ = g15locale.get_translation("gnome15").ugettext
 
 # Upgrade
@@ -60,7 +61,10 @@ g15upgrade.upgrade()
 # of the message displayed when the Gnome15 service is not running
 HAS_APPINDICATOR = False
 try:
-    import appindicator
+    # import appindicator
+    import gi
+    gi.require_version("AppIndicator3", "0.1")
+    from gi.repository import AppIndicator3 as appindicator
     # appindicator.__path__
     HAS_APPINDICATOR = True
 except Exception as appindicator_exception:
@@ -71,7 +75,7 @@ except Exception as appindicator_exception:
 icons_dir = os.path.join(g15globals.user_cache_dir, "macro_profiles")
 g15os.mkdir_p(icons_dir)
 
-PALE_RED = gtk.gdk.Color(213, 65, 54)
+PALE_RED = gdk.Color(213, 65, 54)
 
 BUS_NAME = "org.gnome15.Configuration"
 NAME = "/org/gnome15/Config"
@@ -250,7 +254,7 @@ class G15Config:
         self.control_notify_handles = []
         self.selected_id = None
         self.service = service
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
         self.rows = None
         self.adjusting = False
         self.gnome15_service = None
@@ -393,14 +397,14 @@ class G15Config:
         self.main_window.set_icon_from_file(g15icontools.get_app_icon(self.conf_client, "gnome15"))
 
         # Monitor gconf
-        self.conf_client.add_dir("/apps/gnome15", gconf.CLIENT_PRELOAD_NONE)
+        self.conf_client.add_dir("/apps/gnome15", gconf.ClientPreloadType.PRELOAD_NONE)
 
         # Monitor macro profiles changing
         g15profile.profile_listeners.append(self._profiles_changed)
 
-        # Configure widgets    
-        self.profiles_tree.get_selection().set_mode(gtk.SELECTION_SINGLE)
-        self.macro_list.get_selection().set_mode(gtk.SELECTION_SINGLE)
+        # Configure widgets
+        self.profiles_tree.get_selection().set_mode(gtk.SelectionMode.SINGLE)
+        self.macro_list.get_selection().set_mode(gtk.SelectionMode.SINGLE)
 
         # Indicator options
         # TODO move this out of here        
@@ -458,14 +462,14 @@ class G15Config:
         self.theme_combo.connect("changed", self._theme_changed)
         self.profile_plugins_mode.connect("changed", self._profile_plugins_mode_changed)
         self.global_options_button.connect("clicked", self._show_global_options)
-        self.macro_list.add_events(gtk.gdk.BUTTON_PRESS_MASK)
+        self.macro_list.add_events(gdk.EventMask.BUTTON_PRESS_MASK)
         self.macro_list.connect("button_press_event", self._macro_list_clicked)
         self.import_profile.connect("clicked", self._import_profile)
         self.driver_options.connect('clicked', self._show_driver_options)
 
         # Enable profiles to be dropped onto the list
         self.macro_list.enable_model_drag_dest([('text/plain', 0, 0)],
-                                               gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_COPY)
+                                               gdk.DragAction.DEFAULT | gdk.DragAction.COPY)
         self.macro_list.connect("drag-data-received", self._macro_profile_dropped)
 
         # Connection to BAMF for running applications list
@@ -475,8 +479,10 @@ class G15Config:
         except Exception as e:
             logger.warning("BAMF not available, falling back to WNCK", exc_info=e)
             self.bamf_matcher = None
-            import wnck
-            self.screen = wnck.screen_get_default()
+            # This requires the package gir1.2-wnck-3.0
+            gi.require_version("Wnck", "3.0")
+            from gi.repository import Wnck as wnck
+            self.screen = wnck.Screen.get_default()
 
         # Show infobar component to start desktop service if it is not running
         self.infobar = gtk.InfoBar()
@@ -494,7 +500,8 @@ class G15Config:
         self.start_button = gtk.Button(_("Start Service"))
         self.start_button.connect("clicked", self._start_service)
         self.start_button.show()
-        button_vbox.pack_start(self.start_button, False, False)
+        # Added an extra False when migrating to Gtk 3
+        button_vbox.pack_start(self.start_button, False, False, False)
 
         # Populate model and configure other components
         self._load_devices()
@@ -508,14 +515,15 @@ class G15Config:
 
         # Build the infobar content
         content = self.infobar.get_content_area()
-        content.pack_start(self.warning_image, False, False)
-        content.pack_start(self.warning_label, True, True)
-        content.pack_start(button_vbox, False, False)
+        content.pack_start(self.warning_image, False, False, False)
+        content.pack_start(self.warning_label, True, True, False)
+        content.pack_start(button_vbox, False, False, False)
 
         # Add the bar to the glade built UI
-        self.main_vbox.pack_start(self.infobar, False, False)
+        self.main_vbox.pack_start(self.infobar, False, False, False)
         self.warning_box_shown = False
-        self.infobar.hide_all()
+        # self.infobar.hide_all()
+        self.infobar.hide()
 
         self.gnome15_service = None
 
@@ -725,7 +733,8 @@ class G15Config:
 
     def _hide_warning(self):
         self.warning_box_shown = False
-        self.infobar.hide_all()
+        # self.infobar.hide_all()
+        self.infobar.hide()
         self.main_window.check_resize()
 
     @staticmethod
@@ -762,7 +771,7 @@ class G15Config:
 
     @staticmethod
     def _to_color(rgb):
-        return gtk.gdk.Color(rgb[0] << 8, rgb[1] << 8, rgb[2] << 8)
+        return gdk.Color(rgb[0] << 8, rgb[1] << 8, rgb[2] << 8)
 
     def _color_chosen(self, widget, control):
         color = widget.color
@@ -945,8 +954,8 @@ class G15Config:
                 keys = gtk.HBox(spacing=4)
                 for k in action_binding.keys:
                     fname = os.path.abspath("%s/key-%s.png" % (g15globals.image_dir, k))
-                    pixbuf = gtk.gdk.pixbuf_new_from_file(fname)
-                    pixbuf = pixbuf.scale_simple(22, 14, gtk.gdk.INTERP_BILINEAR)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file(fname)
+                    pixbuf = pixbuf.scale_simple(22, 14, gdk.INTERP_BILINEAR)
                     img = gtk.image_new_from_pixbuf(pixbuf)
                     img.show()
                     keys.add(img)
@@ -1017,7 +1026,7 @@ class G15Config:
     @staticmethod
     def _create_color_icon(color):
         draw = gtk.Image()
-        pixmap = gtk.gdk.Pixmap(None, 16, 16, 24)
+        pixmap = gdk.Pixmap(None, 16, 16, 24)
         cr = pixmap.cairo_create()
         cr.set_source_rgb(float(color[0]) / 255.0, float(color[1]) / 255.0, float(color[2]) / 255.0)
         cr.rectangle(0, 0, 16, 16)
@@ -1077,8 +1086,8 @@ class G15Config:
                                     self.selected_profile.icon = copy_path
                                     self._set_image(self.profile_icon, copy_path)
                 else:
-                    import wnck
-                    for window in wnck.screen_get_default().get_windows():
+                    from gi.repository import Wnck as wnck
+                    for window in wnck.Screen.get_default().get_windows():
                         if window.get_name() == self.selected_profile.window_name:
                             icon = window.get_icon()
                             if icon is not None:
@@ -1196,7 +1205,7 @@ class G15Config:
         self.device_title.set_text(self.selected_device.model_fullname if self.selected_device else "")
         self._set_enabled_value_from_configuration()
         if self.selected_device is not None:
-            self.conf_client.add_dir(self._get_device_conf_key(), gconf.CLIENT_PRELOAD_NONE)
+            self.conf_client.add_dir(self._get_device_conf_key(), gconf.ClientPreloadType.PRELOAD_NONE)
             self.notify_handles.append(self.conf_client.notify_add(self._get_full_key("cycle_seconds"),
                                                                    self._cycle_seconds_configuration_changed))
             self.notify_handles.append(self.conf_client.notify_add(self._get_full_key("cycle_screens"),
@@ -1645,13 +1654,16 @@ class G15Config:
                      "window_fullscreen"])
             else:
                 icon_file = g15icontools.get_app_icon(self.conf_client, device.model_id)
-            pixb = gtk.gdk.pixbuf_new_from_file(icon_file)
+            pixb = GdkPixbuf.Pixbuf.new_from_file(icon_file)
+            # print dir(GdkPixbuf)
             self.device_model.append(
-                [pixb.scale_simple(96, 96, gtk.gdk.INTERP_BILINEAR), device.model_fullname, 96, gtk.WRAP_WORD,
-                 pango.ALIGN_CENTER])
+                [pixb.scale_simple(96, 96, GdkPixbuf.InterpType.BILINEAR), device.model_fullname, 96, gtk.WrapMode.WORD,
+                 pango.Alignment.CENTER])
             if previous_sel_device_name is not None and device.uid == previous_sel_device_name:
                 sel_device_name = device.uid
-                self.device_view.select_path((idx,))
+                # Todo: does this fix work?
+                # self.device_view.select_path((idx,))
+                self.device_view.select_path(gtk.TreePath.new_from_indices((idx,)))
             idx += 1
         if sel_device_name is None and len(self.devices) > 0:
             sel_device_name = self.devices[0].uid
@@ -1687,7 +1699,7 @@ class G15Config:
                 selected = profile.id == active_id
                 if selected:
                     weight = 700
-                lock_icon = gtk.gdk.pixbuf_new_from_file(
+                lock_icon = GdkPixbuf.Pixbuf.new_from_file(
                     os.path.join(g15globals.image_dir, "locked.png")) if locked and selected else None
                 self.profiles_model.append(
                     [profile.name, weight, profile.id, profile == default_profile, not profile.read_only, lock_icon])
@@ -1719,7 +1731,7 @@ class G15Config:
             self._save_profile(profile)
 
     def _macro_list_clicked(self, widget, event):
-        if event.type == gtk.gdk._2BUTTON_PRESS:
+        if event.type == gdk._2BUTTON_PRESS:
             self._macro_properties(event)
 
     def _macro_name_edited(self, widget, row, value):
@@ -1886,9 +1898,9 @@ class G15Config:
     @staticmethod
     def _set_image(widget, path):
         if path is None or path == "" or not os.path.exists(path):
-            widget.set_from_stock(gtk.STOCK_MISSING_IMAGE, gtk.ICON_SIZE_DIALOG)
+            widget.set_from_stock(gtk.STOCK_MISSING_IMAGE, gtk.IconSize.DIALOG)
         else:
-            widget.set_from_pixbuf(gtk.gdk.pixbuf_new_from_file_at_size(path, 48, 48))
+            widget.set_from_pixbuf(GdkPixbuf.Pixbuf.new_from_file_at_size(path, 48, 48))
 
     def _load_windows(self):
         self.window_model.clear()
@@ -1972,10 +1984,10 @@ class G15Config:
                     hscale.connect("value-changed", self._control_changed, control)
                     hscale.show()
 
-                    halign = gtk.Alignment(0, 0, 1.0, 1.00)
+                    halign = gtk.Align(0, 0, 1.0, 1.00)
                     halign.add(hscale)
 
-                    table.attach(halign, 1, 2, row, row + 1, xoptions=gtk.EXPAND | gtk.FILL)
+                    table.attach(halign, 1, 2, row, row + 1, xoptions=gtk.EXPAND | gtk.Align.FILL)
                     self.control_notify_handles.append(
                         self.conf_client.notify_add(self._get_full_key(control.id), self._control_configuration_changed,
                                                     [control, hscale]))
@@ -1983,7 +1995,7 @@ class G15Config:
                 label = gtk.Label(control.name)
                 label.set_alignment(0.0, 0.5)
                 label.show()
-                table.attach(label, 0, 1, row, row + 1, xoptions=gtk.FILL, xpadding=8, ypadding=4)
+                table.attach(label, 0, 1, row, row + 1, xoptions=gtk.Align.FILL, xpadding=8, ypadding=4)
 
                 picker = colorpicker.ColorPicker(redblue=control.hint & g15driver.HINT_RED_BLUE_LED != 0)
                 picker.set_color(control.value)
@@ -2042,11 +2054,11 @@ class G15Config:
             hbox = gtk.HBox()
             self.enable_color_for_m_key = gtk.CheckButton(_("Set backlight colour"))
             self.enable_color_for_m_key.connect("toggled", self._color_for_mkey_enabled)
-            hbox.pack_start(self.enable_color_for_m_key, True, False)
+            hbox.pack_start(self.enable_color_for_m_key, True, False, False)
             self.color_button = gtk.ColorButton()
             self.color_button.set_sensitive(False)
             self.color_button.connect("color-set", self._profile_color_changed)
-            hbox.pack_start(self.color_button, True, False)
+            hbox.pack_start(self.color_button, True, False, False)
             self.memory_bank_vbox.add(hbox)
             hbox.show_all()
         else:

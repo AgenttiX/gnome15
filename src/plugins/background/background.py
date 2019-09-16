@@ -18,8 +18,8 @@ import logging
 import os
 
 import cairo
-import gconf
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import Gtk as gtk
 from lxml import etree
 
 import gnome15.g15locale as g15locale
@@ -152,7 +152,7 @@ class G15Background:
         self.gconf_key = gconf_key
         self.target_surface = None
         self.target_context = None
-        self.gconf_client.add_dir('/desktop/gnome/background', gconf.CLIENT_PRELOAD_NONE)
+        self.gconf_client.add_dir('/desktop/gnome/background', gconf.ClientPreloadType.PRELOAD_NONE)
 
     def activate(self):
         self.bg_img = None

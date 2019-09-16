@@ -21,17 +21,22 @@ import os
 import sys
 
 import cairo
+import gi
+gi.require_version("Dee", "1.0")
+gi.require_version("Unity", "7.0")
 from gi.repository import GLib, GObject, Gio
+# Requires gir1.2-dee-1.0
 from gi.repository import Dee
 
 # FIXME: Some weird bug in Dee or PyGI makes Dee fail unless we probe
 #        it *before* we import the Unity module... ?!
 _m = dir(Dee.SequenceModel)
+# This requires the package gir1.2-unity-5.0
 from gi.repository import Unity
 
 from gnome15 import g15devices
-# from gnome15 import util.g15os as g15os
-# from gnome15 import util.g15icontools as g15icontools
+from gnome15.util import g15os
+from gnome15.util import g15icontools
 from gnome15 import g15screen
 from gnome15 import g15globals
 

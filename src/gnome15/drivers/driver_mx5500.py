@@ -31,8 +31,8 @@ from threading import Lock, Thread
 import time
 
 import cairo
-import gconf
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import Gtk as gtk
 from PIL import ImageMath
 from PIL import Image
 
@@ -277,7 +277,7 @@ class Driver(g15driver.AbstractDriver):
         self.connected = False
         self.async = None
         self.change_timer = None
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
 
     def get_size(self):
         return self.device.lcd_size

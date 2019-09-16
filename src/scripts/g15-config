@@ -39,12 +39,10 @@ except Exception as a:
     logger.debug("Error when importing Gio", exc_info=a)
     pass
 
-import pygtk
+# import pygtk
+# pygtk.require('2.0')
 
-pygtk.require('2.0')
-# import gtk
-# import gconf
-import gobject
+from gi.repository import GObject as gobject
 
 gobject.threads_init()
 

@@ -22,7 +22,7 @@ Various conversions
 import logging
 import math
 
-import gtk.gdk
+from gi.repository import Gdk as gdk
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ def to_pixel(rgb):
 
 
 def to_color(rgb):
-    return gtk.gdk.Color(rgb[0] << 8, rgb[1] << 8, rgb[2] << 8)
+    return gdk.Color(rgb[0] << 8, rgb[1] << 8, rgb[2] << 8)
 
 
 def rgb_to_uint16(r, g, b):

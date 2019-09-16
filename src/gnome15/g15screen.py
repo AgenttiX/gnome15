@@ -33,7 +33,7 @@ from threading import RLock
 import time
 
 import cairo
-import gconf
+from gi.repository import GConf as gconf
 
 import gnome15.g15locale as g15locale
 import g15driver
@@ -368,7 +368,7 @@ class G15Screen:
         # Monitor gconf
         screen_key = "/apps/gnome15/%s" % self.device.uid
         logger.info("Watching GConf settings in %s", screen_key)
-        self.conf_client.add_dir(screen_key, gconf.CLIENT_PRELOAD_NONE)
+        self.conf_client.add_dir(screen_key, gconf.ClientPreloadType.PRELOAD_NONE)
         self.notify_handles.append(self.conf_client.notify_add("%s/cycle_screens" % screen_key, self.resched_cycle))
         self.notify_handles.append(
             self.conf_client.notify_add("%s/active_profile" % screen_key, self.active_profile_changed))

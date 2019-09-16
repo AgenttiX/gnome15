@@ -48,7 +48,7 @@ from urllib import quote
 import urllib2
 # import re
 
-import gtk
+from gi.repository import Gtk as gtk
 from xml.dom import minidom
 
 import gnome15.g15locale as g15locale

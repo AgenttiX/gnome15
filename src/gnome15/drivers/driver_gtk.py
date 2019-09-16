@@ -18,9 +18,9 @@ import logging
 import os
 
 import cairo
-import gconf
-import gobject
-import gtk.gdk
+from gi.repository import GConf as gconf
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 from PIL import Image
 from PIL import ImageMath
 
@@ -134,7 +134,7 @@ class Driver(g15driver.AbstractDriver):
         self.buttons = {}
         self.event_box = None
         self.on_close = on_close
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
         self.notify_handle = self.conf_client.notify_add("/apps/gnome15/%s/gtk_mode" % self.device.uid,
                                                          self.config_changed)
         self._init_driver()
@@ -275,10 +275,10 @@ class Driver(g15driver.AbstractDriver):
             elif control == self.get_control_for_hint(g15driver.HINT_DIMMABLE):
                 if isinstance(control.value, int):
                     v = (65535 / control.upper) * control.value
-                    self.event_box.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color(v, v, v))
+                    self.event_box.modify_bg(gtk.STATE_NORMAL, gdk.Color(v, v, v))
                 else:
                     self.event_box.modify_bg(gtk.STATE_NORMAL,
-                                             gtk.gdk.Color(control.value[0] << 8, control.value[1] << 8,
+                                             gdk.Color(control.value[0] << 8, control.value[1] << 8,
                                                            control.value[2] << 8))
 
     def _window_closed(self, window, evt):
@@ -395,9 +395,9 @@ class Driver(g15driver.AbstractDriver):
         if control:
             if isinstance(control.value, int):
                 v = (65535 / control.upper) * control.value
-                self.event_box.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color(v, v, v))
+                self.event_box.modify_bg(gtk.STATE_NORMAL, gdk.Color(v, v, v))
             else:
-                self.event_box.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color(control.value[0] << 8, control.value[1] << 8,
+                self.event_box.modify_bg(gtk.STATE_NORMAL, gdk.Color(control.value[0] << 8, control.value[1] << 8,
                                                                          control.value[2] << 8))
 
         self.main_window.show_all()
@@ -410,7 +410,6 @@ class Driver(g15driver.AbstractDriver):
 
 
 class VirtualLCD(gtk.DrawingArea):
-
     def __init__(self, driver):
         self.__gobject_init__()
         self.driver = driver

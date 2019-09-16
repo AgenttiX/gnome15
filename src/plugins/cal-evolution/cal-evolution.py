@@ -25,7 +25,7 @@ import re
 import urllib
 
 # import dateutil
-import gtk
+from gi.repository import Gtk as gtk
 import vobject
 import xdg.BaseDirectory
 

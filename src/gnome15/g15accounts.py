@@ -29,8 +29,8 @@ import os
 import pwd
 from threading import Lock
 
-import gobject
-import gtk
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 import keyring
 from lxml import etree
 import pyinotify

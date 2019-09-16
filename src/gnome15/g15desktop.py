@@ -32,10 +32,12 @@ import subprocess
 from threading import RLock, Thread
 
 import dbus
-import gconf
-import gobject
-import gtk
-import pygtk
+import gi
+gi.require_version("GConf", "2.0")
+from gi.repository import GConf as gconf
+from gi.repository import GdkPixbuf
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 import xdg.DesktopEntry
 import xdg.BaseDirectory
 
@@ -49,10 +51,10 @@ import gnome15.g15notify as g15notify
 import gnome15.util.g15icontools as g15icontools
 
 logger = logging.getLogger(__name__)
-pygtk.require('2.0')
 _ = g15locale.get_translation("gnome15").ugettext
 
-icon_theme = gtk.icon_theme_get_default()
+# icon_theme = gtk.icon_theme_get_default()
+icon_theme = gtk.IconTheme.get_default()
 if g15globals.dev:
     icon_theme.prepend_search_path(g15globals.icons_dir)
 
@@ -925,7 +927,7 @@ def browse(url):
     Keyword arguments:
     url        -- URL
     """
-    b = g15gconf.get_string_or_default(gconf.client_get_default(),
+    b = g15gconf.get_string_or_default(gconf.Client.get_default(),
                                        "/apps/gnome15/browser", "default")
     if b not in __browsers and b != "default":
         logger.warning("Could not find browser %s, falling back to default", b)
@@ -1030,11 +1032,11 @@ class G15DesktopComponent:
         self.connected = False
 
         # Connect to DBus and GConf
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
         self.session_bus = dbus.SessionBus()
 
         # Enable monitoring of Gnome15 GConf settings
-        self.conf_client.add_dir("/apps/gnome15", gconf.CLIENT_PRELOAD_NONE)
+        self.conf_client.add_dir("/apps/gnome15", gconf.ClientPreloadType.PRELOAD_NONE)
 
         # Initialise desktop component
         self.initialise_desktop_component()
@@ -1056,7 +1058,8 @@ class G15DesktopComponent:
 
         # Start watching various events
         self.conf_client.notify_add("/apps/gnome15/indicate_only_on_error", self._indicator_options_changed)
-        gtk_icon_theme = gtk.icon_theme_get_default()
+        # gtk_icon_theme = gtk.icon_theme_get_default()
+        gtk_icon_theme = gtk.IconTheme.get_default()
         gtk_icon_theme.connect("changed", self._theme_changed)
 
         # Watch for Gnome15 starting and stopping
@@ -1382,7 +1385,7 @@ class G15GtkMenuPanelComponent(G15DesktopComponent):
         about.set_license(GPL)
         about.set_authors(AUTHORS)
         about.set_documenters(["Brett Smith <tanktarta@blueyonder.co.uk>"])
-        about.set_logo(gtk.gdk.pixbuf_new_from_file(g15icontools.get_app_icon(self.conf_client, "gnome15", 128)))
+        about.set_logo(GdkPixbuf.Pixbuf.new_from_file(g15icontools.get_app_icon(self.conf_client, "gnome15", 128)))
         about.set_comments(_("Desktop integration for Logitech 'G' keyboards."))
         about.run()
         about.hide()
@@ -1390,12 +1393,12 @@ class G15GtkMenuPanelComponent(G15DesktopComponent):
     def scroll_event(self, widget, event):
 
         direction = event.direction
-        if direction == gtk.gdk.SCROLL_UP:
+        if direction == gdk.SCROLL_UP:
             screen = self._get_active_screen_object()
             self._close_notify_message()
             screen.ClearPopup()
             screen.Cycle(1)
-        elif direction == gtk.gdk.SCROLL_DOWN:
+        elif direction == gdk.SCROLL_DOWN:
             screen = self._get_active_screen_object()
             self._close_notify_message()
             screen.ClearPopup()
@@ -1406,9 +1409,9 @@ class G15GtkMenuPanelComponent(G15DesktopComponent):
             otherwise toggle between the devices (used to select what to scroll with up
             and down) 
             """
-            if direction == gtk.gdk.SCROLL_LEFT:
+            if direction == gdk.SCROLL_LEFT:
                 self._get_active_screen_object().CycleKeyboard(-1)
-            elif direction == gtk.gdk.SCROLL_RIGHT:
+            elif direction == gdk.SCROLL_RIGHT:
                 if len(self.screens) > 1:
                     if self.screen_number >= len(self.screens) - 1:
                         self.screen_number = 0

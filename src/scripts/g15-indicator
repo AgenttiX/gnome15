@@ -25,13 +25,12 @@ screens on activation, and allow the configuration UI to be launched (g15-config
 import sys
 from threading import RLock
 
-import pygtk
-
-pygtk.require('2.0')
-import gtk
+# import pygtk
+# pygtk.require('2.0')
+from gi.repository import Gtk as gtk
 import os
 import appindicator
-import gconf
+from gi.repository import GConf as gconf
 
 # Allow running from local path
 path = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "..")
@@ -45,7 +44,7 @@ logger = g15logging.get_root_logger()
 
 # This block MUST be before the imports of the gnome15 modules
 import dbus
-import gobject
+from gi.repository import GObject as gobject
 
 gobject.threads_init()
 import dbus

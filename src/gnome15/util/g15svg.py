@@ -22,6 +22,7 @@ SVG utilities
 import logging
 
 import cairo
+
 import g15convert
 import g15pythonlang
 

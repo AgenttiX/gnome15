@@ -22,7 +22,7 @@ from threading import local, RLock
 import time
 import traceback
 
-import gobject
+from gi.repository import GObject as gobject
 
 if sys.version_info < (3, 0):
     import Queue

@@ -32,9 +32,9 @@ import dbus
 import dbus.service
 import dbus.exceptions
 from dbus.exceptions import NameExistsException
-import gconf
-import gtk
-import gtk.gdk
+from gi.repository import GConf as gconf
+from gi.repository import Gdk as gdk
+from gi.repository import Gtk as gtk
 import lxml.html
 # from PIL import Image
 
@@ -42,7 +42,8 @@ import lxml.html
 # run it in a gtk window
 if __name__ == "__main__":
 
-    import gobject
+    # import gobject
+    from gi.repository import GObject as gobject
     from dbus.mainloop.glib import DBusGMainLoop
     from dbus.mainloop.glib import threads_init
 
@@ -180,7 +181,7 @@ class G15Message:
                 buf = ""
                 for b in image_struct[6]:
                     buf += chr(b)
-                pixbuf = gtk.gdk.pixbuf_new_from_data(buf, gtk.gdk.COLORSPACE_RGB, has_alpha, bits_per_sample,
+                pixbuf = gdk.pixbuf_new_from_data(buf, gdk.COLORSPACE_RGB, has_alpha, bits_per_sample,
                                                       img_width, img_height, img_stride)
                 fh, self.embedded_image = tempfile.mkstemp(suffix=".png", prefix="notify-lcd")
                 file = os.fdopen(fh)
@@ -549,7 +550,7 @@ if __name__ == "__main__":
         logger.error("g15-desktop-service is not running.", exc_info=e)
         sys.exit(0)
 
-    plugin = G15NotifyLCD(gconf.client_get_default(),
+    plugin = G15NotifyLCD(gconf.Client.get_default(),
                           "/apps/gnome15/plugins/notify-lcd2", screen,
                           bus.get_object('org.gnome15.Gnome15', '/org/gnome15/Driver'), bus)
     plugin.activate()

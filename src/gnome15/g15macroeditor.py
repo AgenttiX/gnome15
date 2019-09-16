@@ -22,11 +22,10 @@ from __future__ import print_function
 import logging
 import os
 
-import gconf
-import gobject
-import gtk
-import pango
-import pygtk
+from gi.repository import GConf as gconf
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
+from gi.repository import Pango as pango
 
 import gnome15.g15locale as g15locale
 import g15globals
@@ -41,7 +40,6 @@ import g15keyio
 import g15actions
 
 logger = logging.getLogger(__name__)
-pygtk.require('2.0')
 _ = g15locale.get_translation("gnome15").ugettext
 
 # Key validation constants
@@ -58,7 +56,7 @@ class G15MacroEditor:
         and set_macro() after constructions to populate the macro key buttons
         and the other fields.
         """
-        self.__gconf_client = gconf.client_get_default()
+        self.__gconf_client = gconf.Client.get_default()
         self.__widget_tree = gtk.Builder()
         self.__widget_tree.set_translation_domain("g15-macroeditor")
         self.__widget_tree.add_from_file(os.path.join(g15globals.ui_dir, "macro-editor.ui"))
@@ -645,7 +643,7 @@ class G15MacroScriptEditor:
 
         self.__gconf_client = gconf_client
         self.__driver = driver
-        self.__clipboard = gtk.clipboard_get(gtk.gdk.SELECTION_CLIPBOARD)
+        self.__clipboard = gtk.clipboard_get(gdk.SELECTION_CLIPBOARD)
 
         self.__recorder = g15keyio.G15KeyRecorder(self.__driver)
         self.__recorder.on_stop = self._on_stop_record
@@ -691,7 +689,7 @@ class G15MacroScriptEditor:
                 if op in OP_ICONS:
                     icon = OP_ICONS[op]
                     icon_path = g15icontools.get_icon_path(icon, 24)
-                    self.__script_model.append([gtk.gdk.pixbuf_new_from_file(icon_path), val, op, True])
+                    self.__script_model.append([GdkPixbuf.Pixbuf.new_from_file(icon_path), val, op, True])
 
         self._validate_script()
 

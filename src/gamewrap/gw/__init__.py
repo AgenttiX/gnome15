@@ -22,7 +22,8 @@ import sys
 import threading
 
 import dbus.service
-import gobject
+# import gobject
+from gi.repository import GObject as gobject
 
 logger = logging.getLogger(__name__)
 

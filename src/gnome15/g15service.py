@@ -25,10 +25,12 @@ from threading import Thread
 import time
 
 import dbus
-import gconf
-import gobject
-import gtk.gdk
-import pygtk
+import gi
+gi.require_version("GConf", "2.0")
+gi.require_version("Gdk", "3.0")
+from gi.repository import GConf as gconf
+from gi.repository import GObject as gobject
+from gi.repository import Gdk as gdk
 import Xlib.X
 import Xlib.ext
 import Xlib.XK
@@ -54,7 +56,6 @@ import g15actions
 import g15upgrade
 
 logger = logging.getLogger(__name__)
-pygtk.require('2.0')
 
 # Used for getting logout  / shutdown signals
 master_client = None
@@ -565,7 +566,7 @@ class G15Service(g15desktop.G15AbstractService):
         self.active_window = None
         self.shutting_down = False
         self.starting_up = True
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
         self.screens = []
         self.started = False
         self.service_listeners = []
@@ -754,8 +755,8 @@ class G15Service(g15desktop.G15AbstractService):
 
     def _check_active_application_with_wnck(self, event=None):
         try:
-            import wnck
-            window = wnck.screen_get_default().get_active_window()
+            from gi.repository import Wnck as wnck
+            window = wnck.Screen.get_default().get_active_window()
             if window is not None and not window.is_skip_pager():
                 app = window.get_application()
                 active_application_name = app.get_name() if app is not None else ""
@@ -812,7 +813,7 @@ class G15Service(g15desktop.G15AbstractService):
         self.system_bus = dbus.SystemBus()
 
         # Create a screen for each device        
-        self.conf_client.add_dir("/apps/gnome15", gconf.CLIENT_PRELOAD_NONE)
+        self.conf_client.add_dir("/apps/gnome15", gconf.ClientPreloadType.PRELOAD_NONE)
         logger.info("Looking for devices")
         if len(self.devices) == 0:
             if g15devices.have_udev and not self.exit_on_no_devices:
@@ -936,7 +937,7 @@ class G15Service(g15desktop.G15AbstractService):
             session_manager_client_public_object = self.session_bus.get_object("org.gnome.SessionManager", client_path,
                                                                                "org.gnome.SessionManager.Client")
             sm_client_id = session_manager_client_public_object.GetStartupId()
-            gtk.gdk.set_sm_client_id(sm_client_id)
+            gdk.set_sm_client_id(sm_client_id)
             connected_to_session_manager = True
             logger.info("Connected to GNOME session manager")
         except Exception as e:
@@ -965,7 +966,7 @@ class G15Service(g15desktop.G15AbstractService):
                                                                                    client_path,
                                                                                    "org.mate.SessionManager.Client")
                 sm_client_id = session_manager_client_public_object.GetStartupId()
-                gtk.gdk.set_sm_client_id(sm_client_id)
+                gdk.set_sm_client_id(sm_client_id)
                 connected_to_session_manager = True
                 logger.info("Connected to MATE session manager")
             except Exception as e:
@@ -1094,7 +1095,8 @@ class G15Service(g15desktop.G15AbstractService):
             logger.info("BAMF not available, falling back to polling WNCK.")
             logger.debug("BAMF attempt below :", exc_info=e)
             try:
-                import wnck
+                gi.require_version("Wnck", "3.0")
+                from gi.repository import Wnck as wnck
                 wnck.__file__
                 self._check_active_application_with_wnck()
             except Exception as e:

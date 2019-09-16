@@ -21,8 +21,8 @@ import subprocess
 import tempfile
 from threading import Lock, Thread, Timer
 
-import gobject
-import gtk
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15driver as g15driver

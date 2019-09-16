@@ -19,8 +19,8 @@ import logging
 import os
 import sys
 
-import gobject
-import gtk
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 
 import gnome15.g15screen as g15screen
 import gnome15.util.g15scheduler as g15scheduler

@@ -29,8 +29,11 @@ import sys
 import urllib
 
 import cairo
-import gtk.gdk
-import rsvg
+import gi
+gi.require_version("Rsvg", "2.0")
+from gi.repository import Gdk as gdk
+from gi.repository import GdkPixbuf
+from gi.repository import Rsvg as rsvg
 import xdg.Mime as mime
 
 import g15convert
@@ -101,7 +104,7 @@ def load_surface_from_file(filename, size=None):
             if type == "image/svg+xml" or filename.lower().endswith(".svg"):
                 return load_svg_as_surface(filename, size)
             else:
-                return pixbuf_to_surface(gtk.gdk.pixbuf_new_from_file(full_cache_path), size)
+                return pixbuf_to_surface(GdkPixbuf.Pixbuf.new_from_file(full_cache_path), size)
 
     if is_url(filename):
         type = None
@@ -145,11 +148,11 @@ def load_surface_from_file(filename, size=None):
             else:
                 if type == "text/plain":
                     if filename.startswith("file://"):
-                        pixbuf = gtk.gdk.pixbuf_new_from_file(filename[7:])
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename[7:])
                         return pixbuf_to_surface(pixbuf, size)
                     raise Exception("Could not determine type")
                 else:
-                    pbl = gtk.gdk.pixbuf_loader_new_with_mime_type(type)
+                    pbl = gdk.pixbuf_loader_new_with_mime_type(type)
                     pbl.write(data)
                     pixbuf = pbl.get_pixbuf()
                     pbl.close()
@@ -166,7 +169,7 @@ def load_surface_from_file(filename, size=None):
                         filename = os.path.realpath(filename)
                     return load_svg_as_surface(filename, size)
                 else:
-                    return pixbuf_to_surface(gtk.gdk.pixbuf_new_from_file(filename), size)
+                    return pixbuf_to_surface(GdkPixbuf.Pixbuf.new_from_file(filename), size)
 
             except Exception as e:
                 logger.warning("Failed to get image %s (%s).", filename, type, exc_info=e)
@@ -174,9 +177,11 @@ def load_surface_from_file(filename, size=None):
 
 
 def load_svg_as_surface(filename, size):
-    svg = rsvg.Handle(filename)
+    svg = rsvg.Handle.new_from_file(filename)
     try:
-        svg_size = svg.get_dimension_data()[2:4]
+        svg_size_raw = svg.get_dimensions()
+        svg_size = (svg_size_raw.width, svg_size_raw.height)
+        # svg_size = svg.get_dimension_data()[2:4]
         if size is None:
             size = svg_size
         sx = int(size) if isinstance(size, int) or isinstance(size, float) else int(size[0])
@@ -203,7 +208,7 @@ def pixbuf_to_surface(pixbuf, size=None):
     scale = get_scale(size, (x, y))
     surface = cairo.ImageSurface(0, int(x * scale), int(y * scale))
     context = cairo.Context(surface)
-    gdk_context = gtk.gdk.CairoContext(context)
+    gdk_context = gdk.cairo_get_drawing_context(context)
     if size is not None:
         gdk_context.scale(scale, scale)
     gdk_context.set_source_pixbuf(pixbuf, 0, 0)
@@ -227,7 +232,7 @@ def image_to_pixbuf(im, type="ppm"):
         contents = file1.getvalue()
     finally:
         file1.close()
-    loader = gtk.gdk.PixbufLoader(p_type)
+    loader = gdk.PixbufLoader(p_type)
     loader.write(contents, len(contents))
     pixbuf = loader.get_pixbuf()
     loader.close()
@@ -241,7 +246,7 @@ def surface_to_pixbuf(surface):
         contents = file1.getvalue()
     finally:
         file1.close()
-    loader = gtk.gdk.PixbufLoader("png")
+    loader = gdk.PixbufLoader("png")
     loader.write(contents, len(contents))
     pixbuf = loader.get_pixbuf()
     loader.close()

@@ -67,7 +67,7 @@ import os.path
 import sys
 import threading
 
-import gconf
+from gi.repository import GConf as gconf
 
 import g15globals
 import g15driver
@@ -289,7 +289,7 @@ class G15Plugins:
         self.conf_client = self.service.conf_client
         self.started = []
         self.activated = []
-        self.conf_client.add_dir(self._get_plugin_key(), gconf.CLIENT_PRELOAD_NONE)
+        self.conf_client.add_dir(self._get_plugin_key(), gconf.ClientPreloadType.PRELOAD_NONE)
         self.module_map = {}
         self.plugin_map = {}
         self.state = UNINITIALISED
@@ -356,7 +356,7 @@ class G15Plugins:
                     logger.warning("Same plugin with ID of %s is already loaded."
                                    "Only the first copy will be used.", mod.id)
                 else:
-                    self.conf_client.add_dir(plugin_dir_key, gconf.CLIENT_PRELOAD_NONE)
+                    self.conf_client.add_dir(plugin_dir_key, gconf.ClientPreloadType.PRELOAD_NONE)
                     key = "%s/enabled" % plugin_dir_key
                     self.conf_client.notify_add(key, self._plugin_changed)
                     if (self.screen is None and is_global_plugin(mod)) or \

@@ -26,8 +26,8 @@ import sys
 from threading import RLock
 
 import cairo
-import gconf
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import Gtk as gtk
 import usb
 
 import gnome15.g15locale as g15locale
@@ -172,7 +172,7 @@ class Driver(g15driver.AbstractDriver):
         self.device = device
         self.lock = RLock()
         self.connected = False
-        self.conf_client = gconf.client_get_default()
+        self.conf_client = gconf.Client.get_default()
 
     @staticmethod
     def get_antialias():

@@ -21,10 +21,12 @@ import os.path
 # import time
 
 import cairo
-import cairoplot
+
 import gdata.analytics.client
-# import gobject
-import gtk
+from gi.repository import Gtk as gtk
+# http://cairoplot.sourceforge.net/
+# https://launchpad.net/cairoplot
+import cairoplot.CairoPlot as cairoplot
 
 import gnome15.g15locale as g15locale
 import gnome15.g15theme as g15theme

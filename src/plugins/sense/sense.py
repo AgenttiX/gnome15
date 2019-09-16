@@ -22,9 +22,9 @@ import subprocess
 from threading import Lock
 
 import dbus
-import gconf
-import gobject
-import gtk
+from gi.repository import GConf as gconf
+from gi.repository import GObject as gobject
+from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
 import gnome15.g15driver as g15driver

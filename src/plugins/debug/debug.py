@@ -22,7 +22,7 @@ import sys
 import traceback
 
 import dbus.service
-import pango
+from gi.repository import Pango as pango
 
 import gnome15.g15locale as g15locale
 import gnome15.g15text as g15text
