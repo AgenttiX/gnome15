@@ -1,6 +1,8 @@
 STATUS OF GNOME15
 =================
 
+[![pipeline status](https://gitlab.com/AgenttiX/gnome15/badges/master/pipeline.svg)](https://gitlab.com/AgenttiX/gnome15/-/commits/master)
+
 Gnome15 is currently **not complete maintained**.
 The original primary repository has been unavailable since November 2014 due to a hosting server crash.
 This fork was made to add a feature and has not been updated since November 2013, but it appears to be the latest snapshot of the repository that is currently publicly available.
