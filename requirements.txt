@@ -1,9 +1,9 @@
 feedparser >= 5.2.1
 gconf
-gdata
+gdata >= 2.0.18
 # gio       # Has to be installed with apt
 gobject
-launchpadlib
+launchpadlib >= 1.10.6
 lxml >= 4.3.1
 pillow >= 5.4.1
 pygtk
