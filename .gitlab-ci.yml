@@ -16,12 +16,10 @@ build:
       # The Python 2 dependencies are required by ./configure
     - apt-get install -y
         autoconf git libtool lm-sensors gir1.2-gtk-3.0
-        python-gconf python-gtk2-dev python-pip python-pyinotify python-usb python-virtkey python-xlib
-        python3-gi python3-pip
+        python-gconf python-gtk2-dev python-lxml python-pil python-pip python-pyinotify python-usb python-virtkey python-xlib
+        python3-feedparser python3-gi python3-launchpadlib python3-lxml python3-pil python3-pip python3-pyinotify python3-pyudev python3-setproctitle python3-six python3-xdg python3-xlib
       # The language setting is required for installing PySensors
     - LANG=C.UTF-8 pip3 --cache-dir=.pip3 install -r requirements.txt
-      # The Python 2 dependencies are required by ./configure
-    - pip --cache-dir=.pip2 install lxml pillow
       # python-rsvg is no longer in the latest Ubuntu repositories
     - curl -O http://de.archive.ubuntu.com/ubuntu/pool/universe/g/gnome-python-desktop/python-rsvg_2.32.0+dfsg-3_amd64.deb
     - dpkg -i python-rsvg_2.32.0+dfsg-3_amd64.deb
