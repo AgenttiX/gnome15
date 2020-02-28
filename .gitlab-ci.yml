@@ -42,8 +42,8 @@ build:
     - ./configure
     - make
     - make install
-    - g15-diag
-    - g15-launch
+    - g15-diag --help
+    - g15-launch --help
     - g15-support-dump 2>&1 | tee g15-support-dump.txt
   artifacts:
     paths:
