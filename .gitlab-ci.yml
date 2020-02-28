@@ -12,9 +12,9 @@ build:
       - .pip2
       - .pip3
   before_script:
-    - apt-get update
+    - apt-get update -q
       # The Python 2 dependencies are required by ./configure
-    - apt-get install -y
+    - apt-get install -y -q
         autoconf git libtool lm-sensors
         gir1.2-dee-1.0 gir1.2-gconf-2.0 gir1.2-gdkpixbuf-2.0 gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gir1.2-gtk-3.0 gir1.2-rsvg-2.0 gir1.2-pango-1.0 gir1.2-unity-5.0
         python-feedparser python-gi python-gconf python-gtk2-dev python-launchpadlib python-lxml python-pil python-pip python-pyinotify python-pyudev python-usb python-virtkey python-xlib
