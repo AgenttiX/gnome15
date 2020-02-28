@@ -9,12 +9,26 @@ build:
   image: ubuntu:latest
   cache:
     paths:
-      - .pip
+      - .pip2
+      - .pip3
   before_script:
     - apt-get update
-    - apt-get install -y autoconf libtool lm-sensors gir1.2-gtk-3.0 python3-gi python3-pip
+    - apt-get install -y
+        autoconf git libtool lm-sensors gir1.2-gtk-3.0
+        # The Python 2 dependencies are required by ./configure
+        python-gconf python-gtk2-dev python-pip python-pyinotify python-usb python-virtkey python-xlib
+        python3-gi python3-pip
     # The language setting is required for installing PySensors
-    - LANG=C.UTF-8 pip3 --cache-dir=.pip install -r requirements.txt
+    - LANG=C.UTF-8 pip3 --cache-dir=.pip3 install -r requirements.txt
+      # The Python 2 dependencies are required by ./configure
+    - pip --cache-dir=.pip2 install lxml pillow
+      # python-rsvg is no longer in the latest Ubuntu repositories
+    - curl -O http://de.archive.ubuntu.com/ubuntu/pool/universe/g/gnome-python-desktop/python-rsvg_2.32.0+dfsg-3_amd64.deb
+    - dpkg -i python-rsvg_2.32.0+dfsg-3_amd64.deb
+    - git clone https://github.com/tuomasjjrasanen/python-uinput.git
+    - cd python-uinput && python setup.py build && python setup.py install && cd ..
+    - git clone https://github.com/tuomasjjrasanen/libsuinput.git
+    - cd libsuinput && autoreconf -i && ./configure && make && make install && cd ..
   script:
     - autoreconf -i
     - ./configure
@@ -28,10 +42,10 @@ lint:
   image: python:latest
   cache:
     paths:
-    - .pip
+    - .pip3
   before_script:
   - python -V
-  - pip --cache-dir=.pip install -r requirements.txt
+  - pip --cache-dir=.pip3 install -r requirements.txt
   script:
   - pylint -j 0 *.py
 
