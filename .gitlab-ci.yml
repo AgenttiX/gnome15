@@ -37,6 +37,12 @@ build:
     - ./configure
     - make
     - make install
+    - g15-diag
+    - g15-launch
+    - g15-support-dump 2>&1 | tee g15-support-dump.txt
+  artifacts:
+    paths:
+      - g15-support-dump.txt
 
 lint:
   stage: test
