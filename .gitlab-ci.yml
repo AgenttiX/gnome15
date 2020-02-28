@@ -16,9 +16,9 @@ build:
       # The Python 2 dependencies are required by ./configure
     - apt-get install -y -q
         autoconf git libtool lm-sensors
-        gir1.2-dee-1.0 gir1.2-gconf-2.0 gir1.2-gdkpixbuf-2.0 gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gir1.2-gtk-3.0 gir1.2-rsvg-2.0 gir1.2-pango-1.0 gir1.2-unity-5.0
-        python-feedparser python-gi python-gconf python-gtk2-dev python-launchpadlib python-lxml python-pil python-pip python-pyinotify python-pyudev python-usb python-virtkey python-xlib
-        python3-feedparser python3-gi python3-launchpadlib python3-lxml python3-pil python3-pip python3-pyinotify python3-pyudev python3-setproctitle python3-six python3-usb python3-xdg python3-xlib
+        gir1.2-appindicator3-0.1 gir1.2-dee-1.0 gir1.2-gconf-2.0 gir1.2-gdkpixbuf-2.0 gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gir1.2-gtk-3.0 gir1.2-rsvg-2.0 gir1.2-pango-1.0 gir1.2-unity-5.0
+        python-alsaaudio python-appindicator python-feedparser python-gi python-gconf python-gtk2-dev python-launchpadlib python-lxml python-pil python-pip python-pyinotify python-pyudev python-setproctitle python-usb python-virtkey python-vobject python-xlib
+        python3-feedparser python3-gi python3-launchpadlib python3-lxml python3-pil python3-pip python3-pyinotify python3-pyudev python3-setproctitle python3-six python3-usb python3-vobject python3-xdg python3-xlib
       # The language setting is required for installing PySensors
     - LANG=C.UTF-8 pip3 --cache-dir=.pip3 install -r requirements.txt
       # Manually upgrading keyrings package prevents a dependency bug
