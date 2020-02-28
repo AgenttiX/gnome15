@@ -13,12 +13,12 @@ build:
       - .pip3
   before_script:
     - apt-get update
+      # The Python 2 dependencies are required by ./configure
     - apt-get install -y
         autoconf git libtool lm-sensors gir1.2-gtk-3.0
-        # The Python 2 dependencies are required by ./configure
         python-gconf python-gtk2-dev python-pip python-pyinotify python-usb python-virtkey python-xlib
         python3-gi python3-pip
-    # The language setting is required for installing PySensors
+      # The language setting is required for installing PySensors
     - LANG=C.UTF-8 pip3 --cache-dir=.pip3 install -r requirements.txt
       # The Python 2 dependencies are required by ./configure
     - pip --cache-dir=.pip2 install lxml pillow
