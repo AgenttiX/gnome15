@@ -1,0 +1,17 @@
+
+stages:
+  - build
+
+build:
+  stage: build
+  image: ubuntu:latest
+  cache:
+    paths:
+      - .pip
+  before_script:
+    - pip3 --cache-dir=.pip install -r requirements.txt
+  script:
+    - autoreconf -i
+    - ./configure
+    - make
+    - make install
