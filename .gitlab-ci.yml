@@ -33,8 +33,10 @@ build:
     - cd python-uinput && python setup.py build && python setup.py install && cd ..
     - git clone https://github.com/tuomasjjrasanen/libsuinput.git
     - cd libsuinput && autoreconf -i && ./configure && make && make install && cd ..
-    - git clone https://github.com/rmt/pyinputevent.git
-    - mkdir /usr/lib/python2.7/dist-packages/pyinputevent && cp ./pyinputevent/* /usr/lib/python2.7/dist-packages/pyinputevent
+    # - git clone https://github.com/rmt/pyinputevent.git
+    # - mkdir /usr/lib/python2.7/dist-packages/pyinputevent && cp ./pyinputevent/* /usr/lib/python2.7/dist-packages/pyinputevent
+    - git clone https://github.com/ammgws/pyinputevent.git
+    - cd pyinputevent && python setup.py install && cd ..
   script:
     - autoreconf -i
     - ./configure
