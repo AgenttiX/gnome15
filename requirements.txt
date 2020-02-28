@@ -1,7 +1,7 @@
 feedparser >= 5.2.1
 gconf
 gdata
-gio
+# gio       # Has to be installed with apt
 gobject
 launchpadlib
 lxml >= 4.3.1
