@@ -33,7 +33,6 @@ build:
     - cd libsuinput && autoreconf -i && ./configure && make && make install && cd ..
     - git clone https://github.com/rmt/pyinputevent.git
     - mkdir /usr/lib/python2.7/dist-packages/pyinputevent && cp ./pyinputevent/* /usr/lib/python2.7/dist-packages/pyinputevent
-    - mv ./pyinputevent ./src/gnome15/drivers
   script:
     - autoreconf -i
     - ./configure
