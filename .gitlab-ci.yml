@@ -5,6 +5,7 @@ stages:
 
 build:
   stage: build
+  # Using Ubuntu image to ensure that installation commands are the same as for Ubuntu desktops
   image: ubuntu:latest
   cache:
     paths:
