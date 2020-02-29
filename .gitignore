@@ -42,3 +42,4 @@ data/udev/*.rules
 src/gnome15/g15globals.py
 .idea
 build-log.txt
+.bzr
