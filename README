@@ -1,3 +1,7 @@
+<!--
+The name of this file has to be README so that autoreconf can find it
+-->
+
 # STATUS OF GNOME15
 
 [![pipeline status](https://gitlab.com/AgenttiX/gnome15/badges/master/pipeline.svg)](https://gitlab.com/AgenttiX/gnome15/-/commits/master)
