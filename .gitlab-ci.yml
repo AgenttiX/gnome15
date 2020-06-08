@@ -5,8 +5,9 @@ stages:
 
 build:
   stage: build
-  # Using Ubuntu image to ensure that installation commands are the same as for Ubuntu desktops
-  image: ubuntu:latest
+  # Using Ubuntu image to ensure that installation commands are the same as for Ubuntu desktops.
+  # However, many of the Python 2 packages are no longer available for Ubuntu 20.04, so 18.04 is used here instead
+  image: ubuntu:18.04
   cache:
     paths:
       - .pip2
