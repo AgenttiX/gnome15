@@ -60,16 +60,16 @@ def _rounded_rectangle(cr, x, y, w, h, r=20):
 
 
 class ColorPreview(gtk.DrawingArea):
-
     def __init__(self, picker):
-        self.__gobject_init__()
+        # self.__gobject_init__()
         self.picker = picker
         super(ColorPreview, self).__init__()
         self.set_size_request(CELL_WIDTH, CELL_HEIGHT)
-        self.connect("expose-event", self._expose)
+        # self.connect("expose-event", self._expose)
+        self.connect("draw", self._expose)
         self.connect("button-press-event", self._button_press)
         self.down = False
-        self.add_events(gdk.BUTTON1_MOTION_MASK | gdk.BUTTON_PRESS_MASK)
+        # self.add_events(gdk.BUTTON1_MOTION_MASK | gdk.BUTTON_PRESS_MASK)
 
     def _show_redblue_picker(self, widget_tree):
         main_window = widget_tree.get_object("RBPicker")
@@ -164,13 +164,18 @@ class ColorBar(gtk.DrawingArea):
         super(ColorBar, self).__init__()
         self.picker = picker
         self.set_size_request(len(self.picker.colors) * CELL_WIDTH, CELL_HEIGHT)
-        self.connect("expose-event", self._expose)
+        # self.connect("expose-event", self._expose)
+        self.connect("draw", self._expose)
         self.connect("button-press-event", self._button_press)
         self.connect("button-release-event", self._button_release)
         self.connect("motion-notify-event", self._mouse_motion)
         self.down = False
+        # self.add_events(
+        #     gdk.BUTTON1_MOTION_MASK | gdk.BUTTON_PRESS_MASK | gdk.BUTTON_RELEASE_MASK | gdk.POINTER_MOTION_MASK | gdk.POINTER_MOTION_HINT_MASK
+        # )
         self.add_events(
-            gdk.BUTTON1_MOTION_MASK | gdk.BUTTON_PRESS_MASK | gdk.BUTTON_RELEASE_MASK | gdk.POINTER_MOTION_MASK | gdk.POINTER_MOTION_HINT_MASK)
+            gdk.ModifierType.BUTTON1_MASK | gdk.ModifierType.RELEASE_MASK
+        )
         self.picker_image_surface = None
 
     def _mouse_motion(self, widget, event):
@@ -251,8 +256,8 @@ class ColorPicker(gtk.HBox):
         bar = ColorBar(self)
         preview = ColorPreview(self)
 
-        self.pack_start(bar, True, True)
-        self.pack_start(preview, False, True)
+        self.pack_start(bar, True, True, 0)
+        self.pack_start(preview, False, True, 0)
 
     def set_color(self, color):
         self.color = color

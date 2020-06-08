@@ -19,6 +19,7 @@ import os
 
 import cairo
 from gi.repository import GConf as gconf
+from gi.repository import Gdk as gdk
 from gi.repository import GObject as gobject
 from gi.repository import Gtk as gtk
 from PIL import Image
@@ -275,11 +276,23 @@ class Driver(g15driver.AbstractDriver):
             elif control == self.get_control_for_hint(g15driver.HINT_DIMMABLE):
                 if isinstance(control.value, int):
                     v = (65535 / control.upper) * control.value
-                    self.event_box.modify_bg(gtk.STATE_NORMAL, gdk.Color(v, v, v))
+                    # self.event_box.modify_bg(gtk.STATE_NORMAL, gdk.Color(v, v, v))
+                    self.event_box.modify_bg(gtk.StateType.NORMAL, gdk.Color(v, v, v))
                 else:
-                    self.event_box.modify_bg(gtk.STATE_NORMAL,
-                                             gdk.Color(control.value[0] << 8, control.value[1] << 8,
-                                                           control.value[2] << 8))
+                    # self.event_box.modify_bg(
+                    #     gtk.STATE_NORMAL,
+                    #     gdk.Color(
+                    #         control.value[0] << 8,
+                    #         control.value[1] << 8,
+                    #         control.value[2] << 8)
+                    # )
+                    self.event_box.modify_bg(
+                        gtk.StateType.NORMAL,
+                        gdk.Color(
+                            control.value[0] << 8,
+                            control.value[1] << 8,
+                            control.value[2] << 8)
+                    )
 
     def _window_closed(self, window, evt):
         if self.main_window is not None:
@@ -385,7 +398,8 @@ class Driver(g15driver.AbstractDriver):
         self.event_box.add(rows)
         self.vbox.add(self.event_box)
 
-        self.main_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        # self.main_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.main_window = gtk.Window(gtk.WindowType.TOPLEVEL)
         self.main_window.set_title("Gnome15")
         self.main_window.set_icon_from_file(g15icontools.get_app_icon(self.conf_client, "gnome15"))
         self.main_window.add(self.vbox)
@@ -395,10 +409,22 @@ class Driver(g15driver.AbstractDriver):
         if control:
             if isinstance(control.value, int):
                 v = (65535 / control.upper) * control.value
-                self.event_box.modify_bg(gtk.STATE_NORMAL, gdk.Color(v, v, v))
+                # self.event_box.modify_bg(gtk.STATE_NORMAL, gdk.Color(v, v, v))
+                self.event_box.modify_bg(gtk.StateType.NORMAL, gdk.Color(v, v, v))
             else:
-                self.event_box.modify_bg(gtk.STATE_NORMAL, gdk.Color(control.value[0] << 8, control.value[1] << 8,
-                                                                         control.value[2] << 8))
+                # self.event_box.modify_bg(
+                #     gtk.STATE_NORMAL,
+                #     gdk.Color(
+                #         control.value[0] << 8,
+                #         control.value[1] << 8,
+                #         control.value[2] << 8)
+                # )
+                self.event_box.modify_bg(
+                    gtk.StateType.NORMAL,
+                    gdk.Color(
+                        control.value[0] << 8, control.value[1] << 8,
+                        control.value[2] << 8)
+                )
 
         self.main_window.show_all()
         logger.info("Initialised GTK UI")
@@ -411,11 +437,13 @@ class Driver(g15driver.AbstractDriver):
 
 class VirtualLCD(gtk.DrawingArea):
     def __init__(self, driver):
-        self.__gobject_init__()
+        # self.__gobject_init__()
+        super(VirtualLCD, self).__init__()
         self.driver = driver
         self.set_double_buffered(True)
-        super(VirtualLCD, self).__init__()
-        self.connect("expose-event", self._expose)
+        # super(VirtualLCD, self).__init__()
+        # self.connect("expose-event", self._expose)
+        self.connect("draw", self._expose)
         self.buffer = None
 
     def _expose(self, widget, event):

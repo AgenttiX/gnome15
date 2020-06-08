@@ -25,6 +25,9 @@ import zipfile
 
 import dbus.service
 import gi
+gi.require_version("GConf", "2.0")
+gi.require_version("Gdk", "3.0")
+gi.require_version("Gtk", "3.0")
 from gi.repository import GConf as gconf
 from gi.repository import Gdk as gdk
 from gi.repository import GdkPixbuf
@@ -689,7 +692,7 @@ class G15Config:
             self.stop_service_button.set_sensitive(False)
             logger.debug("Stopped")
             self._show_message(
-                gtk.MESSAGE_WARNING,
+                gtk.MessageType.WARNING,
                 _("The Gnome15 desktop service is not running. It is recommended "
                   "you add <b>g15-desktop-service</b> as a <i>Startup Application</i>.")
             )
@@ -750,8 +753,8 @@ class G15Config:
         self.warning_label.set_text(text)
         self.warning_label.set_use_markup(True)
 
-        if type == gtk.MESSAGE_WARNING:
-            self.warning_image.set_from_stock(gtk.STOCK_DIALOG_WARNING, gtk.ICON_SIZE_DIALOG)
+        if type == gtk.MessageType.WARNING:
+            self.warning_image.set_from_stock(gtk.STOCK_DIALOG_WARNING, gtk.IconSize.DIALOG)
         #            self.warning_label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color(0, 0, 0))
 
         self.main_window.check_resize()
@@ -1301,7 +1304,7 @@ class G15Config:
     def _import_profile(self, widget):
         dialog = gtk.FileChooserDialog("Import..",
                                        None,
-                                       gtk.FILE_CHOOSER_ACTION_OPEN,
+                                       gtk.FileChooserAction.OPEN,
                                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                                         gtk.STOCK_OPEN, gtk.RESPONSE_OK))
         dialog.set_default_response(gtk.RESPONSE_OK)
@@ -1715,7 +1718,9 @@ class G15Config:
 
     def _load_parent_profiles(self):
         self.parent_profile_model.clear()
-        self.parent_profile_model.append([-1, ""])
+        # ValueError: Expected string or unicode but got -1<type 'int'>
+        # self.parent_profile_model.append([-1, ""])
+        self.parent_profile_model.append(["-1", ""])
         if self.selected_device is not None:
             for profile in self.profiles:
                 if profile.id != self.selected_profile.id:
@@ -1974,17 +1979,23 @@ class G15Config:
                     label = gtk.Label(control.name)
                     label.set_alignment(0.0, 0.5)
                     label.show()
-                    table.attach(label, 0, 1, row, row + 1, xoptions=gtk.FILL, xpadding=8, ypadding=4)
+                    table.attach(label, 0, 1, row, row + 1, xoptions=gtk.Align.FILL, xpadding=8, ypadding=4)
 
                     hscale = gtk.HScale()
-                    hscale.set_value_pos(gtk.POS_RIGHT)
+                    # AttributeError: 'gi.repository.Gtk' object has no attribute 'POS_RIGHT'
+                    # hscale.set_value_pos(gtk.POS_RIGHT)
+                    hscale.set_value_pos(gtk.PositionType.RIGHT)
                     hscale.set_digits(0)
                     hscale.set_range(control.lower, control.upper)
                     hscale.set_value(control.value)
                     hscale.connect("value-changed", self._control_changed, control)
                     hscale.show()
 
-                    halign = gtk.Align(0, 0, 1.0, 1.00)
+                    # TypeError: function takes at most 1 argument (4 given)
+                    # halign = gtk.Align(0, 0, 1.0, 1.00)
+                    # TypeError: Required argument 'value' (pos 1) not found
+                    # halign = gtk.Align()
+                    halign = gtk.Align(gtk.Align.FILL)
                     halign.add(hscale)
 
                     table.attach(halign, 1, 2, row, row + 1, xoptions=gtk.EXPAND | gtk.Align.FILL)

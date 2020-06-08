@@ -19,6 +19,7 @@ import os
 import time
 
 import dbus
+import gi
 from gi.repository import GObject as gobject
 
 import gnome15.g15locale as g15locale
@@ -33,8 +34,8 @@ logger = logging.getLogger(__name__)
 _ = g15locale.get_translation("processes", modfile=__file__).ugettext
 
 try:
-    # import gtop
-    from gi.repository import Gtop as gtop
+    gi.require_version("GTop", "2.0")
+    from gi.repository import GTop as gtop
 except Exception as __e:
     logger.debug("Could not import gtop module. Will use g15top instead", exc_info=__e)
     # API compatible work around for Ubuntu 12.10

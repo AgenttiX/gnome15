@@ -255,7 +255,7 @@ class G15Clock(g15plugin.G15Plugin):
                 gap = 8
 
             self.text.set_canvas(canvas)
-            self.text.set_attributes(text, align=pango.ALIGN_CENTER, font_desc=font_name,
+            self.text.set_attributes(text, align=pango.Alignment.CENTER, font_desc=font_name,
                                      font_absolute_size=font_size * pango.SCALE / factor)
             x, y, width, height = self.text.measure()
             if horizontal:

@@ -1249,7 +1249,9 @@ class G15DesktopComponent:
     def _disable(widget, device):
         device.Disable()
 
-    def _cycle_screens_option_changed(self, client, connection_id, entry, args):
+    def _cycle_screens_option_changed(self, client, connection_id, entry):  # , args):
+        # TODO fix the argument names
+        logger.info("_cycle_screens_option_changed got arguments: %s".format(self, client, connection_id, entry))
         self.rebuild_desktop_component()
 
     def _remove_screen(self, screen_path):

@@ -20,6 +20,7 @@ import logging
 import os
 # import time
 
+import gi
 from gi.repository import Gtk as gtk
 
 import gnome15.g15locale as g15locale
@@ -39,7 +40,8 @@ logger = logging.getLogger(__name__)
 _ = g15locale.get_translation("trafficstats", modfile=__file__).ugettext
 
 try:
-    import gtop
+    gi.require_version("GTop", "2.0")
+    from gi.repository import GTop as gtop
 except Exception as e:
     logger.debug("Could not import gtop. Falling back to g15top", exc_info=e)
     # API compatible work around for Ubuntu 12.10

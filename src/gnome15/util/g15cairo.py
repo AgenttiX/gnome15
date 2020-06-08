@@ -38,7 +38,7 @@ import xdg.Mime as mime
 
 import g15convert
 import g15os
-# import gnome15.g15globals
+from gnome15 import g15globals
 
 if sys.version_info < (3, 0):
     from cStringIO import StringIO
@@ -90,7 +90,7 @@ def is_url(path):
 
 
 def load_surface_from_file(filename, size=None):
-    type = None
+    type_ = None
     if filename is None:
         logger.warning("Empty filename requested")
         return None
@@ -99,22 +99,22 @@ def load_surface_from_file(filename, size=None):
         full_cache_path = get_image_cache_file(filename, size)
         if full_cache_path:
             meta_fileobj = open(full_cache_path + "m", "r")
-            type = meta_fileobj.readline()
+            type_ = meta_fileobj.readline()
             meta_fileobj.close()
-            if type == "image/svg+xml" or filename.lower().endswith(".svg"):
+            if type_ == "image/svg+xml" or filename.lower().endswith(".svg"):
                 return load_svg_as_surface(filename, size)
             else:
                 return pixbuf_to_surface(GdkPixbuf.Pixbuf.new_from_file(full_cache_path), size)
 
     if is_url(filename):
-        type = None
+        type_ = None
         try:
             file = urllib.urlopen(filename)
             data = file.read()
-            type = file.info().gettype()
+            type_ = file.info().gettype()
 
             if filename.startswith("file://"):
-                type = str(mime.get_type(filename))
+                type_ = str(mime.get_type(filename))
 
             if filename.startswith("http:") or filename.startswith("https:"):
                 full_cache_path = get_cache_filename(filename, size)
@@ -122,10 +122,10 @@ def load_surface_from_file(filename, size=None):
                 cache_fileobj.write(data)
                 cache_fileobj.close()
                 meta_fileobj = open(full_cache_path + "m", "w")
-                meta_fileobj.write(type + "\n")
+                meta_fileobj.write(type_ + "\n")
                 meta_fileobj.close()
 
-            if type == "image/svg+xml" or filename.lower().endswith(".svg"):
+            if type_ == "image/svg+xml" or filename.lower().endswith(".svg"):
                 svg = rsvg.Handle()
                 try:
                     if not svg.write(data):
@@ -146,20 +146,20 @@ def load_surface_from_file(filename, size=None):
                 finally:
                     svg.close()
             else:
-                if type == "text/plain":
+                if type_ == "text/plain":
                     if filename.startswith("file://"):
                         pixbuf = GdkPixbuf.Pixbuf.new_from_file(filename[7:])
                         return pixbuf_to_surface(pixbuf, size)
                     raise Exception("Could not determine type")
                 else:
-                    pbl = gdk.pixbuf_loader_new_with_mime_type(type)
+                    pbl = gdk.pixbuf_loader_new_with_mime_type(type_)
                     pbl.write(data)
                     pixbuf = pbl.get_pixbuf()
                     pbl.close()
                     return pixbuf_to_surface(pixbuf, size)
             return None
         except Exception as e:
-            logger.warning("Failed to get image %s (%s).", filename, type, exc_info=e)
+            logger.warning("Failed to get image %s (%s).", filename, type_, exc_info=e)
             return None
     else:
         if os.path.exists(filename):
@@ -172,7 +172,7 @@ def load_surface_from_file(filename, size=None):
                     return pixbuf_to_surface(GdkPixbuf.Pixbuf.new_from_file(filename), size)
 
             except Exception as e:
-                logger.warning("Failed to get image %s (%s).", filename, type, exc_info=e)
+                logger.warning("Failed to get image %s (%s).", filename, type_, exc_info=e)
                 return None
 
 
@@ -207,13 +207,19 @@ def pixbuf_to_surface(pixbuf, size=None):
     y = pixbuf.get_height()
     scale = get_scale(size, (x, y))
     surface = cairo.ImageSurface(0, int(x * scale), int(y * scale))
-    context = cairo.Context(surface)
-    gdk_context = gdk.cairo_get_drawing_context(context)
-    if size is not None:
-        gdk_context.scale(scale, scale)
-    gdk_context.set_source_pixbuf(pixbuf, 0, 0)
-    gdk_context.paint()
-    gdk_context.scale(1 / scale, 1 / scale)
+    print(surface)
+    # context = cairo.Context(surface)
+    # gdk_context = gdk.DrawingContext(context)
+    # Old Gtk 2.0 way
+    # https://developer.gnome.org/pygtk/stable/class-gdkcairocontext.html
+    # gdk_context = gtk.gdk.CairoContext(context)
+    # This might work with the gi imports, but may return None
+    # gdk_context = gdk.cairo_get_drawing_context(context)
+    # if size is not None:
+    #     gdk_context.scale(scale, scale)
+    # gdk_context.set_source_pixbuf(pixbuf, 0, 0)
+    # gdk_context.paint()
+    # gdk_context.scale(1 / scale, 1 / scale)
     return surface
 
 

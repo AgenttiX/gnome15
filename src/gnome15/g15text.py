@@ -134,7 +134,7 @@ class G15PangoText(G15Text):
         if attributes:
             self.__layout.set_attributes(attributes)
 
-        self.__layout.set_text(text)
+        self.__layout.set_text(text, None)
         self.metrics = pango_context.get_metrics(self.__layout.get_font_description())
 
     def measure(self):

@@ -281,10 +281,10 @@ def get_active_profile(device):
     """
     val = conf_client.get("/apps/gnome15/%s/active_profile" % device.uid)
     profile = None
-    if val is not None and val.type == gconf.VALUE_INT:
+    if val is not None and val.type == gconf.ValueType.INT:
         # This is just here for compatibility with <= 0.7.x
         profile = get_profile(device, str(val.get_int()))
-    elif val is not None and val.type == gconf.VALUE_STRING:
+    elif val is not None and val.type == gconf.ValueType.STRING:
         profile = get_profile(device, val.get_string())
 
     if profile is None:

@@ -511,7 +511,9 @@ class G15DBUSScreenService(AbstractG15DBUSService):
         for h in self._notify_handles:
             self._service.conf_client.notify_remove(h)
 
-    def _cycle_screens_option_changed(self, client, connection_id, entry, args):
+    def _cycle_screens_option_changed(self, client, connection_id, entry): # , args):
+        # TODO fix the argument names
+        logger.info("_cycle_screens_option_changed got arguments: %s".format(self, client, connection_id, entry))
         self.CyclingChanged(entry.value.get_bool())
 
     def _get_dimmable_controls(self):
