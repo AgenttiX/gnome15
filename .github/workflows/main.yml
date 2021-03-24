@@ -29,6 +29,38 @@ jobs:
       run: fossa analyze
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2
+      - name: Print Python version
+        run: python -V
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Load pip cache
+        uses: actions/cache@v2
+        with:
+          path: .pip
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+            pip-
+      - name: Install requirements
+        run: |
+          pip --cache-dir=.pip install --upgrade pip
+          pip --cache-dir=.pip install pylint
+          pip --cache-dir=.pip install -r requirements.txt
+      - name: Run Pylint
+        run: pylint src mksvgheaders.py 2>&1 | tee pylint.txt
+        working-directory: ${{ github.workspace }}
+      - name: Upload results
+        uses: actions/upload-artifact@v2
+        with:
+          name: Lint
+          path: |
+            ${{ github.workspace }}/pylint.txt
+          if-no-files-found: error
   sast:
     runs-on: ubuntu-latest
     steps:
