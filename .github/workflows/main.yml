@@ -29,3 +29,16 @@ jobs:
       run: fossa analyze
       env:
         FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - uses: AppThreat/sast-scan-action@master
+      with:
+        type: bash,python
+    - uses: actions/upload-artifact@v2
+      with:
+        name: reports
+        path: reports
+        if-no-files-found: error
